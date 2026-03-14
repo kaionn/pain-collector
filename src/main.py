@@ -11,28 +11,48 @@ from . import collect_reddit, collect_hatena, extract_pains
 JST = timezone(timedelta(hours=9))
 
 
+PRODUCT_TYPE_EMOJI = {
+    "モバイルアプリ": "📱",
+    "Webサービス": "🌐",
+    "ブラウザ拡張": "🧩",
+    "CLI・開発ツール": "⌨️",
+    "ハードウェア・IoT": "🔧",
+    "API・SaaS": "☁️",
+    "その他": "📦",
+}
+
+
 def generate_report(pains: list[dict], date_str: str) -> str:
     """日次レポートの Markdown を生成する."""
+    # プロダクトタイプ別に集計
+    by_product: dict[str, list[dict]] = {}
+    for pain in pains:
+        pt = pain.get("product_type", "その他")
+        by_product.setdefault(pt, []).append(pain)
+
+    # サマリーテーブル
     lines = [
         f"# Pain Report: {date_str}\n",
         f"抽出件数: {len(pains)} 件\n",
+        "| プロダクトタイプ | 件数 |",
+        "|---|---|",
     ]
+    for pt in sorted(by_product.keys()):
+        emoji = PRODUCT_TYPE_EMOJI.get(pt, "📦")
+        lines.append(f"| {emoji} {pt} | {len(by_product[pt])} |")
+    lines.append("")
 
-    # カテゴリ別に集計
-    by_category: dict[str, list[dict]] = {}
-    for pain in pains:
-        cat = pain.get("category", "その他")
-        by_category.setdefault(cat, []).append(pain)
-
-    # 深刻度の高い順にソート
-    for cat in sorted(by_category.keys()):
-        items = sorted(by_category[cat], key=lambda x: x.get("severity", 0), reverse=True)
-        lines.append(f"\n## {cat}\n")
+    # プロダクトタイプ別セクション
+    for pt in sorted(by_product.keys()):
+        emoji = PRODUCT_TYPE_EMOJI.get(pt, "📦")
+        items = sorted(by_product[pt], key=lambda x: x.get("severity", 0), reverse=True)
+        lines.append(f"\n## {emoji} {pt}\n")
 
         for item in items:
             severity = item.get("severity", 0)
             stars = "★" * severity + "☆" * (5 - severity)
             pain_text = item.get("pain", "")
+            category = item.get("category", "")
             idea = item.get("app_idea", "")
             existing = item.get("existing_solutions")
             source_title = item.get("source_title", "")
@@ -40,7 +60,8 @@ def generate_report(pains: list[dict], date_str: str) -> str:
 
             lines.append(f"### {pain_text}\n")
             lines.append(f"- 深刻度: {stars} ({severity}/5)")
-            lines.append(f"- アプリアイデア: {idea}")
+            lines.append(f"- カテゴリ: {category}")
+            lines.append(f"- プロダクトアイデア: {idea}")
 
             if existing:
                 lines.append(f"- 既存ソリューション: {existing}")
