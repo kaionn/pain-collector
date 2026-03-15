@@ -3,6 +3,7 @@
 SNS からペインを収集 → LLM で構造化 → Markdown で保存する.
 """
 
+import json
 import os
 from datetime import datetime, timezone, timedelta
 
@@ -91,6 +92,19 @@ def main() -> None:
 
     all_posts = reddit_posts + hatena_posts
     print(f"\n合計投稿数: {len(all_posts)} 件\n")
+
+    # 生データを JSON で保存
+    raw_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "raw")
+    os.makedirs(raw_dir, exist_ok=True)
+    raw_path = os.path.join(raw_dir, f"{date_str}.json")
+    with open(raw_path, "w", encoding="utf-8") as f:
+        json.dump(
+            {"date": date_str, "reddit": reddit_posts, "hatena": hatena_posts},
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+    print(f"生データを保存: {raw_path}")
 
     if not all_posts:
         print("投稿が0件のため終了")
