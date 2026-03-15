@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, extract_pains
+from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, notify
 
 JST = timezone(timedelta(hours=9))
 
@@ -108,12 +108,16 @@ def process_day(
     date_str: str,
     reddit_posts: list[dict],
     hatena_posts: list[dict],
+    zenn_posts: list[dict],
 ) -> None:
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
     print(f"=== Pain Collector: {date_str} ===\n")
 
-    all_posts = reddit_posts + hatena_posts
-    print(f"投稿数: Reddit {len(reddit_posts)} 件 + はてブ {len(hatena_posts)} 件 = {len(all_posts)} 件\n")
+    all_posts = reddit_posts + hatena_posts + zenn_posts
+    print(
+        f"投稿数: Reddit {len(reddit_posts)} 件 + はてブ {len(hatena_posts)} 件"
+        f" + Zenn {len(zenn_posts)} 件 = {len(all_posts)} 件\n"
+    )
 
     # 生データを JSON で保存
     raw_dir = os.path.join(BASE_DIR, "raw")
@@ -121,7 +125,12 @@ def process_day(
     raw_path = os.path.join(raw_dir, f"{date_str}.json")
     with open(raw_path, "w", encoding="utf-8") as f:
         json.dump(
-            {"date": date_str, "reddit": reddit_posts, "hatena": hatena_posts},
+            {
+                "date": date_str,
+                "reddit": reddit_posts,
+                "hatena": hatena_posts,
+                "zenn": zenn_posts,
+            },
             f,
             ensure_ascii=False,
             indent=2,
@@ -152,6 +161,9 @@ def process_day(
     print(f"\nレポートを保存: {output_path}")
     print(f"ペイン件数: {len(pains)} 件")
 
+    # LINE Notify で TOP3 を通知
+    notify.send_top_pains(pains, date_str)
+
 
 def main() -> None:
     """メイン処理."""
@@ -175,9 +187,12 @@ def main() -> None:
         print("\n--- はてブ 収集 ---")
         hatena_posts = collect_hatena.collect()
 
+        print("\n--- Zenn 収集 ---")
+        zenn_posts = collect_zenn.collect()
+
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
-            process_day(target.isoformat(), reddit_posts, hatena_posts)
+            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts)
             print("\n" + "=" * 60 + "\n")
     else:
         # 通常: 収集 → 抽出 → 保存
@@ -187,7 +202,10 @@ def main() -> None:
         print("\n--- はてブ 収集 ---")
         hatena_posts = collect_hatena.collect()
 
-        process_day(today.isoformat(), reddit_posts, hatena_posts)
+        print("\n--- Zenn 収集 ---")
+        zenn_posts = collect_zenn.collect()
+
+        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts)
 
 
 if __name__ == "__main__":

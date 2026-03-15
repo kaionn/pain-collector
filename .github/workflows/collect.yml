@@ -25,6 +25,7 @@ jobs:
       - name: Run pain collector
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
         run: python -m src.main
 
       - name: Commit and push
