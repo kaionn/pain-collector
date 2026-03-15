@@ -69,6 +69,26 @@ def _create_issue(pain: dict, date_str: str) -> None:
     else:
         lines.append("なし（チャンス！）\n")
 
+    # 市場データ
+    market_signal = pain.get("market_signal")
+    market_apps = pain.get("market_apps", [])
+    if market_signal:
+        signal_label = {
+            "whitespace": "🟢 ホワイトスペース（競合なし）",
+            "underserved": "🟡 市場あり・満足度低い（チャンス）",
+            "emerging": "🟡 新興市場",
+            "competitive": "🔴 競合が強い",
+        }.get(market_signal, market_signal)
+        lines.append(f"## 市場シグナル\n")
+        lines.append(f"{signal_label}\n")
+        if market_apps:
+            for app in market_apps[:3]:
+                lines.append(
+                    f"- [{app['name']}]({app['url']}) "
+                    f"⭐{app['rating']} ({app['reviews']}件) {app['price']}"
+                )
+            lines.append("")
+
     if source_url:
         lines.append(f"## ソース\n")
         lines.append(f"[{source_title}]({source_url})\n")
@@ -101,6 +121,13 @@ def _create_issue(pain: dict, date_str: str) -> None:
     # 既存ソリューションなし
     if not existing:
         labels.append("🎯既存なし")
+
+    # 市場シグナル
+    market_signal = pain.get("market_signal")
+    if market_signal == "whitespace":
+        labels.append("🟢whitespace")
+    elif market_signal == "underserved":
+        labels.append("🟡underserved")
 
     # gh issue create コマンド組み立て
     cmd = [

@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, notify, weekly_trends
+from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, feedback, market_check, notify, weekly_trends
 
 JST = timezone(timedelta(hours=9))
 
@@ -99,6 +99,25 @@ def generate_report(pains: list[dict], date_str: str) -> str:
             if source_url:
                 lines.append(f"- ソース: [{source_title}]({source_url})")
 
+            # 市場データ（あれば）
+            market_signal = item.get("market_signal")
+            market_apps = item.get("market_apps", [])
+            if market_signal:
+                signal_label = {
+                    "whitespace": "🟢 ホワイトスペース（競合なし）",
+                    "underserved": "🟡 市場あり・満足度低い（チャンス）",
+                    "emerging": "🟡 新興市場（レビュー少）",
+                    "competitive": "🔴 競合が強い",
+                }.get(market_signal, market_signal)
+                lines.append(f"- 市場シグナル: {signal_label}")
+
+                if market_apps:
+                    for app in market_apps[:3]:
+                        lines.append(
+                            f"  - [{app['name']}]({app['url']}) "
+                            f"⭐{app['rating']} ({app['reviews']}件) {app['price']}"
+                        )
+
             lines.append("")
 
     return "\n".join(lines)
@@ -149,6 +168,10 @@ def process_day(
         print("ペインが0件のため終了")
         return
 
+    # App Store で競合チェック（上位5件のみ）
+    print("--- 競合チェック ---")
+    pains = market_check.enrich_pains(pains, top_n=5)
+
     # レポート生成・保存
     report = generate_report(pains, date_str)
     output_dir = os.path.join(BASE_DIR, "daily")
@@ -180,9 +203,18 @@ def main() -> None:
         action="store_true",
         help="週次トレンド分析を実行する",
     )
+    parser.add_argument(
+        "--feedback",
+        action="store_true",
+        help="フィードバック集計レポートを表示する",
+    )
     args = parser.parse_args()
 
     today = datetime.now(JST).date()
+
+    if args.feedback:
+        feedback.run()
+        return
 
     if args.weekly:
         weekly_trends.run(today)
