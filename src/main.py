@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, notify
+from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, notify, weekly_trends
 
 JST = timezone(timedelta(hours=9))
 
@@ -175,9 +175,18 @@ def main() -> None:
         metavar="DAYS",
         help="過去 N 日分をバックフィルする（例: --backfill 7）",
     )
+    parser.add_argument(
+        "--weekly",
+        action="store_true",
+        help="週次トレンド分析を実行する",
+    )
     args = parser.parse_args()
 
     today = datetime.now(JST).date()
+
+    if args.weekly:
+        weekly_trends.run(today)
+        return
 
     if args.backfill > 0:
         # バックフィル: データを 1 回だけ収集し、日付ごとにレポート生成
