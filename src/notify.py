@@ -1,17 +1,15 @@
-"""LINE Notify で通知を送信する."""
+"""Discord Webhook で通知を送信する."""
 
+import json
 import os
 
 import requests
 
-LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify"
-
-
 def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
-    """深刻度が高いペイン TOP N を LINE Notify で通知する."""
-    token = os.environ.get("LINE_NOTIFY_TOKEN", "")
-    if not token:
-        print("[LINE] LINE_NOTIFY_TOKEN が未設定、通知スキップ")
+    """深刻度が高いペイン TOP N を Discord Webhook で通知する."""
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
+    if not webhook_url:
+        print("[Discord] DISCORD_WEBHOOK_URL が未設定、通知スキップ")
         return
 
     if not pains:
@@ -20,44 +18,62 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
     sorted_pains = sorted(pains, key=lambda x: x.get("severity", 0), reverse=True)
     top = sorted_pains[:top_n]
 
-    lines = [f"\n🔥 Pain Report: {date_str} TOP{top_n}\n"]
-
+    embeds = []
     for i, pain in enumerate(top, 1):
         severity = pain.get("severity", 0)
         stars = "★" * severity + "☆" * (5 - severity)
         category = pain.get("category", "")
         pain_text = pain.get("pain", "")
         product_type = pain.get("product_type", "")
+        target_user = pain.get("target_user", "")
         wtp = pain.get("willingness_to_pay", "")
+        frequency = pain.get("frequency", "")
         existing = pain.get("existing_solutions")
         idea = pain.get("app_idea", "")
+        source_url = pain.get("source_url", "")
 
-        lines.append(f"{i}. {stars} [{category}]")
-        lines.append(f"   {pain_text}")
-        lines.append(f"   → {product_type} | 課金: {wtp}")
-        lines.append(f"   💡 {idea}")
+        # 深刻度で色を変える
+        color = {5: 0xFF0000, 4: 0xFF6B00, 3: 0xFFAA00, 2: 0x00AA00, 1: 0x888888}.get(severity, 0x888888)
 
-        if not existing:
-            lines.append("   🎯 既存ソリューションなし！")
+        fields = [
+            {"name": "深刻度", "value": f"{stars} ({severity}/5)", "inline": True},
+            {"name": "カテゴリ", "value": category, "inline": True},
+            {"name": "プロダクト", "value": product_type, "inline": True},
+            {"name": "対象ユーザー", "value": target_user, "inline": False},
+            {"name": "頻度 / 課金意欲", "value": f"{frequency} / {wtp}", "inline": True},
+            {"name": "アイデア", "value": idea, "inline": False},
+        ]
 
-        lines.append("")
+        if existing:
+            fields.append({"name": "既存ソリューション", "value": existing, "inline": False})
+        else:
+            fields.append({"name": "既存ソリューション", "value": "なし（チャンス！）", "inline": False})
 
-    message = "\n".join(lines)
+        embed = {
+            "title": f"{i}. {pain_text}",
+            "color": color,
+            "fields": fields,
+        }
 
-    # LINE Notify は 1000 文字制限
-    if len(message) > 1000:
-        message = message[:997] + "..."
+        if source_url:
+            embed["url"] = source_url
+
+        embeds.append(embed)
+
+    payload = {
+        "content": f"🔥 **Pain Report: {date_str}** TOP{top_n}",
+        "embeds": embeds,
+    }
 
     try:
         resp = requests.post(
-            LINE_NOTIFY_URL,
-            headers={"Authorization": f"Bearer {token}"},
-            data={"message": message},
+            webhook_url,
+            json=payload,
             timeout=10,
         )
-        if resp.status_code == 200:
-            print(f"[LINE] TOP{top_n} ペインを通知しました")
+        if resp.status_code in (200, 204):
+            print(f"[Discord] TOP{top_n} ペインを通知しました")
         else:
-            print(f"[LINE] 通知失敗: {resp.status_code} {resp.text[:100]}")
+            print(f"[Discord] 通知失敗: {resp.status_code} {resp.text[:200]}")
     except requests.RequestException as e:
-        print(f"[LINE] 通知失敗: {e}")
+        print(f"[Discord] 通知失敗: {e}")
