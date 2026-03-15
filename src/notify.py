@@ -144,6 +144,14 @@ def _create_issue(pain: dict, date_str: str) -> None:
         if result.returncode == 0:
             issue_url = result.stdout.strip()
             print(f"[GitHub] Issue 作成: {issue_url}")
+
+            # Project に自動追加
+            subprocess.run(
+                ["gh", "project", "item-add", "1", "--owner", "kaionn", "--url", issue_url],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
         else:
             print(f"[GitHub] Issue 作成失敗: {result.stderr[:200]}")
     except Exception as e:
