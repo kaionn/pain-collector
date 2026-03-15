@@ -1,8 +1,11 @@
-"""GitHub Issues でペインを個別 Issue として作成する."""
+"""GitHub Issues でペインを個別 Issue として作成する（重複チェック付き）."""
 
+import json
 import subprocess
 
-# プロダクトタイプ → ラベル名のマッピング
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
 PRODUCT_TYPE_LABELS = {
     "モバイルアプリ": "📱モバイルアプリ",
     "Webサービス": "🌐Webサービス",
@@ -18,21 +21,100 @@ WTP_LABELS = {
     "free": "💰free",
 }
 
+DUPLICATE_THRESHOLD = 0.5
+
+
+def _fetch_open_issues() -> list[dict]:
+    """open 状態の Issue タイトル一覧を取得する."""
+    try:
+        result = subprocess.run(
+            [
+                "gh", "issue", "list",
+                "--label", "pain-report",
+                "--state", "open",
+                "--json", "number,title",
+                "--limit", "200",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+    except Exception:
+        pass
+    return []
+
+
+def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
+    """既存 Issue の中から重複を検出する. 類似度が閾値以上なら既存 Issue を返す."""
+    if not existing_issues:
+        return None
+
+    titles = [issue["title"] for issue in existing_issues]
+    corpus = titles + [pain_text]
+
+    try:
+        tfidf = TfidfVectorizer().fit_transform(corpus)
+        sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
+
+        max_idx = sims.argmax()
+        if sims[max_idx] >= DUPLICATE_THRESHOLD:
+            return existing_issues[max_idx]
+    except ValueError:
+        pass
+
+    return None
+
 
 def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
     """深刻度が高いペイン TOP N を個別の GitHub Issue として作成する."""
     if not pains:
         return
 
+    existing_issues = _fetch_open_issues()
+    print(f"[GitHub] 既存 open Issue: {len(existing_issues)} 件")
+
     sorted_pains = sorted(pains, key=lambda x: x.get("severity", 0), reverse=True)
     top = sorted_pains[:top_n]
 
     for pain in top:
-        _create_issue(pain, date_str)
+        pain_text = pain.get("pain", "")
+        duplicate = _find_duplicate(pain_text, existing_issues)
+
+        if duplicate:
+            print(f"[GitHub] 重複検出 → #{duplicate['number']} {duplicate['title'][:50]}")
+            _comment_duplicate(duplicate["number"], pain, date_str)
+        else:
+            issue = _create_issue(pain, date_str)
+            if issue:
+                existing_issues.append(issue)
 
 
-def _create_issue(pain: dict, date_str: str) -> None:
-    """1 件のペインから GitHub Issue を作成する."""
+def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:
+    """既存 Issue に重複ペインの情報をコメントとして追加する."""
+    pain_text = pain.get("pain", "")
+    source_title = pain.get("source_title", "")
+    source_url = pain.get("source_url", "")
+
+    comment = f"📅 {date_str} に同様のペインを再検出:\n\n> {pain_text}\n"
+    if source_url:
+        comment += f"\nソース: [{source_title}]({source_url})"
+
+    try:
+        subprocess.run(
+            ["gh", "issue", "comment", str(issue_number), "--body", comment],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        print(f"[GitHub] #{issue_number} にコメント追加")
+    except Exception as e:
+        print(f"[GitHub] コメント追加失敗: {e}")
+
+
+def _create_issue(pain: dict, date_str: str) -> dict | None:
+    """1 件のペインから GitHub Issue を作成する. 成功時は {number, title} を返す."""
     severity = pain.get("severity", 0)
     stars = "★" * severity + "☆" * (5 - severity)
     category = pain.get("category", "")
@@ -96,43 +178,37 @@ def _create_issue(pain: dict, date_str: str) -> None:
     lines.append(f"---\n📅 {date_str}")
 
     body = "\n".join(lines)
+    title = f"[{category}] {pain_text[:80]}"
 
     # ラベルを組み立て
     labels = ["pain-report"]
 
-    # ジャンル
     if category:
         labels.append(category)
 
-    # プロダクトタイプ
     pt_label = PRODUCT_TYPE_LABELS.get(product_type)
     if pt_label:
         labels.append(pt_label)
 
-    # 課金意欲
     wtp_label = WTP_LABELS.get(wtp)
     if wtp_label:
         labels.append(wtp_label)
 
-    # 深刻度（3以上）
     if severity >= 3:
         labels.append(f"🔥severity-{severity}")
 
-    # 既存ソリューションなし
     if not existing:
         labels.append("🎯既存なし")
 
-    # 市場シグナル
-    market_signal = pain.get("market_signal")
     if market_signal == "whitespace":
         labels.append("🟢whitespace")
     elif market_signal == "underserved":
         labels.append("🟡underserved")
 
-    # gh issue create コマンド組み立て
+    # gh issue create
     cmd = [
         "gh", "issue", "create",
-        "--title", f"[{category}] {pain_text[:80]}",
+        "--title", title,
         "--body", body,
     ]
     for label in labels:
@@ -145,6 +221,9 @@ def _create_issue(pain: dict, date_str: str) -> None:
             issue_url = result.stdout.strip()
             print(f"[GitHub] Issue 作成: {issue_url}")
 
+            # Issue 番号を抽出
+            issue_number = int(issue_url.rstrip("/").split("/")[-1])
+
             # Project に自動追加
             subprocess.run(
                 ["gh", "project", "item-add", "1", "--owner", "kaionn", "--url", issue_url],
@@ -152,7 +231,11 @@ def _create_issue(pain: dict, date_str: str) -> None:
                 text=True,
                 timeout=30,
             )
+
+            return {"number": issue_number, "title": title}
         else:
             print(f"[GitHub] Issue 作成失敗: {result.stderr[:200]}")
     except Exception as e:
         print(f"[GitHub] Issue 作成失敗: {e}")
+
+    return None
