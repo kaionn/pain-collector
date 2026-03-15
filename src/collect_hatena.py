@@ -2,27 +2,23 @@
 
 import feedparser
 
-FEEDS = [
-    {
-        "url": "https://b.hatena.ne.jp/hotentry/it.rss",
-        "category": "テクノロジー",
-    },
-    {
-        "url": "https://b.hatena.ne.jp/hotentry/life.rss",
-        "category": "暮らし",
-    },
+CATEGORIES = [
+    {"path": "it", "label": "テクノロジー"},
+    {"path": "life", "label": "暮らし"},
 ]
 
 
 def collect() -> list[dict]:
-    """はてブ RSS からホットエントリを取得する."""
+    """はてブ RSS から現在のホットエントリを取得する."""
     all_entries = []
 
-    for feed_info in FEEDS:
+    for cat in CATEGORIES:
+        url = f"https://b.hatena.ne.jp/hotentry/{cat['path']}.rss"
+
         try:
-            feed = feedparser.parse(feed_info["url"])
+            feed = feedparser.parse(url)
         except Exception as e:
-            print(f"[はてブ] {feed_info['category']} の取得に失敗: {e}")
+            print(f"[はてブ] {cat['label']} の取得に失敗: {e}")
             continue
 
         entries = []
@@ -30,7 +26,7 @@ def collect() -> list[dict]:
             entries.append(
                 {
                     "source": "hatena",
-                    "category": feed_info["category"],
+                    "category": cat["label"],
                     "title": entry.get("title", ""),
                     "url": entry.get("link", ""),
                     "summary": entry.get("summary", "")[:500],
@@ -40,7 +36,7 @@ def collect() -> list[dict]:
 
         all_entries.extend(entries)
         print(
-            f"[はてブ] {feed_info['category']}: {len(entries)} 件のエントリを取得"
+            f"[はてブ] {cat['label']}: {len(entries)} 件のエントリを取得"
         )
 
     print(f"[はてブ] 合計: {len(all_entries)} 件")
