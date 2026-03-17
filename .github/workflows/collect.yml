@@ -2,7 +2,7 @@ name: Collect Pains
 
 on:
   schedule:
-    - cron: "0 0 * * *" # UTC 0:00 = JST 9:00
+    - cron: "0 20 * * *" # UTC 20:00 = JST 5:00
   workflow_dispatch: # 手動実行も可能
 
 permissions:

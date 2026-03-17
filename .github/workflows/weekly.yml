@@ -2,7 +2,7 @@ name: Weekly Trend Analysis
 
 on:
   schedule:
-    - cron: "0 0 * * 0" # 毎週日曜 UTC 0:00 = JST 9:00
+    - cron: "0 20 * * 6" # 毎週土曜 UTC 20:00 = 日曜 JST 5:00
   workflow_dispatch: # 手動実行も可能
 
 permissions:
