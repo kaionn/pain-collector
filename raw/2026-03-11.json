@@ -1,0 +1,2199 @@
+{
+  "date": "2026-03-11",
+  "reddit": [
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "Built a minimal daily intention app with one rule: once you write it, you can't change it.",
+      "body": "It's called Polaris. Before your day starts, you write your intention for the day and lock it in.\n\nThat's it. No editing after that.\n\nI found that when I could always go back and revise, I never really committed. The immutability is the whole point - it forces you to actually mean what you write.\n\nWhat it has:\n\n* One entry per day, locked once submitted\n* Push notification reminder (once daily, optional)\n* Android home screen widget so your intention is always visible\n* Works offline for the core flow\n* PWA - no app store needed\n* No streaks, no social, no gamification\n\nJust a daily anchor.\n\nWould love feedback from anyone who tries it.",
+      "score": 1,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/apps/comments/1rqeurg/built_a_minimal_daily_intention_app_with_one_rule/",
+      "created_utc": 1773189163.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "$4,200 in 4 months from something I didn't plan on selling",
+      "body": "I run an app dev agency, before judging pls hear me out and this'll literally make u rethink to monetise on something which people need now and not on building random apps and hustling for a making revenue out of that.  \n\n\nThree people, about two years in. We built android and iOS apps for niche businesses.   \n\n\nThe agency is on track for about \\~$200k this year. My take home after paying the team and tools averages around $8,000/month. some months better some months worse depending on how payments land. Yeah It's not even above average income but two years ago it was at 0.\n\nSo the thing I want to get into is what actually determines whether a project makes you money or costs you money, because for the first year I thought it was about pricing. charge more, keep more. That's only partially true. you can charge more but then you lose more proposals in a market where every client is comparing 6-8 agencies.\n\nWhat actually kills your margin is time spent on things the client isn't paying y",
+      "score": 5,
+      "num_comments": 11,
+      "url": "https://www.reddit.com/r/apps/comments/1rsr8w3/4200_in_4_months_from_something_i_didnt_plan_on/",
+      "created_utc": 1773417543.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "I’m building a note app and need a reality check. No links, no names, just want your honest feedback.",
+      "body": "Hi everyone,\n\nI am a software developer and I've been working on a new note-taking tool. English is not my first language, so please excuse any mistakes. I am not here to do a promotion — I will not mention my app name or any links in this post. I just want to do a survey and hear your honest thoughts as power users.\n\nI’m trying to solve the problem of \"context\" and \"security.\" Here is what the app does right now:\n\n**The Features:**\n\n* **Memo Chains:** It’s not just folders. Every note is a node in a \"chain\" (chronological or logical), so you can see the update history of a thought.\n* **Granular E2EE (The Core):** This is not just \"all or nothing.\" You can choose to encrypt an **entire chain** or just **specific notes/nodes**.\n* **- Why?** If you encrypt everything, you can't search for anything.\n* **- How it works:** You can keep the \"title\" or \"tags\" unencrypted so you can still search and organize your library. But the sensitive \"content\" inside the node is fully E2EE.\n* **- Privacy",
+      "score": 1,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/apps/comments/1rtio91/im_building_a_note_app_and_need_a_reality_check/",
+      "created_utc": 1773492761.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "Built a tiny app to solve my one specific problem and wondering if it resonates",
+      "body": "I've always struggled with starting things. Not finishing them, not focusing, just starting. I'd know exactly what I needed to do and still spend three hours avoiding it.\n\nEvery productivity app I tried added more: more features, more tracking, more guilt when I broke a streak. None of them addressed the actual moment of resistance when you're staring at the task and can't begin.\n\nSo I built something simple for myself. You open it, name what you're avoiding, and commit to two minutes. That's basically it. No gamification, no stats, no daily reminders. Just a tool for that specific moment.\n\nI put it on the App Store recently but I'm honestly not sure if this problem is just me or if others experience it too. Would genuinely appreciate honest feedback on whether this even makes sense as a concept.\n\nHappy to share the link if anyone's curious, but mostly just want to know if this resonates or if I'm solving a problem that only I have.",
+      "score": 5,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/apps/comments/1rtx9ba/built_a_tiny_app_to_solve_my_one_specific_problem/",
+      "created_utc": 1773528080.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "MailVault — A desktop app for backing up and browsing your email locally",
+      "body": "Hey everyone,\n\nI've been working on MailVault — a free and open source desktop email backup app for macOS and Linux. The idea is simple: connect your email accounts and save everything to your local machine as standard .eml files that you own and control.\n\nWhy I built it\n\nIt started with a friend. Tomas works in logistics, and every few months he hits the same wall — his 10GB mailbox is full. Again. His inbox is packed with CMR documents, invoices, shipping confirmations, and customer correspondence, all with heavy attachments. He can't just delete them — regulations require him to keep those records, and he needs them to resolve disputes. So every time his mailbox fills up, he's stuck: pay for more server storage, manually export emails into folders on his desktop, or risk losing documents he's legally required to keep.\n\nI looked for a solution and realized the existing email backup tools are either command-line utilities that require technical knowledge, outdated apps that haven't be",
+      "score": 1,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/apps/comments/1rtcjt3/mailvault_a_desktop_app_for_backing_up_and/",
+      "created_utc": 1773471348.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "[App Clip] Telepromtper app for iPhone. No App Install needed",
+      "body": "Hi everyone! Built a teleprompter that works as an App Clip — scan a QR code and you're reading off your screen in seconds. No download, no sign-up.\n\n[https://appclip.apple.com/id?p=com.arcform.teleprompterapp.Teleprompter-AI.Clip](https://appclip.apple.com/id?p=com.arcform.teleprompterapp.Teleprompter-AI.Clip)\n\nIf you want voice-tracked auto-scrolling, the full app uses Apple's on-device speech models to follow your voice in real-time. Pause, it waits. Talk, it scrolls.\n\nGreat for creators, vloggers, educators, or anyone who's tired of doing 20 takes on camera.\n\n  \nCan't wait to hear your feedback",
+      "score": 1,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/apps/comments/1rp2182/app_clip_telepromtper_app_for_iphone_no_app/",
+      "created_utc": 1773067307.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "apps",
+      "title": "Can someone help me block Mi browser",
+      "body": "I need help blocking Mi browser because i can't just disable it like chrome or uninstall it like other apps",
+      "score": 2,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/apps/comments/1ro3i3y/can_someone_help_me_block_mi_browser/",
+      "created_utc": 1772972424.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "I cant convince myself that scrolling isnt worth it",
+      "body": "Hey so I know this sub is being flooded by AI junk lately but I am kinda desperate… my own research has been a little fruitless and theres no way im going to ask AI for advice. So basically:\n\nI spend a lot of time scrolling on instagram on my fyp and instagram reels. It takes hours from me and obviously like everyone I feel bad afterwards. However, I do genuinely feel like there is something of value in these reels, for example cool recipes that I never would have discovered if not for instagram, or cool movies and tv show recomendations, or art in general… or ideas of things to do in my free time or places to travel, or things that I can do to improve myself and live a more fulfilling life. To some extent i know this is partly not true, but I can’t convince myself to stop scrolling if I know theres an infinite supply of cool, potentially life changing content out there.\n\nI tried saying to myself: “every time you watch a reel, avoid getting into the zombie scrolling state - try asking ",
+      "score": 8,
+      "num_comments": 20,
+      "url": "https://www.reddit.com/r/productivity/comments/1rri28k/i_cant_convince_myself_that_scrolling_isnt_worth/",
+      "created_utc": 1773292834.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "I cant choose between handwriting or typing notes",
+      "body": "On one hand, typing notes allows me to use software like spaced repetition, easy editing, and convenience. However, the intentionality of handwriting notes is very attractive to me and is more aesthetically pleasing. I also strain my eyes less. I can list several problems and cons of handwriting notes but there’s something that pulls me in. I have every practical and academic reason to type my notes, but handwriting just feels better. ",
+      "score": 18,
+      "num_comments": 17,
+      "url": "https://www.reddit.com/r/productivity/comments/1rork1q/i_cant_choose_between_handwriting_or_typing_notes/",
+      "created_utc": 1773033761.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "My task management system is getting too messy. Looking for a better method or tools",
+      "body": "I'm currently struggling with my task management system and I'm looking for advice on better methods or tools.\n\nRight now I manage everything using a simple notes app.\n\nMy current workflow looks like this:\n\n1. Write monthly goals\n2. Write weekly goals\n3. Break weekly goals into tasks\n4. Estimate how long each task will take\n5. Create a weekly schedule and assign tasks to time blocks (for example: 19:00–20:00 Task A)\n\nHowever, this system isn't working well anymore.\n\nCurrently I'm juggling multiple things:\n\n* My main job\n* Side work (client projects)\n* Building my own SaaS product\n\nBecause of this, task management has become increasingly complicated. Ideally, I would like to manage everything in one place, including personal/private tasks.\n\nProblems I'm facing\n\n* I can't easily track history (planned vs actual)\n* I don't have a clear yearly overview\n* I estimate weekly task hours, but once I assign them to time blocks I lose track of how many total hours were allocated to each task\n* Th",
+      "score": 2,
+      "num_comments": 19,
+      "url": "https://www.reddit.com/r/productivity/comments/1rqs249/my_task_management_system_is_getting_too_messy/",
+      "created_utc": 1773231125.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "Being better-informed: overwhelmed by Instagram and Twitter but also don't want FOMO",
+      "body": "I use Instagram and Twitter for becoming better-informed about politics, society and culture. So I follow accounts to do with news, magazines, philosophy, art, feminism, etc. - you get the picture. All my classmates at uni follow similar accounts.\n\nIt takes me less than two minutes of being on these apps to feel overwhelmed with a) everything there is to know b) how much my classmates are reading, based on their 'likes', reposts and stories c) how slow I am at reading and understanding, and how I know for a fact that I'll forget everything I read in a matter of hours.\n\nOn top of this are the 5-6 newsletters I subscribe to. Hundreds and hundreds of emails I never even have time to click on.\n\nAn easy solution would be to stick to reading a newspaper everyday + maybe one website/news app, but I would miss out on SO much! SO incredibly much. It's making me anxious just thinking about all the academic lite articles, articles on art, culture, film, science, long-form investigative pieces, no",
+      "score": 8,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/productivity/comments/1rozs3a/being_betterinformed_overwhelmed_by_instagram_and/",
+      "created_utc": 1773061817.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "Anyone else tired of dragging around a pile of overdue tasks in Todoist?",
+      "body": "Most of my tasks don't have a real deadline. But Todoist wants you to put dates on everything, and the moment you do, you're on a treadmill. Miss a few days and suddenly you've got twenty overdue tasks in red. It's not productivity anymore, it's guilt management.\n\nMy workaround: I stopped using dates unless there's a genuine hard deadline. Instead I use a @next_step label for whatever I should work on right now — basically the GTD \"next action\" idea. Works great in theory, but on Android it's annoyingly clunky to get to that view. You can't pin a single filter to the nav bar, so it's always an extra tap or two.\n\nBeen looking at alternatives:\n\nTickTick — Smart Lists do what I'm doing manually. But the app feels cluttered with stuff I don't need (Pomodoro timers, habit trackers…). I just want a task list, not a life coach.\n\nNirvana — Built for GTD, \"next actions\" are native. But is it still actively developed?\n\nNozbe / DGT GTD — Haven't tried either yet.\nHas anyone made a similar shift a",
+      "score": 8,
+      "num_comments": 7,
+      "url": "https://www.reddit.com/r/productivity/comments/1rny3fg/anyone_else_tired_of_dragging_around_a_pile_of/",
+      "created_utc": 1772953394.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "How do you structure your day? Your life?",
+      "body": "I am always left wondering how I ended up being broke and wasting my potential.\n\nHow do others smoothly glide through life?\n\nI literally withhold myself from doing fun things and relaxing because I want to finish entrepreneurial projects. But I don't. \n\n  \nMeanwhile other people seem to get things done AND have time to do fun things.\n\n  \nI can't tell if I am trying too hard and being unrealistic, or if I am just inefficient at getting things done.\n\n  \n\n\n  \n",
+      "score": 2,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/productivity/comments/1rrbxwe/how_do_you_structure_your_day_your_life/",
+      "created_utc": 1773275718.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "Using roguelike deck-builder mechanics to describe how habits work",
+      "body": "Several weeks ago, very stupid addicting roguelike game happened, and recently another one (the OG) got its sequel in early access.\n\nThat plus me hanging out in this sub once again has led to the following fusion:\n\nI'm a Xennial (betwix Gen Z and Millennial), so paper, pen, notebook, calculator is my starter productivity deck.  My school only got computers when I was in high school, and they didn't even have GUI - Graphical User Interface yet.\n\nSo, my to do list is centered on pen and paper, and getting rid of them would be like paying a merchant to get rid of unwanted cards in my deck, which is pretty apt, because pre-existing habit pathways in the brain can't just be rewritten over instantly.\n\nIt was only when I acquired Gmail and Google Calendar that some to do list function went over to them.  Gmail drafts can serve like text files and Google Calendar is essentially a digital planner, which is handy for me, because even though I tried to switch from pocket notebook to planner many ",
+      "score": 3,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/productivity/comments/1rnz2t4/using_roguelike_deckbuilder_mechanics_to_describe/",
+      "created_utc": 1772956836.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "Why i wanna just sit still ? I'm feeling like the i don't want anything as well as i need this Why I'm being uncertain about my decisions like every little thing I'm afraid to make choice",
+      "body": " I'm prepping for an exam but from quite sometime I just wanna be still just sit and do nothing \n\nI hardly Go out if goes so for only like 10-15 minutes. Can't make eye contact with people afraid that something bad might happen from these I'm unable to focus on studies and just pretending I'll do or I'm doing and after every 30 to 40 minutes coming back to scrolling and sitting still it's becoming stressful for me \n\nI got social anxiety i guess because before I was able to hangout with people and communicate with them properly but now I'm even uncomfortable talking with my own family members \n\nCan this be results of bullying ?\n\nLike in 10th grade there was some thing happening in my school i was just ignoring them and sitting there in fear of something will happen \n\nIs it resulted of that ?\n\nCan someone help me out figuring these out ?\n\nI wanna get on track once again but I'm unable to bring myself is it just laziness or I'm just making excuses whenever I'm trying to do something my br",
+      "score": 2,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/productivity/comments/1rsfxq7/why_i_wanna_just_sit_still_im_feeling_like_the_i/",
+      "created_utc": 1773383823.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "productivity",
+      "title": "My productivity stack collapsed to an Apple Notes singularity",
+      "body": "I recently left my job to start my own company, and the productivity stack I built over the last 8 years has shattered. Before, I could comfortably segment my Notion, Obsidian, Roam, etc. into clean systems and take the time to sweep them up. Now I'm slammed, with customer feedback, investor meetings, one-on-ones, coffee chats, whiteboarding sessions, bug review, etc. and i just can't bring myself to use any of the things i've crafted for myself. I don't want to set up a workspace, file/archive documents, etc. \n\nI now just dump all my thoughts into 1 big apple note and then copy-paste it into chatgpt/claude when i have questions. this works until it doesn't, for example if i have any 2 pieces of information that are at odds (\"investor said X yesterday, and Y two days ago\"), the whole thing crumbles and now i get confused, garbled data out. And when i'm in an actual IRL conversation with a customer/investor i don't even bother opening up apple notes to type stuff down. \n\nthe 1-big-apple",
+      "score": 2,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/productivity/comments/1rrch0d/my_productivity_stack_collapsed_to_an_apple_notes/",
+      "created_utc": 1773277063.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Imposter syndrome in the AI era: I can't code from a blank canvas.",
+      "body": "In 2024, I decided to learn programming through a Udemy course. I tackled the basics of web development and built a few small React projects for my portfolio. After sending out applications, it only took me four months to land a job as a Web Developer (React + PHP) and IT Help Desk specialist.\n\nThen, AI entered the picture. I started using it to write code—beginning with simple autocomplete and evolving into the agentic coding tools we use today in 2026.\n\nWhere does that leave me now? I am experiencing the worst imposter syndrome of my life. I understand the theory perfectly: I know exactly what a project needs in terms of APIs, authentication, storage, and architecture. But if I had to start from a \"blank canvas\" in an empty IDE, I would struggle to put it into practice. I know programming isn't about memorizing syntax, but I can't help second-guessing myself.\n\nI'm torn because I don't know if it makes sense to say, \"I refuse to use AI for this project.\" At the end of the day, if you ",
+      "score": 0,
+      "num_comments": 32,
+      "url": "https://www.reddit.com/r/webdev/comments/1rpazxj/imposter_syndrome_in_the_ai_era_i_cant_code_from/",
+      "created_utc": 1773086586.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Help- my son is into coding",
+      "body": "Hey, everyone \n\nI dont know if this is OK to post here but I need your help. \n\nMy 11 year old son has been very interested in coding from a young age. I peek into his room after dinner and he is just sitting at his PC working on code. So much code. Numbers and letters just...forever.\n\nI have really tried to learn different scripts and I really want to encourage him and explore this with him but I just cant grasp it. Im a contractor, I work with my hands in the dirt with machines, my brain is just...a different type of busy. And I simply dont understand half of what he is explaining to me (excitedly, too, this stuff gives him so much joy. Its wonderful) \n\nHow can I support him to the best of my abilities? What can I get for him or enroll him in that would be beneficial? How do I show him Im interested in his interests despite not understanding them? Is there an online school?  \n\nI have brought him to a couple of local \"kids coding\" get togethers and he just looks at me and tells me its ",
+      "score": 620,
+      "num_comments": 278,
+      "url": "https://www.reddit.com/r/webdev/comments/1rsqx5q/help_my_son_is_into_coding/",
+      "created_utc": 1773416811.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Better Auth &amp; Email OTP...cant decide",
+      "body": "Im currently working on an application where I want to enforce 2FA as a minimum standard for authentication. I moved from a homegrown auth solution to better auth and want to start setting up the 2fa side for email OTPs, the only issue I am having is in choosing an OTP sending mechanism. I know better auth handles a lot of the load, but the sticking point for me is in the actual sending of those OTPs. I see saas products all of the time have email verification/etc, but am not really finding information on what they are using for the stack.\n\nIve looked at just utilizing my businesses google workspaces account, but that has hard API send limits that ill likely exceed, ive looked at twilio and dexacom for email/otp based 2fa, but thats too much cost for me in my present stage of launching.\n\nSo im looking for guidance on how to handle this OTP debacle without breaking the bank, I realistically could only stomach a couple hundred a month in costs for the auth system, which in my head sounds",
+      "score": 1,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/webdev/comments/1rqgnl7/better_auth_email_otpcant_decide/",
+      "created_utc": 1773193820.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "My side project greeting card maker hit ~100k monthly visitors in ~3 weeks… but I’m 17 and have no idea how to monetize it",
+      "body": "Hey everyone,\n\nAbout 3 weeks ago I launched a small side project that lets people create greeting cards online. I mainly built it as a fun project to learn more about SEO and web development.\n\nUnexpectedly, the traffic started growing pretty quickly and right now it's getting around 100k monthly visitors. Most of it is coming from SEO and some pages are still climbing in rankings, so I'm estimating it could reach ~1M monthly users in a few months if things keep going the same way.\n\nThe problem is monetization.\n\nRight now everything on the site is completely free. I did that intentionally because I wanted to focus on growth first and make the tool genuinely useful.\n\nMy first thought was to add display ads, but I ran into an issue:\nI'm 17, so I can't open an AdSense account, and I also can't really use my parents' bank accounts for payouts.\n\nSo I'm kind of stuck in this weird situation where the site has traction but I don't know the best way to generate revenue yet.\n\nSome ideas I’ve bee",
+      "score": 310,
+      "num_comments": 219,
+      "url": "https://www.reddit.com/r/webdev/comments/1rr0ln1/my_side_project_greeting_card_maker_hit_100k/",
+      "created_utc": 1773250841.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "These people is the reason the market is saturated today",
+      "body": "",
+      "score": 253,
+      "num_comments": 100,
+      "url": "https://www.reddit.com/r/webdev/comments/1rofj6n/these_people_is_the_reason_the_market_is/",
+      "created_utc": 1773001735.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Why Modern Web Uses JWTs?",
+      "body": "I am working on a project in which the authentication will be very important for me, as it is a SaaS with high traffic, but I can't distinguish between the advantages of traditional sessions for authentication and JWTs.  \nSo if anyone can tell me what I should use in here.",
+      "score": 190,
+      "num_comments": 104,
+      "url": "https://www.reddit.com/r/webdev/comments/1robxdk/why_modern_web_uses_jwts/",
+      "created_utc": 1772993599.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Your users' data is not yours",
+      "body": "**TL;DR**: If you can't secure it, don't collect it. And for the love of god, don't post your database on social media.\n\n\\-\n\nSaw a developer post a database screenshot on social media to celebrate or something. User-generated content clearly visible. Timestamps, personal notes, all in plaintext. I watched for a while. Likes kept coming in. No one said anything.\n\nHere's the thing — their privacy policy does mention collecting user-generated content. Legally disclosed, sure. But there's a difference between disclosing collection and personally browsing individual entries. And posting that publicly? That's a whole different level.\n\nNo mention of encryption anywhere. Plaintext on the server. And this is a note-taking / reading app. Personal notes and memos are about the last thing you want sitting in plaintext on someone else's server. Ideally you just don't collect them at all. If you need server-side sync, encrypt it so even you can't read it.\n\nAt my last company, prod was on a closed ne",
+      "score": 154,
+      "num_comments": 50,
+      "url": "https://www.reddit.com/r/webdev/comments/1rsvqls/your_users_data_is_not_yours/",
+      "created_utc": 1773427136.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "$4,200 in 4 months from something I didn't plan on selling",
+      "body": "I run an app dev agency. Three people, about two years in. We built android and iOS apps for niche businesses. \n\nThe agency is on track for about \\~$200k this year. My take home after paying the team and tools averages around $8,000/month. some months better some months worse depending on how payments land. Yeah It's not even above average income but two years ago it was at 0.\n\nSo the thing I want to get into is what actually determines whether a project makes you money or costs you money, because for the first year I thought it was about pricing. charge more, keep more. That's only partially true. you can charge more but then you lose more proposals in a market where every client is comparing 6-8 agencies.\n\nWhat actually kills your margin is time spent on things the client isn't paying you for. and the biggest category of that for us was always project management overhead.\n\nI'll give you an example. We built an app for a small chain of laundromats. customers check machine availability",
+      "score": 68,
+      "num_comments": 38,
+      "url": "https://www.reddit.com/r/webdev/comments/1rsqkmc/4200_in_4_months_from_something_i_didnt_plan_on/",
+      "created_utc": 1773416034.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "What's your favorite way to build a new website in 2026?",
+      "body": "Genuine question cuz I feel like the answer changed a lot in the last year. A while back my default would've been pretty straightforward depending on the gig. Basic brochure site? Probably Webflow or WordPress. Something more custom? Just code it. Something quick and dirty? Maybe try one of the AI builders and see if it survives first contact with a real user lol.\n\nBut now in 2026 the tool stack feels way more all over the place. Some people are shipping with Cursor, Atoms, v0, Lovable, Replit, whatever. Some are still sticking with Astro, Next, Laravel, Rails, plain old React, whatever they already know and trust. And honestly I still can't tell where the line is between \"good for prototypes\" and \"actually fine for production.\"\n\nI've been testing a mix of stuff myself and keep bouncing between \"holy shit this is fast\" and \"ok cool now I gotta untangle this weird AI mess.\"\n\nSo if you were starting today, what's your actual go-to and why? Wanna know what people are really using after th",
+      "score": 0,
+      "num_comments": 42,
+      "url": "https://www.reddit.com/r/webdev/comments/1rqmfqa/whats_your_favorite_way_to_build_a_new_website_in/",
+      "created_utc": 1773211350.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "im pulling my hair out over this. should i try and carry on?",
+      "body": "maybe i'm just not cut out for this, but i'm slowly making my way through a course that is teaching the fundamentals of front and back end development, and im currently on front end and learning what react is and what it can do. and i have no idea how any of it works, at all. i have done some lessons about building components an then importing/exporting, but i don't understand the next lesson that talks about babel and webpack and how they all interact. \n\n  \nand if this is only the beginning, how am i going to manage anything more than this? I'm not an idiot, i am semi-competent at javascript and i understand coding principles, but this is the first time in this course where the information isn't even settling in my head, i can't understand what's happening to make the things happen. at best, i understand importing and exporting components.\n\n  \ni don't know what a DOM is, or how it's different to a virtual DOM, or why you even need a different one. maybe going over things again might h",
+      "score": 0,
+      "num_comments": 30,
+      "url": "https://www.reddit.com/r/webdev/comments/1rpbpxu/im_pulling_my_hair_out_over_this_should_i_try_and/",
+      "created_utc": 1773088115.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Learn a popular industry stack, or do what I want to do?",
+      "body": "Honestly. I want to learn Java Springboot and React TypeScript but like it's just so much content and stuff to do, there's 24 hours in a day I can't do everything. But I also want to do Roblox Lua Dev, its not going to teach me Restful or the things that transfer to modern popular tech stacks that'll get me hired",
+      "score": 4,
+      "num_comments": 27,
+      "url": "https://www.reddit.com/r/webdev/comments/1rpkbav/learn_a_popular_industry_stack_or_do_what_i_want/",
+      "created_utc": 1773108525.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Made DNPR (patent pending) - because Canvas gives you access to a PDF. DOM gives you control over it",
+      "body": "so ive been digging into how pdf editors actually work and something bothered me for a while\n\npdf.js and pdfium based editors are like 98% of the market. and they all do the same thing - render ur document as a flat image on a canvas element. the \"text\" you think youre editing is just a floating overlay on top of pixels. two disconnected systems pretending to be one\n\nopen devtools on any of them. remove the canvas element. youll see whats left - ghost text placeholders hanging in the air with no connection to anything\n\nits 21 years old. document is treated as an image not an object. thats why you need to click a specific tool before editing anything, why you cant just grab an image and move it, why accessibility is always an afterthought\n\nthink i spent like 16 months to bake this technology - filed a patent for a diferent approach, DOM-Native PDF Rendering (DNPR). no canvas. text becomes real span elements, graphics become svg nodes, layout is css. document becomes an object u can actu",
+      "score": 0,
+      "num_comments": 25,
+      "url": "https://www.reddit.com/r/webdev/comments/1rp6vwl/made_dnpr_patent_pending_because_canvas_gives_you/",
+      "created_utc": 1773077863.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Marketing scrum",
+      "body": "Web dev/up manager for 10+ years. I have experienced this scenario so many times across jobs:\n\n\"Hey, we want to build this page/component. Here's a desktop mockup. Can you do this and how many hours?\"\n\nOf course. I'll add my comments to the figma for functionality questions. To get cracking on this I'll need all the states, content, and both mobile and desktop designs. From what I see, I can estimate X hours.\n\n\"Okay great, we'll get back to you with all that\"\n\n[2+ Weeks pass]\n\n\"Hey, when do you think you'll be done?\"\n\nI'll still need what I asked for and no one answered my comments. \n\n\"So like end of week or...?\"\n\nI know what's happening here. They don't know the answers to my questions and didn't anticipate this \"simple\" thing to be so complex. Furthermore their manager asked them the progress on the page/component so they just rolled the shit down a hill. I'll end up just making it work because I want to get paid but it creates tech debt and an endless QA slog.\n\nMy question is: how d",
+      "score": 12,
+      "num_comments": 20,
+      "url": "https://www.reddit.com/r/webdev/comments/1rqgiu8/marketing_scrum/",
+      "created_utc": 1773193479.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "[Showoff Saturday] I built a free tool to create custom map posters of anywhere on Earth and would love some feedback! (Open Source Code included)",
+      "body": "Hey r/webdev! I've been building Carto Art ([cartoart.net](https://cartoart.net/)) on and off for a while now. It's a free browser-based tool for creating custom map posters of anywhere on Earth. Figured Showoff Saturday was a good excuse to finally share it here and get some honest feedback.\n\nBasically you search for a location, tweak the style and colors, toggle on 3D terrain if you want, and export. You can get print-ready PNGs at up to 300 DPI, or record animated flyover GIFs/videos with the 3D terrain included. The two images above are a 3D terrain render of Greenland and a dark-mode wallpaper of Japan.\n\nStack is Next.js + TypeScript, MapLibre GL JS for the vector maps, [Deck.gl](http://Deck.gl) for the 3D terrain, Supabase, and Tailwind/shadcn. The editor is open source if anyone wants to poke around: [github.com/kkingsbe/carto-art](https://github.com/kkingsbe/carto-art)\n\nA few things that were surprisingly hard to get right:\n\nMaking [Deck.gl](http://Deck.gl) and MapLibre play ni",
+      "score": 34,
+      "num_comments": 15,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtpn94/showoff_saturday_i_built_a_free_tool_to_create/",
+      "created_utc": 1773509984.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "AWS SES rejected my sandbox removal request for a fan engagement game and I'm baffled — anyone dealt with this?",
+      "body": "  \nI've been trying to get my AWS SES account moved out of sandbox for a pretty basic use case: a sports fan loyalty game where users collect athlete cards and earn rewards. Emails are purely transactional — account verification, password resets, game notifications. All opt-in. No purchased lists. Full bounce/complaint handling via SNS. SPF, DKIM, DMARC all configured. Every single sender address individually verified.\n\nTheir rejection said they \"believe my use case would impact deliverability\" and affect my \"reputation as a sender.\" No specifics. No explanation of what triggered the concern. Just a form letter.\n\nI'm in Alpha. I have maybe a dozen test users. I'm not blasting anyone. I literally cannot send a password reset email to my own verified addresses without hitting sandbox restrictions.\n\nHas anyone successfully appealed one of these? A few questions:\n\n* Is there specific language that triggers their spam filters during the review process?\n* Should I be more explicit about the ",
+      "score": 8,
+      "num_comments": 15,
+      "url": "https://www.reddit.com/r/webdev/comments/1rssvng/aws_ses_rejected_my_sandbox_removal_request_for_a/",
+      "created_utc": 1773421057.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Announcing Vite+ Alpha and going Open Source",
+      "body": "",
+      "score": 87,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/webdev/comments/1rshxeq/announcing_vite_alpha_and_going_open_source/",
+      "created_utc": 1773391324.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "I tried to use the transformer.js and use some model, but I got an error, and it says Failed to Fetch",
+      "body": "I can't find a proper documentation on how to use it,",
+      "score": 0,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/webdev/comments/1rpq6z9/i_tried_to_use_the_transformerjs_and_use_some/",
+      "created_utc": 1773126829.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "How do you BALANCE the Programming aspect and Enterprenueship sides of WebDev?",
+      "body": "\n\nI started learning web dev 4 months ago in an effort to make a webapp that I would also want to make money from.\n\nAs a solo dev, how do you BALANCE programming(learning languages and frameworks, frontend and backend) and Enterprenueship (Web design, marketing, branding and so on)?\n\nI feel overwhelmed when I'm coding when I can't seem to think of the right colors to use or how I'm going to layout things.",
+      "score": 0,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/webdev/comments/1rs04xr/how_do_you_balance_the_programming_aspect_and/",
+      "created_utc": 1773342853.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "[Showoff Saturday] I built a security scanner for vibe-coded apps — scanned 100 projects, found 318 vulnerabilities",
+      "body": "Hey r/webdev,\n\nSo I shipped a side project a few months ago. Built it with Claude Code, felt pretty good about it, decided to run a security check before I forgot. My API keys were in the source. Just... right there. CSRF protection? Nope. Cool.\n\nAnyway that was humbling. And then I thought — wait, if I'm doing this, and I actually care about security at least a little bit, what does everyone else's vibe-coded stuff look like?\n\nI built a scanner to find out.\n\n**What I actually did**\n\nPulled 100 public GitHub repos. Lovable, Bolt.new, Cursor, v0.dev projects. Ran automated security scans across all of them.\n\nThe numbers were bad:\n- 318 vulnerabilities. 89 CRITICAL.\n- 65% scored below 70/100 on security\n- 41% had API keys or secrets in the source code. Forty-one percent!\n- Multiple Supabase service_role keys committed to public repos, which is... yeah\n\nThen I checked 50 AI app system prompts for prompt injection. 90% scored CRITICAL. Average was 3.7 out of 100. That one honestly surprise",
+      "score": 0,
+      "num_comments": 10,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtfkwt/showoff_saturday_i_built_a_security_scanner_for/",
+      "created_utc": 1773482645.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "[Showoff Saturday] I built a 100% client-side PDF toolkit using Next.js because I was tired of cloud-based privacy risks.",
+      "body": "https://preview.redd.it/cen1q72ubxog1.png?width=1919&amp;format=png&amp;auto=webp&amp;s=1dd11f55714cb214c36f057c6fdbe039d2728a77\n\nHey everyone. As a dev, I hate uploading sensitive documents like invoices or resumes to random servers just to merge or sign them. I wanted a zero-knowledge alternative, so I built HonestPDF.\n\nIt is a **strictly client-side**, **privacy-first toolkit**. All the heavy lifting (merge, split, redact) is done locally directly in your browser using modern Web APIs. The files literally never leave your device, ensuring total data sovereignty. There are no hidden paywalls or subscriptions either.\n\nI also wrote a short Medium post about the architecture and why the web needs more local-first alternatives instead of cloud editors.\n\nWould love to get your feedback on the performance and the approach!   \n  \n[***HonestPDF*** ](https://www.gethonestpdf.com/)***|*** [***Medium***](https://medium.com/@gethonestmaker/how-to-edit-merge-and-sign-sensitive-pdfs-without-upload",
+      "score": 0,
+      "num_comments": 10,
+      "url": "https://www.reddit.com/r/webdev/comments/1rt7ucg/showoff_saturday_i_built_a_100_clientside_pdf/",
+      "created_utc": 1773456291.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Given two domain names, how do I configure DNS to redirect at the top level but not when you access a path?",
+      "body": "I have multiple domain names I'm using in conjunction. I want to display resources at one of them like normal (when accessing a path), but when no path is added, I want to redirect to a different domain name. How do I do that?\n\nFor example:\n\nname.net redirects to name.com\n\n\n\nname.net/ redirects to name.com\n\n\n\nname.net/foo remains name.net/foo",
+      "score": 1,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/webdev/comments/1rpruu7/given_two_domain_names_how_do_i_configure_dns_to/",
+      "created_utc": 1773133285.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Postman stuck at inf loading times?",
+      "body": "https://preview.redd.it/cojty0yxgqng1.png?width=1832&amp;format=png&amp;auto=webp&amp;s=5e3d5993ce072d525bae8478c76fb7d4e987ea8a\n\neven the app or going incognito doesn't help.",
+      "score": 1,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/webdev/comments/1rnswd0/postman_stuck_at_inf_loading_times/",
+      "created_utc": 1772937346.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Zero-Config (and free) WebSockets: a repost from Wednesday :p",
+      "body": "*I had this taken down on Wednesday, but based on the (humblingly, is that a word?) positive responses, I figured it was def worth a reshare on the correct day.\n\nHere's the original post, appropriately tagged as `Showoff Saturday` this time:*\n\n----\n\nSuper stoked to share that I just publicly released [ittysockets.com](http://ittysockets.com).  This is a free, community-supported project, specifically designed to get indie devs playing with realtime features by dropping virtually every barrier imaginable.\n\n```\nimport { connect } from 'itty-sockets' // ~466 bytes gzipped\n\n// user 1\nconst channel = connect('my-secret-channel')\n  .send('hey there!')    // can send immediately\n  .send([1, 2, 3])       // anything JSON stringifiable \n  .send({ foo: 'bar' })\n\n// keep sending\nchannel.send({ text: 'hello!' })\n\n// reconnects in a single line\nsetInterval(channel.open, 1000)\n```\n\nmeanwhile, other users can connect and listen on the same channel\n\n```\nconnect('my-secret-channel')\n  .on('message', ({",
+      "score": 2,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtmr9g/zeroconfig_and_free_websockets_a_repost_from/",
+      "created_utc": 1773503214.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Would your team actually use automated visual changelogs in Slack?",
+      "body": "Working on a tool that generates visual release summaries from GitHub PRs and posts them to Slack automatically when you merge. AI reads the diff, filters out noise like lockfile updates and merge commits, and writes a human-readable summary.\n\nThe target user is teams where non-technical members (PM, QA, design, support) need to know what shipped but can't parse raw commit logs.\n\nBefore I build the full thing would this actually be useful for your team or is this a solution looking for a problem?\n\nHere's what the Slack message would look like:\n\nhttps://preview.redd.it/h12d87u86zog1.png?width=837&amp;format=png&amp;auto=webp&amp;s=c34fc976028fdb0e5db91c664ebaef007383a7bb\n\n",
+      "score": 0,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtekji/would_your_team_actually_use_automated_visual/",
+      "created_utc": 1773478784.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "I built a free piano greeting card tool where you can \"play\" a song for someone special",
+      "body": "Spent the last few weeks building this because I wanted to play piano for someone but never learned how.\n\nThe tool guides you through any song step-by-step (shows which keys to press), records your performance, and lets you send it as a card. Built with React, Vite, Firebase, and Tone.js for the audio.\n\nI'm keeping it completely free - no ads, no signups, no paywalls. Love shouldn't have a paywall.\n\nTech-wise the challenge was syncing the piano animations with Tone.js playback and making it work smoothly on mobile (limited to 8 keys on small screens).\n\nWould love feedback from other devs.\n\nhttps://egreet.in/piano",
+      "score": 8,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtoo2b/i_built_a_free_piano_greeting_card_tool_where_you/",
+      "created_utc": 1773507734.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Is there an Open-Source/self host alternative to e2b (e2b.dev. Code interpreting for your AI app)?",
+      "body": "E2b is fantastic, and for a local project, I think its amazing. But I'm looking to build a real enterprise app that will need to use a lot of these sandboxes and its just not viable. Whats the best way to spin up a lot of dev environments (Sandboxes, but with python,go,node etc.) that support preview urls - for relatively cheap and of course without concurrency limits. You can't build a real app with 20 concurrent sandboxes.. Any recs for something you could deploy on AWS/GCP/Azure - or Vercel? ",
+      "score": 3,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/webdev/comments/1roncaa/is_there_an_opensourceself_host_alternative_to/",
+      "created_utc": 1773021274.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "[Showoff Saturday] TinyFn.io -- 500+ deterministic utility tools for AI agents",
+      "body": "I've been building AI agent workflows for about 2 years now. One thing I kept running into is agents confidently getting simple stuff wrongl; math, unit conversions, timezones, email validation, counting. The model doesn't know it can't do arithmetic. It just guesses and sounds confident about it.\n\nSo I built [tinyfn.io](https://tinyfn.io). It's a utility API with 500+ endpoints covering all the boring stuff agents shouldn't be doing probabilistically:\n\n* math and conversions (temperature, weight, currency, data sizes)\n* validation (email, URL, phone, credit card, UUID)\n* string ops (slugify, word count, extract URLs)\n* formatting (dates, phone numbers, currency)\n* encoding (base64, URL encode, JWT decode)\n* generators (UUID, passwords, tokens)\n* and a bunch more (color, regex, IP/network, stats)\n\nThree ways to use it:\n\n* **MCP server** — attach to your harness or Claude Desktop, Cursor, Claude Code. Any MCP client at the server URL and the agent discovers the tools automatically\n* **R",
+      "score": 0,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtmh1r/showoff_saturday_tinyfnio_500_deterministic/",
+      "created_utc": 1773502533.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "How do React+JavaScript CoderPad interviews usually go?",
+      "body": "I have a 45min interview. 15min intros and 30min of coding. It’s a mid-level role. The recruiter would only say it’s a React+JavaScript interview so I don't know what to expect.\n\nI've been getting familiar with CoderPad and understand at minimum it gives you the boilerplate code that comes from initializing a react project.\n\nMy question: for a react/javascript CoderPad interview, is it more like they A) give me an existing project and ask me to make some changes to an existing component or B) Ask me to make something from scratch/from react boilerplate code?\n\nThe platform itself I think limits what they can ask, e.g. we cannot make fetch requests to public endpoints, can't work with JWT, etc. Also, its only 30 minutes of coding so I think this limits what can be asked.",
+      "score": 0,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtkovt/how_do_reactjavascript_coderpad_interviews/",
+      "created_utc": 1773498118.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Help logging into cPanel",
+      "body": "I need to log in to cPanel to help a client with a WordPress design project. In the past, I have had success logging in by adding myself to the User Manager in cPanel. But even though I did this, I still can't seem to log in. I tried adding /cpanel and :2083 after the URL, but I get an error that says \"This login is invalid.\" (I get the same error when trying to log in to my own website's cPanel this way. I don't know why this never works.) Do you know of another way to log in to cPanel? I could get in through the client's hosting company (Bluehost), but that would require asking my client to give me their username and password. Is there no better way? I tried calling Bluehost directly to ask their advice, but they won't talk to me since I'm not the account holder. Any ideas? Thanks a million!",
+      "score": 1,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/webdev/comments/1rs2p7n/help_logging_into_cpanel/",
+      "created_utc": 1773348392.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Open source tool that lets your AI agent see your running app",
+      "body": "AI agents can read and edit your code but they can't see what's actually happening in the browser. especially with frontend work, they're basically guessing how things look. and the back and forth of either taking screenshots or describing what you're seeing in detail just to get them on the same page gets old fast.\n\n\n\nI made a small library that streams console logs, network requests, errors, DOM snapshots, and screenshots from your running app directly to the agent over MCP. so instead of you being the middleman between the browser and the agent, it just looks for itself.\n\n\n\nworks with React, Next.js, and has a Vite plugin — just plug it in and get to work.\n\n\n\nworks with Cursor, Kiro, Codex, etc. \n\n\n\n[https://www.npmjs.com/package/@everkers/agent-eyes](https://www.npmjs.com/package/@everkers/agent-eyes)",
+      "score": 0,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtuu1s/open_source_tool_that_lets_your_ai_agent_see_your/",
+      "created_utc": 1773522127.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "webdev",
+      "title": "Ran MiniMax Agent's code output through my standard review. Here's how it compares to what Lovable and Bolt generate",
+      "body": "I build client sites for a living and use AI tools in my pipeline. After seeing some buzz about MiniMax Agent, I put it through the same code quality review I run on Lovable and [Bolt.new](http://Bolt.new) output.\n\nTest: \"Build a SaaS dashboard with auth, user roles, real-time data charts, and a settings panel. React/TypeScript.\"\n\nWhat I checked: component architecture, TypeScript strictness, dependency choices, auth implementation, accessibility basics.\n\nMiniMax generated clean component separation, used proper TypeScript types (not `any` everywhere), and the auth flow was functional out of the box. The Selector Edit feature lets you click on any rendered element and modify it visually, which is actually useful for client feedback rounds.\n\nWhere it fell short: some repeated logic that should have been abstracted, and the chart library choice was opinionated without justification.\n\nTheir M2.5 model claims 80.2% SWE-bench. I can't verify that directly, but code quality felt on par with ",
+      "score": 0,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/webdev/comments/1rtov5n/ran_minimax_agents_code_output_through_my/",
+      "created_utc": 1773508174.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Please help. Is this a spy app. How do I disable this ?. I've not clicked ok or hit the pin. I can't force stop it. It's running in the background",
+      "body": "",
+      "score": 0,
+      "num_comments": 7,
+      "url": "https://www.reddit.com/r/software/comments/1rpytle/please_help_is_this_a_spy_app_how_do_i_disable/",
+      "created_utc": 1773153824.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "There is a strange moment unfolding in software right now.",
+      "body": "Access to powerful tooling has created the impression that the act of producing code is equivalent to understanding software development itself. The two are not the same. Code has always been the visible surface of a much deeper discipline that involves problem definition, architecture, trade-offs, long term maintenance, and an understanding of the systems that code ultimately interacts with.\n\nA useful comparison is drawing. Anyone can pick up a pencil and sketch something passable. That does not make them an artist. The tool lowers the barrier to producing marks on paper, but it does not grant mastery of composition, form, or technique.\n\nThe same principle applies here. The presence of a tool that can generate code does not automatically produce competent systems. It simply produces more code.\n\nWhat we are seeing is a surge of shallow construction. Many projects appear to begin with the question “what can be built quickly” rather than “what actually needs to exist”. The result is a la",
+      "score": 111,
+      "num_comments": 40,
+      "url": "https://www.reddit.com/r/software/comments/1rqdrpy/there_is_a_strange_moment_unfolding_in_software/",
+      "created_utc": 1773186523.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "I was tired of sending my Pdf to sketchy websites so I built PDFSlice, Open source Client side PDF Toolkit!",
+      "body": "I decided to make this after I read that many popular sites do server side processing, on top of that they bomb you with more than 600 cookies from around 221 domains when you upload a single document.\n\nPDFSlice supports 16 utility so far, planning to add more. Like merge, remove pages, password protect, redact, split etc.\n\n\nI will add everything related to pdf's that could be done on the client side. It's open source as well.\n\nCheck it out here : https://www.pdfslice.in/\n\nLooking for feedback, my focus was clean and minimal UI with functionality.\n\nIf you find it helpful please do leave a Star on GitHub.",
+      "score": 15,
+      "num_comments": 12,
+      "url": "https://www.reddit.com/r/software/comments/1rqm762/i_was_tired_of_sending_my_pdf_to_sketchy_websites/",
+      "created_utc": 1773210473.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Are online media tools just... accepted as painful or am I missing something?",
+      "body": "Every time I need to quickly trim a video or convert an audio file I end up uploading to some sketchy website, waiting, downloading, then repeating the whole thing for the next file. \n\nMy laptop could do all of this locally in seconds but I can't find a simple tool that just handles multiple things without being a bloated mess. Do you guys just deal with this? What does your workflow actually look like?",
+      "score": 1,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/software/comments/1ro4pwl/are_online_media_tools_just_accepted_as_painful/",
+      "created_utc": 1772976014.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "I'm looking for something to make flowcharts with formulars and excel is getting inconvenient with more complicated processing lines",
+      "body": "This is a flowchart for the Minecraft Modpack Gregtech: New Horizons\n\n  \nI just cant find a fitting software",
+      "score": 15,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/software/comments/1rp71no/im_looking_for_something_to_make_flowcharts_with/",
+      "created_utc": 1773078190.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "What tools do you use to download videos for offline viewing?",
+      "body": "Recently I started building a small offline media library because streaming platforms remove content pretty often, and sometimes shows I want to rewatch just disappear.\n\nI tested a few different download tools to save videos locally before organizing them on my external drive. Some were complicated to set up, and others didn’t work well with certain platforms.\n\nOne tool I tried recently was Keeprix, which made it easier to download videos so I could store them locally and organize them later. After downloading, I usually sort everything into folders by series or category on my drive.\n\nI’m still experimenting with different workflows, so I’m curious what other people here use.",
+      "score": 2,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/software/comments/1rsd6f3/what_tools_do_you_use_to_download_videos_for/",
+      "created_utc": 1773374678.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Private software alternatives?",
+      "body": "Do you know a great piece of software which is both privacy focused and a good alternative to software which otherwise tracks you?\n\nExample\n\nGmail -&gt; Protonmail\n\nThis is your chance to share, and help everyone benefit from privacy.",
+      "score": 1,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/software/comments/1royhm1/private_software_alternatives/",
+      "created_utc": 1773058175.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Whats is the best VM for my current purpose?",
+      "body": "Few years ago i used to play a game where i could in fact had a macro for certain \"farming\" while afking, and this macro required full control of my mice pointer and i was able to create a VM (i think oracle) that would do the trick, i could use my PC for other games while on the VM for that specific game i could just \" afk macro farm\". I've been trying for a week trying to find a VM that does that again, i tried Oracle again, i tried VMware and Hyper V... but all of those once i start the macro i can't use my mouse on my host pc anymore or vice versa, if i'm macro-ing on my host i can't use my mouse on the VM, the mice pointer seems to be shared now between host/vm. Question...\n\nwhat happened to VMs to not allow that anymore and... is there a way to do that? some sorta configuration or a different VM app or whatever method? I'm trying to do the same thing i did years ago, the pointer in the vm keep running the macro while i can use the host for movies, study, other games etc.\n\nTy in a",
+      "score": 2,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/software/comments/1rs1qb7/whats_is_the_best_vm_for_my_current_purpose/",
+      "created_utc": 1773346315.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Local, content-aware file organization tool for documents, images and media",
+      "body": "I had accumulated years' worth of files that weren't consistently organized into folders. Sorting everything manually was possible, but too time-consuming. I wanted a tool that could help organize my file storage reliably without having to define complex rule sets.\n\nThis applies especially to folders like `Downloads`, `Documents`, and `Images`, as well as large NAS archives.\n\nThe result is AI File Sorter (currently v1.7.0): a local, content-aware file organization tool for documents and images, with optional metadata-based (like ID3 for mp3 files) renaming for audio/video files and non-content-aware categorization for other file types. It's open-source and cross-platform (**Windows, macOS, Linux**).\n\n[See the app in action (an animated GIF).](https://raw.githubusercontent.com/hyperfield/ai-file-sorter/refs/heads/main/images/screenshots/ai-file-sorter-win.gif)  \n[See an app screenshot.](https://github.com/hyperfield/ai-file-sorter/blob/main/images/screenshots/sort-confirm-moved-win.png?",
+      "score": 8,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/software/comments/1rrzyiw/local_contentaware_file_organization_tool_for/",
+      "created_utc": 1773342480.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "SnipFor: Free &amp; Lightweight Snipping Tool with High-Accuracy OCR (No Subscriptions)",
+      "body": "https://i.redd.it/wl94b8tr0ung1.gif\n\nHi everyone,\n\nI spend a lot of time in terminal sessions, Zoom meetings, and looking at error logs. One of my biggest daily frustrations was having to manually re-type text from images or video streams because I just couldn't highlight and copy them.\n\nI checked out a few tools, but most of them either required a subscription or sent the image data to the cloud for OCR processing. Working in a security-conscious IT environment, anything cloud-based was a non-starter for me.\n\nSo I ended up building SnipFor. It is a lightweight Windows app that combines a screen capture tool with a local OCR engine.\n\nA few things I focused on during development:\n\n1. Everything stays offline. No data is sent to any server, ever. Your company security policies should be fine with it.\n2. It is lightweight. I hate bloatware, so I kept the RAM and system footprint minimal.\n3. Fast annotations. You can add arrows, lines, and highlights directly as you snip.\n\nThe community ve",
+      "score": 0,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/software/comments/1ro5tmk/snipfor_free_lightweight_snipping_tool_with/",
+      "created_utc": 1772979009.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Antigravity update limiting Claude Opus 4.6 usage - any way to downgrade?",
+      "body": "I recently updated Antigravity IDE, and since the update I'm barely able to use Claude Opus 4.6.\n\nBefore the update I could have long sessions, but now after 5-10 conversations it stops working and I can't use Claude anymore for a while.\n\nThis is affecting my workflow because I rely heavily on Claude for coding inside Antigravity.\n\nHas anyone else experienced this after the latest update?\n\nQuestions:\n\n1. Is there a way to downgrade Antigravity to the previous version?\n\n2. Is this a rate-limit issue from Anthropic or something Antigravity changed?\n\n3. Any workaround to keep using Claude Opus without hitting this limit so quickly?\n\nWould appreciate any help from people using Antigravity or Claude in their dev workflow.",
+      "score": 0,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/software/comments/1rqeq35/antigravity_update_limiting_claude_opus_46_usage/",
+      "created_utc": 1773188845.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "software",
+      "title": "Are There Any Media Players With VLC GUI But Better Backend/Features?",
+      "body": "I've been searching for years but I can't find something that has the front end of VLC but a better backend. I also realise that for whatever reason people don't like the VLC interface, but I do. The two things missing in every single alternative, that VLC has and I really like, are:\n\n1) Seekbar scrolling - you can use the mousewheel on the scrollbar to seek, but anywhere else it manipulates volume. Every other app is either locked to volume, or it forces you to choose between audio only or video only manipulation.\n\n2) Floating fullscreen widget. I personally don't like the seekbar extending to the ends of my screen. The fullscreen widget in VLC is a good width and being able to move it around is great. Haven't seen any other media player do this as far as I can remember. Edit: Oh and you can adjust transparency of the widget too.\n\nSo the remaining thing is VLC performance. It still doesn't officially have Long File Path support, despite there being multiple solutions posted on their g",
+      "score": 6,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/software/comments/1rskvef/are_there_any_media_players_with_vlc_gui_but/",
+      "created_utc": 1773401688.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Cant do apple care anymore?",
+      "body": "Hello everyone\n\ntoday my mother wanted to get rid of some subscriptions that she didnt need since her app store account is somehow mine (dont ask me i dont know either why thats the case) she accidentally cancelled my apple care plus subscription since she told me it was an honest mistake i wanted to resub to apple care\n\ni checked my settings and both in my subscriptions tab and under general&gt;info&gt; device coverage i couldn’t re subscribe \n\nwhat do i do now? i really wana get apple care again because i want some protection against thieves and damages\n\nthanks!",
+      "score": 0,
+      "num_comments": 15,
+      "url": "https://www.reddit.com/r/iphone/comments/1rovxmm/cant_do_apple_care_anymore/",
+      "created_utc": 1773049893.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "cant decline calls even with unlocked phone",
+      "body": "title.\n\nno matter what i do i cant decline my incoming calls. and the power button isnt an option because i accidentally hang up calls while talking to someone. this driving me insane. \n\niphone 13 and ios 26.1\n\nplease dont delete my post ive searched the whole internet for this issue but nothing",
+      "score": 0,
+      "num_comments": 7,
+      "url": "https://www.reddit.com/r/iphone/comments/1roc26z/cant_decline_calls_even_with_unlocked_phone/",
+      "created_utc": 1772993901.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Booting into iphone  diagnostics but cant run tests ?",
+      "body": "Booting into iphone  diagnostics but cant run tests on iphone se 2020 and iphone 11 pro, it just says exit. any suggestions to fix it ? ive read something about being able to do it only if youre an autherized technician or some shi like that. diagnostics run fine on a 14 pro i have.",
+      "score": 1,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rts74k/booting_into_iphone_diagnostics_but_cant_run_tests/",
+      "created_utc": 1773515905.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Can't move or add photos to an album on iphone",
+      "body": "",
+      "score": 0,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rnrenb/cant_move_or_add_photos_to_an_album_on_iphone/",
+      "created_utc": 1772933094.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "What Should I Do with Old Lightning Cables?",
+      "body": "I've recently purchased a new iPhone 17 (RIP 13, you did good) and now I have years of lightning cables I have no use for. I can't seem to find retailers or anyone who incentivizes trading them in, so...who can I donate these to that would actually be useful? I figure this will be more and more relevant as pre-USB C phones die, and I am open to suggestions.",
+      "score": 24,
+      "num_comments": 33,
+      "url": "https://www.reddit.com/r/iphone/comments/1rt69yc/what_should_i_do_with_old_lightning_cables/",
+      "created_utc": 1773451942.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Reverting from iPhone 17 pro to 15 pro",
+      "body": "I recently realized my 15 pro was peak. No accidently pressing the camera button when snapping my phone into the car phone holder or opening by accident. No random blacked out or blurred camera sessions occurring. The screen size is something I can't get with. A phone is meant to be portable and easy to use, most people can't even use their phones with one hand anymore because your thumb can't reach the other side of the screen, but we're brainwashed to think a few centimeters bigger is essential despite the fact we went decades without a tablet as a phone. My 15 pro was light weight, powerful, sleek and worked just fine which is why I'll be returning my orange (which must've stood for 'warning' in the first place) with the gorgeous 15 pro babyy.",
+      "score": 0,
+      "num_comments": 36,
+      "url": "https://www.reddit.com/r/iphone/comments/1rsrdon/reverting_from_iphone_17_pro_to_15_pro/",
+      "created_utc": 1773417815.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Can I force an iPhone to power down via its side buttons?",
+      "body": "My daughter's iPhone needs a new screen (white screen of death). Someone keeps calling it through Instagram or whatever, so it keeps ringing. How can I force it to shut down?\n\n**Update**: Resolved, even though no combination of various buttons seems to turn it off. I Googled 'iPhone alarm screen' to see if I could press the correct area to stop that and it hasn't gone off since. Yay, but it's odd that you can't force this thing to simply power down with the buttons.",
+      "score": 42,
+      "num_comments": 28,
+      "url": "https://www.reddit.com/r/iphone/comments/1rpfzdj/can_i_force_an_iphone_to_power_down_via_its_side/",
+      "created_utc": 1773097650.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "I regret getting an iPhone 15",
+      "body": "So I got an iPhone 15 base on December 31st. Brand new, 128gb. After 5-6 days I started noticing that my display would leave ghosting after a static image had been displayed for around 30-40 minutes. As the days went by, it became easier for the ghosting to appear, only needing 10-15 minutes. Long story short I did a little research and found that what I had is called image retention. I went to a premium reseller because here in Greece there's no apple and the told me it's because of iOS 26 and that I should contact apple support. I tried EVERYTHING, even resetting from iTunes and starting fresh without a backup, and the problem was still there. I then took it again to another store that is not a premium reseller but a authorised service point where they took it. After 5 days I called them asking about my phone and they said to my that they will have to send it to the eu service center because that can't find any problem. After 3 days I got my phone back.\n\nBrand new screen, but after 3",
+      "score": 0,
+      "num_comments": 21,
+      "url": "https://www.reddit.com/r/iphone/comments/1ro5dot/i_regret_getting_an_iphone_15/",
+      "created_utc": 1772977823.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "what do you do in this situation",
+      "body": "",
+      "score": 24,
+      "num_comments": 16,
+      "url": "https://www.reddit.com/r/iphone/comments/1rob0el/what_do_you_do_in_this_situation/",
+      "created_utc": 1772991531.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Photos of other iphone screens automatically deleting",
+      "body": "I have a weird one. I'm a bartender and sometimes I take photos of other people's phones if they're showing me a recipe. What I've noticed is that within an hour, the photo is deleting. If I heart it then it will stay in my Favorites folder. But will not be in my recents. And if I unheart it then it will be gone altogether. Won't even be in my Recently Deleted. This is annoying and I can't find any info on this anywhere. The only missing photos are the ones I have taken of other phone screens, specifically iPhones. \n\nI am using a SE 3rd gen, ios 18.7.1",
+      "score": 25,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/iphone/comments/1rowkgr/photos_of_other_iphone_screens_automatically/",
+      "created_utc": 1773052142.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Unknown icons.",
+      "body": "Hi there,\n\n just wondering if anyone recognizes these faint images on my partners iphone. She says that they have just appeared today.\n\nI thought that it was just screen burn, but after looking at the apps she uses i cant find any that match. Im not to familiar with ios myself so unsure if a recent UI change happened.\n\nIf anyone knows where these are from, it would be greatly apriciated if you could let us know.",
+      "score": 9,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/iphone/comments/1ru18yb/unknown_icons/",
+      "created_utc": 1773538674.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Set As Ringtone Option Missing",
+      "body": "Cant seem to find set as ringtone option. I had it earlier tried multiple formats mp3,m4a,m4r also tried it on a file i had set before it is not showing ",
+      "score": 1,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/iphone/comments/1ro8asp/set_as_ringtone_option_missing/",
+      "created_utc": 1772985238.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Apple just totaled my 14 Pro Max",
+      "body": "Here is a short story of how my weekend going and the quality and direction of Apple service.\n\nA bit of background\n\nI bought 14 Pro Max (512GB version) in 2022, a couple of months after the release - it was my first iPhone, looked and felt great and, after a couple of weeks of occasional tutorial videos, I got really happy about it ...untill yesterday. But I'm getting ahead of myself.\n\nI moved to Canada a year later and, still not being used to heavy winter jackets of the north, did not notice how the phone slipped off my knees while stepping out of the car. By the time I found it (Find Devices service really helped here) it got run over by a car. The manufacturing of the device appeared to be surprisingly good - it was still alive. Compacted snow on the parking lot saved me - the iPhone got pressed into the snow instead of being crushed. I ended up having a crack on the back plate and shattered protection glass on the lower camera (the main x1 camera, it appeared), but, to my fascinat",
+      "score": 0,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/iphone/comments/1roj9ew/apple_just_totaled_my_14_pro_max/",
+      "created_utc": 1773010680.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "SwiftKey keyboard keeps getting replaced by iPhone default keyboard on iOS 26.3",
+      "body": "Has anyone else been experiencing this bug on iOS 26.3?\n\nI use Microsoft SwiftKey as my main keyboard and it's actually the only keyboard I have enabled in my keyboard settings. However, since updating to iOS 26.3, something strange keeps happening.\n\nWhen I open certain apps and tap into a text field:\n\n1. My SwiftKey keyboard appears first like normal.  \n\n2. Then a second later it gets replaced by the iPhone default keyboard.\n\nThis happens periodically and I can't figure out what triggers it. Sometimes SwiftKey works fine, but other times it gets overridden right after appearing.\n\nThings worth noting:\n\n\\- SwiftKey is the only keyboard enabled in my keyboard settings.\n\n\\- The issue started immediately after updating to iOS 26.3.\n\n\\- It seems to happen randomly when opening apps and tapping into text fields.\n\nHas anyone found a fix or workaround for this? I'm trying to figure out if this is an iOS bug or a SwiftKey issue.\n\nWould appreciate any insight.",
+      "score": 7,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/iphone/comments/1rqpkp1/swiftkey_keyboard_keeps_getting_replaced_by/",
+      "created_utc": 1773223208.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Apple iPhone X after falling down three flights of stairs.",
+      "body": "https://preview.redd.it/ka0rfvpdl8og1.png?width=207&amp;format=png&amp;auto=webp&amp;s=41aa83c8671d31d7f1dac86ec104f3327fc745e2\n\nI went to go see a friend of mine when my phone fell out of my pocket falling down three flights of stairs. I'm not really sad, more so just pissed off that I lost a few pictures of really sentimental things.",
+      "score": 0,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/iphone/comments/1rq05r7/apple_iphone_x_after_falling_down_three_flights/",
+      "created_utc": 1773156847.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Opened an mp4 link on google drive, could it be malicious and infect iPhone?",
+      "body": "I’m a total noob when it comes to phones etc so forgive me if this is indeed a stupid question.\n\nI opened an mp4 link from here of one of the short reel videos someone had posted. It was indeed the intended video and played the full thing fine.\n\nWhat I am worried about that could this have had any malicious intentions behind it that could have stayed on my phone? I removed the video from my recents and changed my pw just incase.\n\nProbably overreacting but I am a chronic worrier ",
+      "score": 0,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/iphone/comments/1rsxgcr/opened_an_mp4_link_on_google_drive_could_it_be/",
+      "created_utc": 1773430850.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Do I need to backup my iPhone?",
+      "body": "My phone kept saying I was out of storage, so I went through everything and deleted apps I never used, sorted through pictures I didn’t need multiples of, deleted videos, voice memos, etc. Surprisingly deleting old messages cleared the most storage, I thought it would have been photos/videos. \n\nAnyways, do I need to backup my iPhone 16 Pro Max? Are you supposed to regularly do backups “just in case”? Since it says I didn’t have enough storage for the last backup, does that mean the backup replicates the same amount of storage, so I would need 6 GB to do a full backup on iCloud? \n\nI’m also not sure why only 8 photos are saved in iCloud, which are photos I had airdropped from my phone to my iPad. iCloud had been turned on for photos, so why would it not have saved it? ",
+      "score": 1,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/iphone/comments/1rpodih/do_i_need_to_backup_my_iphone/",
+      "created_utc": 1773120367.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Help why doesn’t face id work(read subtext)",
+      "body": "so i bought a iPhone eleven mainly for the face id and until two days ago it worked perfectly but then it randomly stopped working and i always have to give my password and so i reset my face id and everytime i try to configure it it gives me this message and i cant do anything about it its in german so the translation is:face id currently not available try configurating it later ",
+      "score": 0,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/iphone/comments/1ro9fry/help_why_doesnt_face_id_workread_subtext/",
+      "created_utc": 1772987942.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Iphone 17 stuttering",
+      "body": "When I decide to play some music with apple music and then close the app and swipe on the home screen there is a micro stutter and this only happends if I didnt open the app before. Any fixes? I listen to music a lot and I also cant stop noticing this when it happends",
+      "score": 0,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/iphone/comments/1rq7jgt/iphone_17_stuttering/",
+      "created_utc": 1773172629.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "RCS Encryption? Is this new?",
+      "body": "",
+      "score": 0,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/iphone/comments/1rpcrc8/rcs_encryption_is_this_new/",
+      "created_utc": 1773090347.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Data transfer",
+      "body": "I have an old iphone with icloud that i forgot the password and cant be recovered. Is there any way that I can transfer data to the new iphone without transfering the icloud account to the new phone?",
+      "score": 1,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/iphone/comments/1ru5hnj/data_transfer/",
+      "created_utc": 1773551466.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "eSIM / EID suddenly disappearing on iOS 26",
+      "body": "Hey guys,\n\nI'm having an issue with my iPhone 12 Pro. The eSIM options and the entire EID sometimes disappear. One moment everything is there, and the next it's gone. I haven't found a clear pattern.\n\nWhen I turn airplane mode on and off, the eSIM options and the EID sometimes reappear. However, soon after, I get the “No SIM” message again.\n\nIt's odd because the EID still shows up in the device info and when I dial *#06#. The “Add eSIM” option is also there, but when I try to add a new eSIM, I get an error before the profile even starts to download. This makes me think the EID might be temporarily stored while the actual eSIM chip isn't accessible. After a reboot, the EID and the “Add eSIM” option usually disappear again, and I have to toggle airplane mode in hopes they show up again.\n\nI think airplane mode might force the system to check the eSIM chip. If it responds briefly, then all the eSIM-related options come back.\n\nI've seen some posts on Reddit where people mentioned this start",
+      "score": 1,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/iphone/comments/1ru0c13/esim_eid_suddenly_disappearing_on_ios_26/",
+      "created_utc": 1773536119.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Silicone case rep",
+      "body": "Where to get iPhone silicone reps nowadays? can't find them on aliexpress anymore \\\\:",
+      "score": 0,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/iphone/comments/1ro7fkw/silicone_case_rep/",
+      "created_utc": 1772983108.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Call volume problems",
+      "body": "",
+      "score": 0,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/iphone/comments/1rq34fv/call_volume_problems/",
+      "created_utc": 1773163290.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Hong Kong iPhone + moving to France , can I still get AppleCare+ Theft &amp; Loss?",
+      "body": "I recently purchased a brand-new iPhone (Hong Kong variant). As far as I know, Apple does not offer **AppleCare+ with Theft &amp; Loss** in Hong Kong.\n\nI activated the phone yesterday and I’m currently in Pakistan, but I will be moving to **France soon**, where Apple does offer **AppleCare+ with Theft &amp; Loss**.\n\nMy question is: **once I arrive in France, will I be able to purchase AppleCare+ with Theft &amp; Loss for this Hong Kong variant iPhone within the 60-day eligibility window?** Or does Apple restrict this based on the original region where the phone was purchased?\n\nIf anyone has had a similar experience (buying an iPhone in one region and purchasing AppleCare in another), I would really appreciate your insight. Thanks!",
+      "score": 0,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/iphone/comments/1ro3i65/hong_kong_iphone_moving_to_france_can_i_still_get/",
+      "created_utc": 1772972430.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "broken camera or lens?",
+      "body": "so i accidentally dropped my phone and now my photos look like this(1st photo) and i don't know if the lens or the camera itself is damaged because there aren't any visible cracks on my lens outside of 2 little scratches that can be barely seen(2nd picture)(those other cracks next to the camera were there before) and there's also no repair shop open in my town on weekends so I can't ask anywhere else than reddit, so does anyone know which one is broken?",
+      "score": 0,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rtotqb/broken_camera_or_lens/",
+      "created_utc": 1773508081.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "How does international warranty work for iPhones?",
+      "body": "I'm looking for an older model and can't find it everywhere, the only stores selling it all have the USA code for US sales, meaning it's a US model, even though it's being sold in Europe.\n\nHow does the warranty work in this case? Will the 12 months of Apple warranty work fully, and if I encounter battery or other issues within those 12 months, will they handle it normally, or will there be problems because it's a US-spec model?",
+      "score": 0,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rtkg12/how_does_international_warranty_work_for_iphones/",
+      "created_utc": 1773497505.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "\"You’re now using Gemini on your iOS device\"",
+      "body": "That's the subject of the email I got. But where? I can't find it in Settings or in any of my Google apps (mail, maps, calendar).",
+      "score": 1,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rq7495/youre_now_using_gemini_on_your_ios_device/",
+      "created_utc": 1773171721.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Find my issues",
+      "body": "Hello. Me and my girlfriend share eachothers location. I can see her location, but I cant see her. I have been to settings and tried everything. I have Iphone 16 pro and she has Iphone 16 pro max. We have the latest update 26.3.1.\n\nThank you for your help.",
+      "score": 0,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rppr7f/find_my_issues/",
+      "created_utc": 1773125210.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Ringtone volume auto decrease???",
+      "body": "I set alarms almost every day and almost everyday theres NO volume, ive tried literally everything. I set timers because alarms are awful for going off but change with buttons is off focus aware is off reduce loud sounds is off on both headphones and phones theres no limit volume, when i turn the volume up its normal for one day and then switches itself off. Same thing with my ipad and i cant seem to find anything online that doesnt suggest the things ive already tried",
+      "score": 1,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/iphone/comments/1rnrpw7/ringtone_volume_auto_decrease/",
+      "created_utc": 1772933955.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "iPhone 17 and Hearing Aids",
+      "body": "I posted this in r/hearing aids, I might find help here.\n\nI got a new phone yesterday and I'm trying to figure something out.\n\nMy previous phone was an iPhone 12. If I swiped all the way to the left, I got to a page that showed the remaining battery life of both the phone and my hearing aids. The new phone just shows the power of the phone battery.\n\nThe new phone recognizes the hearing aids (Truhearing 6 RIC). I can play music through them. I can make adjustments to the hearing aids through the app. The step counter and all that other junk works as well. The one thing I can't do is see how much power is left in the hearing aid batteries.\n\nI've deleted and reinstalled the App, twice. I've gone through all the settings that I could find on the phone that have to do with hearing aids or batteries.\n\nIs this a feature that apple dropped? It really was helpful.",
+      "score": 1,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rtssdv/iphone_17_and_hearing_aids/",
+      "created_utc": 1773517300.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "iPhone Device Management",
+      "body": "I upgraded to the iPhone 17 Pro last month through a Verizon business plan. The first phone they sent me had a 'Device Management' prompt that I had never seen before stating it was registered to a business that wasn't mine. They could set up email, update software, etc. Long story short, spoke to customer service and they sent me a new phone. My next bill has come out and I see no mention of the first phone they sent me. No payment plan or anything. It seems like I might have a \"free\" phone, but I'll wait it out a little longer to confirm. \n\nI'm curious as to what my options are with it. I can't seem to get past the Device Management prompt without entering a valid business email. Is there anyway I can get this removed? Would someone buy it for parts? Should I just send it back? ",
+      "score": 1,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rrtf8t/iphone_device_management/",
+      "created_utc": 1773328375.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Inactive contacts buttons",
+      "body": "Hello,\n\nI have a brand new 17 pro and I'm having a problem with inactive contacts buttons.\n\nBefore, I had a 15 pro and everything worked fine. I made a backup of my 15 pro with iTunes and then I restored this backup to my new 17 pro. For some reasons I set up security options in phone settings like lockdown mode, etc. but even if I turn it off, contact buttons still remain to be inactive.\n\nIf I want to call somebody I can't just tap call icon, I need to scroll down and click on phone number. If I want to message somebody, I need to go to Messages -&gt; New message and pick a contact to send msg to. It's very annoying.\n\nI'm using e-sim card and all contacts are in iCloud. I tried to:\n\n\\- turn off lockdown mode\n\n\\- turn off some settings under screen time menu.\n\nAlso I turned off iCloud sync -&gt; erased all contacts from phone -&gt; turn sync on. Still the same issue, nothing changed. I think it may be some security settings but I can't find out what to change that. Please help me.\n\nhtt",
+      "score": 4,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rourgc/inactive_contacts_buttons/",
+      "created_utc": 1773045475.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "airdrop",
+      "body": "i cant see my MacBook pro to share any document or photos via airdrop from my iphone (15 pro), but i can see my iphone the other way around. i did all the network reset, turned on/off both the devices but none helped. Also when other try to share any photo via airdrop from their iphone they can see my macbook.\n\nplease tell me how to fix it ",
+      "score": 0,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rr0aj3/airdrop/",
+      "created_utc": 1773250201.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "Is my iPhone dead ?",
+      "body": "So here's my problem:\n\nI was charging my phone (iPhone 13) using the USB port on the bus I was in. Suddenly, the phone screen went black. I had about 60% battery remaining.\n\nI tried the volume up/volume down/power button trick, without success. I tried connecting it to my computer, but I can't detect any connection.\n\nAre there any other things I could try?\n\nIf it's actually dead, do you think it's the battery (which was at 82% capacity) or something more serious?\n\nThanks in advance!",
+      "score": 0,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1roab6o/is_my_iphone_dead/",
+      "created_utc": 1772989954.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "iphone",
+      "title": "FaceTime &amp; WhatsApp video calls buffer every 30 seconds on cellular network!",
+      "body": "Hey! I have an issue with my iPhone 14 Pro Max (version iOS 26.3.1). Whenever I have video calls (whether it's FaceTime or WhatsApp) on a cellular internet network (5G and 4G both), it just randomly stops and buffers for 5-10 seconds at random intervals of 30-35 seconds. So I can't continuously have a conversation without interruption.\n\nInitially, I thought it was my network, so I also changed my phone carrier (from Jio to Airtel). But on a new carrier, I am still facing the same issue. I also tried to change my cellular settings, but it didn't help. On WiFi, it works perfectly, though.\n\nIf anyone has had the same issue and knows the solution, I'd really appreciate it.\n\nP.S. Next, I will again try to change my carrier from Airtel to Vi. But not sure if it would really help.",
+      "score": 0,
+      "num_comments": 0,
+      "url": "https://www.reddit.com/r/iphone/comments/1rnyvkg/facetime_whatsapp_video_calls_buffer_every_30/",
+      "created_utc": 1772956104.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "They cant keep this private - Samsung S26 Ultra Teardown - JerryRigEverything",
+      "body": "",
+      "score": 94,
+      "num_comments": 54,
+      "url": "https://www.reddit.com/r/Android/comments/1rrdt0v/they_cant_keep_this_private_samsung_s26_ultra/",
+      "created_utc": 1773280513.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Android or iOS – have you ever switched and regretted it?",
+      "body": "I've been on Android for years and can't imagine switching. But sometimes I wonder if iOS is really as good as Apple users claim. Have you ever switched sides? Was it the right decision or did you regret it? What surprised you the most about the other side?",
+      "score": 18,
+      "num_comments": 99,
+      "url": "https://www.reddit.com/r/Android/comments/1rq8ab7/android_or_ios_have_you_ever_switched_and/",
+      "created_utc": 1773174195.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Current state of android messaging with RCS",
+      "body": "Trying to not let this turn into a rant post, but just looking for some clarity on this issue which appears to be an android issue, NOT a carrier issue.\n\nI recently dropped my old carrier in favor of a more expensive one because I was tired of getting the run around on technical support. I use textra as my default messaging app on an LG G7 ThinQ and recently switched to a Google Pixel 3 also with textra. Starting with the LG, I just randomly started not getting texts from certain people in friends group chats. These chats had been created at least 8 years ago with no changes to members. I just started getting some texts saying \"lol\" or \"I agree\" with no context for what the missing text was. Sometimes it was the same people not coming through, other times it was everyone. This issue lasted for at least 6 months. So I switched carriers, installed textra on a new phone and day 1, issue persists.\n\nI contacted my new carrier and they said they recommend google messages for \"best experience",
+      "score": 0,
+      "num_comments": 14,
+      "url": "https://www.reddit.com/r/Android/comments/1rp6oki/current_state_of_android_messaging_with_rcs/",
+      "created_utc": 1773077434.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "OnePlus 10R hiding 120GB of 256GB storage in inaccessible system partitions - Complete technical investigation with ADB proof",
+      "body": "OnePlus is holding 120GB of my 256GB phone hostage in hidden system storage that I cannot access or delete, even with advanced debugging tools. This appears to be either gross negligence or planned obsolescence.\n\n**My Situation**\n\n\\- **Device:** OnePlus 10R (256GB)\n\n\\- **Problem:** \"Other\" storage shows 120GB\n\n\\- **My actual files:** Only 110GB (Apps, Photos, Videos, Documents)\n\n\\- **Missing storage:** 120GB completely inaccessible\n\n\n\nStorage settings showing 120GB \"Other\"\n\nWhat I Tried (Everything Failed)\n\n1. ✗ Built-in \"Clean up\" button\n\n\\- Does nothing. \"Other\" stays at 120GB.\n\n2. ✗ DiskUsage app\n\n\\- Cannot find where the 120GB is hiding\n\n\\- Only shows my 110GB of actual files\n\nDiskUsage results\n\n\n\n\n\n3. ✗ Manual app cache clearing\n\n\\- Went through every app\n\n\\- Cleared all caches\n\n\\- Still 120GB \"Other\"\n\n4. ✗ ADB Debugging (Advanced)\n\n\\- Connected phone to computer\n\n\\- Enabled Developer Options + USB Debugging\n\n\\- Ran professional diagnostic commands\n\nResult: Every system directory ",
+      "score": 0,
+      "num_comments": 10,
+      "url": "https://www.reddit.com/r/Android/comments/1rrsmc2/oneplus_10r_hiding_120gb_of_256gb_storage_in/",
+      "created_utc": 1773326555.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "The Galaxy S26 Ultra is Actually a Powerful Desktop PC! - ETA PRIME",
+      "body": "",
+      "score": 0,
+      "num_comments": 10,
+      "url": "https://www.reddit.com/r/Android/comments/1rppjwo/the_galaxy_s26_ultra_is_actually_a_powerful/",
+      "created_utc": 1773124478.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Daily Superthread (Mar 09 2026) - Your daily thread for questions, device recommendations and general discussions!",
+      "body": "Note 1. You can search for previous [daily threads](https://www.reddit.com/r/Android/search/?q=daily+superthread&amp;include_over_18=on&amp;restrict_sr=on&amp;t=all&amp;sort=new).\n\nNote 2. Join our IRC and Telegram chat-rooms! [Please see our wiki for instructions](https://www.reddit.com/r/Android/wiki/index#wiki_.2Fr.2Fandroid_chat_rooms).\n\nPlease post your questions here. Feel free to use this thread for general questions/discussion as well.",
+      "score": 9,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/Android/comments/1roycfc/daily_superthread_mar_09_2026_your_daily_thread/",
+      "created_utc": 1773057754.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Daily Superthread (Mar 13 2026) - Your daily thread for questions, device recommendations and general discussions!",
+      "body": "Note 1. You can search for previous [daily threads](https://www.reddit.com/r/Android/search/?q=daily+superthread&amp;include_over_18=on&amp;restrict_sr=on&amp;t=all&amp;sort=new).\n\nNote 2. Join our IRC and Telegram chat-rooms! [Please see our wiki for instructions](https://www.reddit.com/r/Android/wiki/index#wiki_.2Fr.2Fandroid_chat_rooms).\n\nPlease post your questions here. Feel free to use this thread for general questions/discussion as well.",
+      "score": 2,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/Android/comments/1rslel1/daily_superthread_mar_13_2026_your_daily_thread/",
+      "created_utc": 1773403293.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Why does Galaxy AI lack this ONE basic feature that older iPhones have? (Voice Focus with Bluetooth/Wired mics)",
+      "body": "​I recently upgraded to the Galaxy S26 Ultra, and while I am absolutely blown away by the device, there is one glaring software omission that is driving me crazy.\n​Samsung has done an incredible job with Galaxy AI—the processor is a beast, photo editing is magic, and Live Translate is futuristic. But despite all this AI power, we still can't use software-based noise cancellation (Voice Focus) when connected to a Bluetooth or wired headset. &gt;\nThe moment you connect third-party earbuds or a wired mic, One UI completely disables the Voice Focus toggle. It forces you to rely 100% on the headset's hardware microphones, which often pick up all the background street/wind noise.\n​Meanwhile, if you look at the other side, even older iPhones (like the iPhone 11 Pro Max) have \"Voice Isolation.\" iOS forces software-level noise cancellation on any connected mic, making your voice sound crystal clear to the other person regardless of how cheap the earbuds are. I also know that Google Pixels do th",
+      "score": 5,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/Android/comments/1rpwueu/why_does_galaxy_ai_lack_this_one_basic_feature/",
+      "created_utc": 1773149095.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Deciding to come back to Android after 1 year.",
+      "body": "This post is manly for me to express **my experience with iOS**, and to see the opinions of the rest of this **sub** and have some discussion.\n\nLast year I decided to enter the iOS side of the phone world. My partner always wanted an iPhone so, after she got a 15 Pro, I decided to dabble with a **16 Pro**. Of course, the first 2 weeks were amazing, the **build quality, camera and responsiveness were great**. I decided to switch to most of the Apple software ecosystem and until recently I was fairly satisfied. \n\nRecently I've been seeing a lot of discussion around the **Nothing Phones** and software and was fairly intrigued by it and I loved the phone's hardware design and UI. This got me thinking, after experimenting with iOS for around 1 year, was I really happy and satisfied with it? The answer was mixed. \n\nBy one hand, the camera is amazing, but i don't really take much photos. The build quality was good, but it's practically impossible to use the phone without a case; not only does",
+      "score": 0,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/Android/comments/1rtoix6/deciding_to_come_back_to_android_after_1_year/",
+      "created_utc": 1773507419.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "Android",
+      "title": "Some features I would like to come to Android eventually",
+      "body": "I know probably none of these will make it to Android 17, even though some of these are relatively small features, but it would be amazing if they made it to Android eventually. \n\nDo you think these are good suggestions? Would you want them too? What are some of the features you would like to see?\n\n**FEATURES**\n\n* **App pausing** - We can currently pause apps; it is a great idea! But it would be even better to be able to pause them for a custom set period. Let's say you have work apps or social media apps, and you go on holidays/vacation and wish not to be distracted by them. It would be nice to be able to pause those apps for a week and after one week when you are back to work, they would be resume automatically. Currently you can only pause apps for a day and they automatically resume at midnight. Maybe even have the ability to tap and hold on a folder and pause all apps in it at once. \n\n* **App cloning** - I would like to be able to run multiple app instances, maybe even different v",
+      "score": 0,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/Android/comments/1ro4g9c/some_features_i_would_like_to_come_to_android/",
+      "created_utc": 1772975242.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "LifeProTips",
+      "title": "LPT If you spill something on a carpet/fabric, 2/3 hydrogen peroxide and 1/3 blue dawn dish soap will clean nearly ANYTHING up",
+      "body": "My cat knocked over a FULL glass of a berry smoothie on our carpet today (we JUST moved into this house a few months ago, new build). I was panicked, and didn't know what to do. My husband knew this trick that saved our carpet.\n\nHe mixed 2/3 hydrogen peroxide and 1/3 dawn dish soap (the ratio doesn't have to be this exact, we were in a panic cleaning it up), and looking at our carpet now, you can't even tell ANYTHING happened. I was in shock. I wasn't sure how common this tip was, but it was an absolute lifesaver and I hope it helps someone else out here! Took a rag, dipped it in the solution, and scrubbed away like magic!\n\nEdit: as some of the comments have noted, it depends on the material, and it is important to know how to extract soap if you ever put it on carpet. So use this tip on a case by case basis. I just know it worked out amazing for our terrible incident that occurred today and relieved us of a lot of stress. Happy for this post to be an opportunity to share even more use",
+      "score": 188,
+      "num_comments": 30,
+      "url": "https://www.reddit.com/r/LifeProTips/comments/1ru3b0p/lpt_if_you_spill_something_on_a_carpetfabric_23/",
+      "created_utc": 1773544607.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "LifeProTips",
+      "title": "LPT: Enjoy the journey, not the thought of the end goal.",
+      "body": "",
+      "score": 0,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/LifeProTips/comments/1rrqhw4/lpt_enjoy_the_journey_not_the_thought_of_the_end/",
+      "created_utc": 1773321438.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Living with parents that never admit when they are wrong Or belive you. My mother can't even admit this is not butter because it has the word butter on the label. My mother says its abusive to call her out when shes wrong on something.",
+      "body": "",
+      "score": 47161,
+      "num_comments": 2757,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rs5oyv/living_with_parents_that_never_admit_when_they/",
+      "created_utc": 1773355094.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Every sign on my road is like this, the town won't replace them since they get shot up within a year when they do and they feel it would just be a waste of taxpayer money, took over a decade to get the stop sign replaced after someone ran it over. This is why we cant have nice things",
+      "body": "",
+      "score": 29113,
+      "num_comments": 1625,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1robx24/every_sign_on_my_road_is_like_this_the_town_wont/",
+      "created_utc": 1772993579.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "I can see it but I can't buy it.....",
+      "body": "My cordless drill died this morning while working on our fence.  Home Depot website said their store two miles away had plenty in stock.  Got in the truck &amp; headed over.\n\nThey do indeed have plenty in stock.  They're all inside locked cages.  There is *one* guy who has the key to the locked cages.  He's tied up with a (very) picky customer.  I stand there for 15 minutes watching them wander back &amp; forth all over the power tools department, unable to decide which brand of jigsaw to buy.\n\nClearly I'm not going to be getting a cordless drill anytime in the next hour.  I tell the only other staffer in the area they just lost a $200 sale because they can't unlock the cage.  I go home &amp; order it from someone else online.  \n\nPeople, people, people.  I can understand why you'd lock up expensive &amp; frequently stolen merchandise.  If you do that, you MUST have someone around who can unlock it when you have a paying customer.  \n\n",
+      "score": 4389,
+      "num_comments": 621,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rrva6e/i_can_see_it_but_i_cant_buy_it/",
+      "created_utc": 1773332491.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "pregnant, bf’s woken me up at 3am, cant get back to sleep",
+      "body": "im very pregnant, obviously extremely tired and extremely hormonal at the moment and hes decided to learn danish (speaking out loud with the app talking too) with a loud movie on in the background whilst im trying to sleep. when i woke up he then turned the film off and went to sleep and now i cant get back to sleep. very very unhappy right now as i have plans later in the morning too !!!\n\nedit : guys it really wasnt that deep i was just annoyed😔 he’s not a narcissist or a horrible person, hes been really helpful during the pregnancy. this has only happened once, hes apologised and we’ve come to the conclusion that he’ll be learning during the day😭",
+      "score": 1591,
+      "num_comments": 252,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rpn0z8/pregnant_bfs_woken_me_up_at_3am_cant_get_back_to/",
+      "created_utc": 1773116006.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Apartment building doesn't give us physical access keys and makes us use faulty apps",
+      "body": "Maintenance has access with a physical key. They won't even let us pay for one. So I submitted a complaint to the fire marshal for fire code violation as you can't even exit the garage without using a mobile app. \n\nHopefully they'll be forced to change ",
+      "score": 9275,
+      "num_comments": 573,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ro2hc8/apartment_building_doesnt_give_us_physical_access/",
+      "created_utc": 1772969054.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "The thermostat at work is controlled remotely by the county office and can't be adjusted by workers in the office.",
+      "body": "",
+      "score": 47,
+      "num_comments": 63,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rspugd/the_thermostat_at_work_is_controlled_remotely_by/",
+      "created_utc": 1773414390.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "This ai board game I found at Spencer's",
+      "body": "",
+      "score": 4986,
+      "num_comments": 100,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rrcc0e/this_ai_board_game_i_found_at_spencers/",
+      "created_utc": 1773276709.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "You can't be mad you have chronic pain",
+      "body": "Some background before today: I was born with very bad feet. I have bunions and something super fun called functional hallux limitus in both my feet. I have FHL because my first metatarsals are longer than they are supposed to be and whenever I put pressure on them (i.e. take a step), they grind against the bone in my big toe and cause a fair amount of pain. I was in cross country for 6 years, which caused it to become a major issue in my left foot a few years ago. My doctor essentially had me on the maximum daily dose of pain/anti-inflammatory medication for a year until the pain got bad enough that the meds weren't helping. I eventually got the surgery, which was incredibly painful and has left me with 2 long scars on my left foot that are incredibly sensitive (i.e. if I slightly graze them, my foot jerks, and if someone steps on my foot, then I involuntarily scream). Ultimately, the surgery mostly fixed the issue in the left foot and I only experience twinge of pain every once in a ",
+      "score": 77,
+      "num_comments": 17,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rr9u7p/you_cant_be_mad_you_have_chronic_pain/",
+      "created_utc": 1773270742.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Grocery store replaced all their cards with plastic ones that have fake beverage holders that can't actually hold anything",
+      "body": " Also in Wisconsin liquor can be sold in grocery stores and gas stations. ",
+      "score": 0,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rqcpfv/grocery_store_replaced_all_their_cards_with/",
+      "created_utc": 1773184029.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "i cant vent about posting restrictions to anyone. wtf is life. hulu has to many ads on its ads plan.",
+      "body": "im sorry but like why tho? are you in a kahoot with eachother? let my post flounder in peace",
+      "score": 0,
+      "num_comments": 10,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ru0oxf/i_cant_vent_about_posting_restrictions_to_anyone/",
+      "created_utc": 1773537114.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "YouTube started doing this recently and I can't turn it off",
+      "body": "How do I fix this, because I looked through the settings, and can't find anything for it?",
+      "score": 15,
+      "num_comments": 7,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rtbbzz/youtube_started_doing_this_recently_and_i_cant/",
+      "created_utc": 1773467061.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Hotel room had a (half-assembled) emergency exit sign next to the door. Can't turn it off of course. Room was lit green-ish through the night.",
+      "body": "Daytime photo, of course. Hotel was new so I'm guessing they hadn't fitted the cover ([like these](https://der-partymann.de/wp-content/uploads/2024/01/Notausgangsschild-Led-Ausgang-e1706451006130.jpg)) yet.",
+      "score": 6,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rpuokc/hotel_room_had_a_halfassembled_emergency_exit/",
+      "created_utc": 1773143081.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Can't see shi",
+      "body": "This tv didnt give me a single problem during the 6 years it was attached to the wall, but got absolutely obliterated the week I moved it on my desktop ",
+      "score": 5,
+      "num_comments": 5,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rt9hpd/cant_see_shi/",
+      "created_utc": 1773461104.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Google REALLY wants you to use AI. Can't even look up basic information with AI being crammed down our throats",
+      "body": "",
+      "score": 5,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rsl1rg/google_really_wants_you_to_use_ai_cant_even_look/",
+      "created_utc": 1773402232.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "a discount app is selling my fav cake for cheap the day after i screwed up my foot so i cant get it because its pickup only and only for today",
+      "body": "",
+      "score": 0,
+      "num_comments": 4,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ro57uw/a_discount_app_is_selling_my_fav_cake_for_cheap/",
+      "created_utc": 1772977390.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Someone stole my key cover cap at a parking garage. Can't have nothin nice in Detroit",
+      "body": "And to make it worse, the one I ordered isn't quite a color match. Avoidable silly mistake, but I'll live with it at this point. ",
+      "score": 8,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ru5eh4/someone_stole_my_key_cover_cap_at_a_parking/",
+      "created_utc": 1773551176.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Can't return kettle as I have no receipt",
+      "body": "Trying to return kettle within policy. Unable to return due to lack of receipt :(",
+      "score": 0,
+      "num_comments": 3,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rnxvib/cant_return_kettle_as_i_have_no_receipt/",
+      "created_utc": 1772952673.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "One poster stays up perfectly without loosening while one can't even stay on for one day. They have the same tape, wall, paper texture and size.",
+      "body": "Tapes don't stay on, pins fall and Blu tack MELTS. I think my room walls hate me lmao.  ",
+      "score": 7,
+      "num_comments": 2,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rq2qqk/one_poster_stays_up_perfectly_without_loosening/",
+      "created_utc": 1773162507.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "I can't be the only one who SPECIFICALLY unchecks the email subscribe button when buying something...",
+      "body": "...only to receive emails from the company within 24 hours, to which I then manually unsubscribe.\n\nWhat the fuck man...happens a decent percentage of the time.",
+      "score": 11,
+      "num_comments": 1,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rswtpq/i_cant_be_the_only_one_who_specifically_unchecks/",
+      "created_utc": 1773429456.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Youtube replacing titels with AI over veiws",
+      "body": "",
+      "score": 1653,
+      "num_comments": 61,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ro0wp7/youtube_replacing_titels_with_ai_over_veiws/",
+      "created_utc": 1772963517.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "The security at my father's 50+ apartment building refuses to let me in to see him when I come to visit and bring him groceries",
+      "body": "I hope I'm posting this correctly 😬\n\nLike the title says, whenever I come to visit my father at his apartment, building security denies me entry because apparently he's required to meet me at the doors and let me in himself. \n\nThe problem is that my father doesn't use or even HAVE a phone of any kind, nor does he want one, so coordinating my arrival and getting him to actually meet me at the front doors is close to impossible. \n\nMy visits are nearly always a welcomed surprise to him when they come, but plenty of other residents in the building know me by face and name and will chat with me when they see me, ask how I'm doing, how my father is doing, etc...\n\nSecurity never takes that into account, though, and always blocks me from entering. ...whiiich I guess I can't fault them for too much -- it is their job after all -- I just wish they didn't have to be so strict and unbending about it. I mean, it's a quiet old folk's home, I'm a very short, pale, 20-something young woman with no tat",
+      "score": 174,
+      "num_comments": 121,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rtza59/the_security_at_my_fathers_50_apartment_building/",
+      "created_utc": 1773533197.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "My school used the worst AI generated poster they could find for Pi Day. Good thing this is my last month there.",
+      "body": "The white blob is me hiding the school name btw.",
+      "score": 275,
+      "num_comments": 58,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rthl3h/my_school_used_the_worst_ai_generated_poster_they/",
+      "created_utc": 1773489560.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "I cannot stand ADS, why are ads everywhere?",
+      "body": "Looking at the Weather Channel app and WHYY do they have ads??? I'M trying to check the radar, 2 seconds later they throw a AD in your face! If a tornado is coming towards me, I should not have toBE FORCED TO WATCH AN AD?!? Knowledge of weather should be FREE",
+      "score": 11,
+      "num_comments": 59,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rrsp7o/i_cannot_stand_ads_why_are_ads_everywhere/",
+      "created_utc": 1773326737.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "The charging case is designed so that the right earphone has to charge on the left... and the left one on the right 🫣",
+      "body": "I always mix them up 🙃",
+      "score": 144,
+      "num_comments": 22,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rt66gs/the_charging_case_is_designed_so_that_the_right/",
+      "created_utc": 1773451687.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "A can of Pepsi Max exploded in my car. Perth, Western Australia. Gotta be from the heat. It was 31c/88f - never seen that happen before.",
+      "body": "",
+      "score": 15,
+      "num_comments": 41,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ro5jwh/a_can_of_pepsi_max_exploded_in_my_car_perth/",
+      "created_utc": 1772978295.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "I got a car wash yesterday",
+      "body": "Got an oil change yesterday and I get a free car wash with that. I can't win 😭",
+      "score": 75,
+      "num_comments": 29,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rtepij/i_got_a_car_wash_yesterday/",
+      "created_utc": 1773479294.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "My mom was sharing my life updates with my ex friends whom I stopped talking to long ago",
+      "body": "9 months ago, I blocked some of my close friends because they were talking really demeaning stuff about me behind my back. Which a mutual let me know through chat screenshots.\n\nI had let my mom know I'm no longer in contact with them. But my mom had my ex friends' numbers still saved in WhatsApp.\n\nI only recently came to know. Bcz someone DMed me - i saw your singing and dancing video and liked it. I was dumbstruck for a moment. How did they know about this. But understood everything instantly.\n\nShe was constantly sharing all my life updates to them via statuses and even chatting with them normally (wishing them new year or commenting in their statuses).\n\nI felt stupid. Because it was a sensitive topic for me. I hate to give them my life updates. I'm currently unemployed (since jan '26).\n\nSo I took her phone and deleted and blocked all my ex friends. But I don't know if i did the right thing...\n\nI don't care about my ex friends seeing my embarrassing stuff anymore. What's done is done.",
+      "score": 31,
+      "num_comments": 37,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rnwmzf/my_mom_was_sharing_my_life_updates_with_my_ex/",
+      "created_utc": 1772948629.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Weak floss picks.",
+      "body": "Have to use an average of 3 picks to get through all my teeth. Never had this problem before. ",
+      "score": 66,
+      "num_comments": 23,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rnzafz/weak_floss_picks/",
+      "created_utc": 1772957564.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Who designs blenders like this?!",
+      "body": "I seriously want to shake the person that designed this blender. It is impossible to clean, and this is my second blender that ended up being like this. Originally I got some fancy Ninja blender set that had this issue, now it's the Nutribullet one. Why do blender designers make handles with open cracks that water and food grime can make it into???? Why is there a crevice near the blades that food can make it under that can't be easily accessed to clean???",
+      "score": 10,
+      "num_comments": 30,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rodso5/who_designs_blenders_like_this/",
+      "created_utc": 1772997790.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Ads on youtube for ipad forces me out of full screen.. and just leaves it like that!",
+      "body": "Every time I watch YouTube on my iPad in fullscreen an ad will pop up and I both have to skip the ad and go back to full screen. Why cant the ad just play in full screen?  Why does it need to show me 4 separate things I can click to go and download an app that I dont care about?? Do these advertisers realize we dont even care? ",
+      "score": 85,
+      "num_comments": 17,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rorvqf/ads_on_youtube_for_ipad_forces_me_out_of_full/",
+      "created_utc": 1773034864.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "What even is this notification??",
+      "body": "For the last couple of weeks, anytime I get a message on Messenger, it's accompanied by another notification that seems to serve ABSOLUTELY no purpose. Like, it's better than the six months or so I'd get one saying \"You MAY have new messages,\" but there are never any more messages, so what is the point? I can't seem to shut it off without losing the notifications that actually come with messages.\n\nI dunno, just wanted to bitch about it a little",
+      "score": 57,
+      "num_comments": 18,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rttc4q/what_even_is_this_notification/",
+      "created_utc": 1773518605.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Etsy has literally, and I mean literally, no way to talk to a human being at the company.",
+      "body": "Update: I apparently got my case escalated... and then it immediately reverted back to their basic automated system. It's still all just robots.\n\nhttps://preview.redd.it/zantkgxzzwng1.png?width=876&amp;format=png&amp;auto=webp&amp;s=650d7671b1455464fddd21cd832e342566d5c996\n\n[This is the same copy paste response you always get, automated. Robots. Nothing changed.](https://preview.redd.it/m3nryyo20xng1.png?width=1913&amp;format=png&amp;auto=webp&amp;s=678fb5e9162c4255625d6b553c7dd47e61041139)\n\n\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\n\ntl;dr, Etsy suspended me permanently for no reason, and their automated system is useless but they have removed any way to talk to a human.\n\nI need to preface this by saying I use Etsy a lot for birthday and Christmas presents, and for things that can't be found elsewhere. A lot of ar",
+      "score": 62,
+      "num_comments": 17,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rnsagy/etsy_has_literally_and_i_mean_literally_no_way_to/",
+      "created_utc": 1772935591.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Dad is set on that he’s right about everything so he refuses to fire the jack of trades handy man even though EVERYTHING the guy has “fixed” is always half assed and never done even when my dad pays full price",
+      "body": "For context I pay my own car note and I paid majority to purchase the car at the shop. The car is in his name since it was the only way he’d let me go on his insurance. This “handyman” has “fixed” or taken my brakes to a car shop multiple times. The brakes are never done fully and there’s always problems afterwards. He’s done the same thing with my brothers car as well, he’ll say it’s fixed and good when really it’s a half assed job. He’s “fixed” our towel rack in the bathroom which meant the towel rack only stayed up for 3 days before it falling again. He also SMASHED a huge ugly hole into our shower head system because he didn’t know how to properly do it. my point is my dad is paying this guy FULL price for things to be fixed even though the guy only fixes them halfway. In this situation the handy man was to take my car to auto repair and fix my brakes. My dad lent me 250 so everything could be done. The brakes come back needing to be pumped 8x for the car to stop because apparently",
+      "score": 27,
+      "num_comments": 21,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rq00f5/dad_is_set_on_that_hes_right_about_everything_so/",
+      "created_utc": 1773156504.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Because toilet paper wasn’t scam-y and confusing enough…",
+      "body": "The only real way to compare TP to TP is sheets per roll. Just noticed this Cottonelle says it has 284 1-ply sheets. Cottonelle is a not a 1-ply TP. So does it have 142 sheets? 😑",
+      "score": 0,
+      "num_comments": 24,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rnsm8q/because_toilet_paper_wasnt_scamy_and_confusing/",
+      "created_utc": 1772936534.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "I guess it's easy to give away defective gift cards...",
+      "body": "My aunt who is amazing, always sends me any gift cards she gets from the casino when she gets them for player rewards. Im always so excited to use them because any little bit helps! I guess I can't use this one. I've been trying to puzzle it out but it is harder than it seems...obviously I did not post the whole card #, no worries about that guys.",
+      "score": 99,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rpdm95/i_guess_its_easy_to_give_away_defective_gift_cards/",
+      "created_utc": 1773092257.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Holding shrinkflation in my hands.",
+      "body": "It can't be more obvious than this... New is on the left old is on the right. I just got a job at a grocery store and I was stocking the shelves when I noticed this, went from 14oz down to 12oz.  Same SKU.",
+      "score": 10,
+      "num_comments": 18,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rssjah/holding_shrinkflation_in_my_hands/",
+      "created_utc": 1773420324.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Damaged box for $1400 phone",
+      "body": "I purchased a brand-new iPhone 17 Max 512GB as a gift from the Apple Store, and they handed me one with a damaged box. When I asked if I could get a different one, since the box was damaged, they said, “Yeah, they’re all like that. Maybe if you go to another store, return it, and buy it again, you could get an undamaged box.”\n\nWTF, Mr. Cook — customers are spending $1,500 on a premium phone and getting a crappy damaged box, and the only response is, “They’re all like that”?? I’ve seen better packaging from Temu unboxings…",
+      "score": 0,
+      "num_comments": 18,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rqjguf/damaged_box_for_1400_phone/",
+      "created_utc": 1773201590.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Washington Post's motto on their page is \"Democracy Dies in Darkness.\" Looks more like Democracy is trapped behind a paywall.",
+      "body": "I know WaPo isn't the best example of the free press but damn. People can't make informed decisions without being able to do research. If people can't afford to research in order to make those decisions then quite literally they are in darkness and, according to the Washington Post, that will kill democracy.",
+      "score": 5,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rt3u3d/washington_posts_motto_on_their_page_is_democracy/",
+      "created_utc": 1773445648.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Am I just bad at math or is this a bit misleading",
+      "body": "Serving size: 3 pieces\nServings per container: about 5\nTotal pieces in package: 10",
+      "score": 6,
+      "num_comments": 13,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rqf059/am_i_just_bad_at_math_or_is_this_a_bit_misleading/",
+      "created_utc": 1773189547.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Hard To Figure Out How Dumpster Work",
+      "body": "I don't want to be human anymore. I'm not the same species as these people. \n\nThe inside of the dumpster is virtually empty and people pile trash around it. I can't believe it's a regular thing. What are people thinking?",
+      "score": 33,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rs81u5/hard_to_figure_out_how_dumpster_work/",
+      "created_utc": 1773360726.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "The comments on this arrest page about a woman who drugged homemade lasagna with the intent to make a pregnant woman miscarry",
+      "body": "Local article, like the title says it’s basically about a woman who gave a poisoned lasagna to a family in hopes that it would force the pregnant mother to miscarry. \n\nI don’t know, I’m just tired. My first reaction to this was to feel really sad and concerned about the mom’s wellbeing, so I went to the comments looking for an update and it’s just flooded with jokes and baseless theories. ",
+      "score": 24,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rqika0/the_comments_on_this_arrest_page_about_a_woman/",
+      "created_utc": 1773198962.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Youtube algorithm spoiling a show",
+      "body": "I'm in the middle of watching Breaking Bad for the first time, and it's got me hooked. \n\nSo I looked up a couple clips of episodes I've already watched, cause a few scenes stuck with me and I wanted to see them again.\n\nSome time later, here comes the fuckass youtube algo recommending me BB videos whose titles spoil stuff I haven't seen yet. Just straight up spoilers in the title, which I couldn't even register in the split second it took me to read it, and it was too late. It's not even a clip from the show, it's some Q&amp;A with the creator i guess, and the spoiler is in the damn title.\n\nMight be an insignificant, minor thing that it spoiled (which is what i'm hoping for), but the point is that it could still spoil something major. Can't even browse youtube in peace.\n\nFuck the youtube algorithm, it's become so unbelievably dogshit for so many reasons, but this particularly pissed me off. ",
+      "score": 0,
+      "num_comments": 12,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rpk3jy/youtube_algorithm_spoiling_a_show/",
+      "created_utc": 1773107982.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Seller gave half $5 to my sisters. Not the first time he treated them like shit",
+      "body": "In the past he \"forgot\" to give them change, gave them less change than they had to get, and sent them home without giving them their money back or the snacks they asked for\n\n  \nSadly he's an old dude with a tiny business so i can't sue him",
+      "score": 18,
+      "num_comments": 9,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rrniyi/seller_gave_half_5_to_my_sisters_not_the_first/",
+      "created_utc": 1773312846.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "This brand new jar of Vitamin D tables",
+      "body": "",
+      "score": 0,
+      "num_comments": 11,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rp56qu/this_brand_new_jar_of_vitamin_d_tables/",
+      "created_utc": 1773074293.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "These choclate Waffles perfectly fit into the bottom tray of the vending machine and will never escape",
+      "body": "",
+      "score": 40,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rs3cbw/these_choclate_waffles_perfectly_fit_into_the/",
+      "created_utc": 1773349770.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Nearly every single post, about the moon landing, will have at least SOMEONE claiming it was staged. The post mentioned how it took 400K people to land apollo 11. Where the hell did this rumor even start? It had 600M viewers, Australia even helped out with the broadcasting!",
+      "body": "",
+      "score": 2,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1ru3n3g/nearly_every_single_post_about_the_moon_landing/",
+      "created_utc": 1773545640.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "New cat name",
+      "body": "We already had 2 cats , which were my roommates' cats. We recently had a cat hanging around our porch that came right up to me and was extremely affectionate, as I go out to smoke all the time. We suspected the cat was pregnant, and recently confirmed she is after I decided to take her in because she was so persistent lol. My roomate wanted to name the cat and we cant agree on a name, but I said I should be able to name her since I took her in and paying for her to be treated before we let her around the other cats, we are giving the kittens away to a good woman we know who will find homes for them once old enough. My roomate hates the name I chose for her and refuses to call her that, I call her \"Bagheera\" like the species of panther, specifically the one from the jungle book because she resembles him. She says its such a stupid name for a cat, but calls her \"Baby Mama\" for now.",
+      "score": 0,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rtggxp/new_cat_name/",
+      "created_utc": 1773485870.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Manager with no self control",
+      "body": "I work way up North and recently moved to a new position. First red flag was only 1 other person applied.\n\n I found out why quite quickly, it's the manager.\n\nA thought crosses his mind and he acts on it. He can't be calm, he causes problems and is not to be trusted. It appears that he enjoys causing conflict, but I think it's because he is incapable of being kind. I think he sees it as a weakness so he bullies people.\n\nAll the staff before me have quit, all the staff who quit complained to his director and now the can of worms is open. He come to my office multiple time a day and asks me what the staff are saying about him, asking me to install cameras so he can watch them, and I'm pretty sure he bugged my office (sorry to sound crazy) but was having a conversation in my office with a staff member, he called to add to what was being said in our conversation.\n\n Never encountered anything like this before!!",
+      "score": 13,
+      "num_comments": 7,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rpiurx/manager_with_no_self_control/",
+      "created_utc": 1773104751.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "Oranges in grocery stores are in so many inconvenient places",
+      "body": "For context I have anaphalaxis reactions to something in the peel/scent of oranges and when I ingest the fruit. The eating part is easy enough to avoid but literally all the grocery stores around me have oranges front and center in one entrance and pre peeled oranges in the other. The oranges are also scattered through the entire vegetable and fruit section so going in there is like a damn mine field. I know its not a common allergy so I can't expect them to change it but its so obnoxious. ",
+      "score": 0,
+      "num_comments": 8,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rp93vv/oranges_in_grocery_stores_are_in_so_many/",
+      "created_utc": 1773082507.0
+    },
+    {
+      "source": "reddit",
+      "subreddit": "mildlyinfuriating",
+      "title": "American Airline chat support tried to upsell me TWICE before doing anything on my actual issue.",
+      "body": "Had a passport issue with checking in to my flight. I reached out to chat support, and the first thing he asked was if I wanted to upgrade my seats. Then, I provide my personal info. But before we look at that, he tries the credit card upsell. My dude - I'm leaving the country in &lt;24 hours and I can't check in. I am not looking for a credit card. Thats not why I'm chatting with you.",
+      "score": 10,
+      "num_comments": 6,
+      "url": "https://www.reddit.com/r/mildlyinfuriating/comments/1rsq09p/american_airline_chat_support_tried_to_upsell_me/",
+      "created_utc": 1773414767.0
+    }
+  ],
+  "hatena": [
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "【入門記事】ClaudeCodeの中級者になりたい人は集合してください - Qiita",
+      "url": "https://qiita.com/K5K/items/72cc4282819ace823524",
+      "summary": "Deleted articles cannot be recovered. Draft of this article would be also deleted. Are you sure you want to delete this article? みなさん、ClaudeCodeを使っていますか？ (「バチバチ使いこなしているぜ！」という方は読んでも意味ないので、この記事は閉じてください！) 私はClaudeCodeが好きで、業務はもちろ...",
+      "bookmarks": 709
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "【2026年最新版】Claude Codeで行うべきセキュリティ設定 10選 - Qiita",
+      "url": "https://qiita.com/miruky/items/51db293a7a7d0d277a5d",
+      "summary": "Deleted articles cannot be recovered. Draft of this article would be also deleted. Are you sure you want to delete this article?",
+      "bookmarks": 193
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「いずれAIに使い潰される人」のためのAI批判ガイド » p2ptk[.]org",
+      "url": "https://p2ptk.org/ai/5439",
+      "summary": "以下の文章は、2025年12月5日付けのコリイ・ドクトロウの「The Reverse Centaur’s Guide to Criticizing AI」という記事を翻訳したものである。 Pluralistic 昨夜、ワシントン大学計算神経科学センターが主催する「神経科学・AI・社会」講演シリーズで講演を行った。タイトルは「逆ケンタウロスのためのAI批判ガイド」で...",
+      "bookmarks": 130
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "“AIの知ったかぶり”相次ぐ 営業被害やひぼう中傷のリスクも | NHKニュース",
+      "url": "https://news.web.nhk/newsweb/na/na-k10015074431000",
+      "summary": "「AIさん？その記事の加藤諒は僕ではありません。事実無根です」 今年2月、俳優の加藤諒さんがXで投稿したのは「AI」による被害の告発でした。 検索サイトやSNSで調べものをするとき、AIが要約した…",
+      "bookmarks": 76
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "MacBookで動くし、ぶっ壊れ性能。いま最強のローカルLLM｢Qwen3.5｣を解説しちゃう",
+      "url": "https://www.gizmodo.jp/2026/03/qwen_3_5_9b_4b.html",
+      "summary": "MacBookで動くし、ぶっ壊れ性能。いま最強のローカルLLM｢Qwen3.5｣を解説しちゃう2026.03.14 21:008,159 かみやまたくみ とりあえずこれでいいやつ（令和最新版）。 2026年2月末〜3月上旬にかけてアリババがリリースしたオープンウェイトの大規模言語モデル（ローカルLLM）｢Qwen3.5｣シリーズが話題です。 実際触ってみた...",
+      "bookmarks": 308
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "GitHub - mizchi/actrun: GitHub Actions compatible CI runner in MoonBit",
+      "url": "https://github.com/mizchi/actrun",
+      "summary": "You signed in with another tab or window. Reload to refresh your session. You signed out in another tab or window. Reload to refresh your session. You switched accounts on another tab or window. Reload to refresh your session. Dismiss alert",
+      "bookmarks": 32
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "アマゾンからの「重要なお知らせ」　報酬変更、「一方的」嘆く配達員：朝日新聞",
+      "url": "https://www.asahi.com/articles/ASV3G1SM9V3GUTIL019M.html",
+      "summary": "通販大手アマゾンの荷物を運ぶ配達員たちに、「近く報酬の単価を変更する」という通知が同社側から届いている。減額になる人も多い。変更をのまないと契約を切られるという内容で、「一方的だ」との声があがってい…",
+      "bookmarks": 147
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Coding Agent時代の開発ワークフローについてのまとめ",
+      "url": "https://nyosegawa.github.io/posts/coding-agent-workflow-2026/",
+      "summary": "こんにちは！逆瀬川ちゃん (@gyakuse) です！ 今日はCoding Agent時代の開発ワークフローについて、みんながやっているものからわたしがやっている手法までまとめて紹介していきたいと思います。 前回の記事 Claude Code / Codex ユーザーのための誰でもわかるHarness Engineeringベストプラクティス では、LinterやHook...",
+      "bookmarks": 259
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "CHUWI製ノートPCで2件目のCPU偽装が発覚。CoreBook Plusで",
+      "url": "https://garumax.com/second-case-of-cpu-spoofing-discovered-in-chuwi-laptops",
+      "summary": "CHUWI製ノートPCで2件目のCPU偽装が発覚。CoreBook Plusで 投稿日:2026年03月14日 CHUWI ニュース 執筆者 : GARU ※ 当メディアのリンクにはアフィリエイト広告が含まれています 2件目はCoreBook Plus notebookcheckはCoreBook XのCPU偽装に関する記事を公開したところ、どうやらCHUWIは風評被害による法的措置の可能性も...",
+      "bookmarks": 23
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "一般社団法人日本サイバーセキュリティ・イノベーション委員会",
+      "url": "https://www.j-cic.com/reports.html",
+      "summary": "サイバーセキュリティ政策史 経営 人材 AI 政策 海外動向 2025年 2024年 2023年 2022年 2021年 2020年 2019年 2018年 全選択 全解除 フィルタは「OR条件」です。クリックして選択したレポート種別は、全て表示されます。 サイバーセキュリティはいつ、なぜ安全保障政策になったのか [後編] ～国家像があって初めて安全保...",
+      "bookmarks": 38
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude Codeのエージェントチームを使うだけで大抵のことが出来るようになった",
+      "url": "https://zenn.dev/n314/articles/e06f189f093902",
+      "summary": "エージェントチームでClaude Codeが賢くなった Claude CodeにAgent teamsが実装されてから、ずっと使っている。 複雑な要求も簡単な指示でこなせるようになってきた。 ドキュメント、コード、DBを網羅的に検索しながら実装案を考えても性能が落ちなくなった。 アップデートによってもっと良い方法が見つかったりするかも...",
+      "bookmarks": 344
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "O'Reilly Online Learningで始める技術書多読という読み方",
+      "url": "https://zenn.dev/penginpenguin/articles/83da148f861840",
+      "summary": "はじめに ぺんぎん（@jitepengin）です。 普段の業務や、プライベートでのアウトプットのために、技術書を読んでいる方も多いと思います。 次のような悩みを持っている人は多いのではないでしょうか。 技術書が高くてなかなか手が出ない 積読ばかり増えてしまう 1冊読み切るのに時間がかかる 新しい分野を広く知りたい ...",
+      "bookmarks": 115
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "iPhoneの「探す」機能で４時間雪に埋もれていた夫を救い出した妻",
+      "url": "https://karapaia.com/archives/590224.html",
+      "summary": "スマートフォン＝スマホは既に単なる携帯電話ではない。情報端末として、我々の日常生活に欠かせないアイテムとなっている。 そして位置情報アプリの搭載は、探し物を助けてくれるだけでなく、時として人命救助にもつながるように。 2026年2月、アメリカ・ワシントン州の雪山で雪崩に巻き込まれた男性が、アップル社の「...",
+      "bookmarks": 8
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「脳に電極を埋め込んで手のマヒを回復させる技術」を中国企業が開発、国内販売も承認",
+      "url": "https://gigazine.net/news/20260314-china-brain-computer-interface/",
+      "summary": "上海に拠点を置く博睿康科技(Neuracle Technology)が脳コンピューターインターフェース(BCI)を開発し、中国での販売承認を得たことが明らかになりました。開発された脳コンピューターインターフェースには「マヒした手の動きを回復させる」という効果があるそうです。 China approves market launch of brain-computer i...",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ガラケー型スマホ「ケースマ」が売れているワケ　在庫切れで入手困難な店舗も　メーカーに方針を聞いた",
+      "url": "https://www.itmedia.co.jp/mobile/articles/2603/15/news002.html",
+      "summary": "韓国から上陸を果たした新型携帯電話が、各所で入手しづらい状況になっている。 韓国発のモバイルデバイスメーカー、ALT（アルト）が日本市場への本格参入とともに2月19日に発売した「MIVE（マイブ） ケースマ（以下、ケースマ）」だ。これは、従来のフィーチャーフォン（ガラケー）の操作性と、最新スマートフォンの利...",
+      "bookmarks": 4
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "無料でYouTubeなどから動画・音楽をダウンロードできるyt-dlpを簡単に使える「ytdlp-interface」、オープンソースで開発され広告やユーザー登録なしで利用可能",
+      "url": "https://gigazine.net/news/20260315-ytdlp-interface/",
+      "summary": "YouTubeやニコニコ動画などのストリーミングサービスからムービーをダウンロードできる「yt-dlp」のWindows用グラフィカルインターフェースである「ytdlp-interface」が公開されています。MITライセンスの下でオープンソースで開発されており、無料で利用可能です。 ErrorFlynn/ytdlp-interface: Windows graphical inte...",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "A Guide to vim.pack (Neovim built-in plugin manager) – Evgeni Chasnovski",
+      "url": "https://echasnovski.com/blog/2026-03-13-a-guide-to-vim-pack",
+      "summary": "The upcoming Neovim 0.12 release will have a built-in plugin manager. It is implemented in Lua and is available as a built-in vim.pack module (hence the name). This blog post describes the fundamentals of how vim.pack is intended to be used. Reading only selected sections should be fine, but it i...",
+      "bookmarks": 8
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "スマホの画面保護フィルム、実はもういらない説",
+      "url": "https://www.gizmodo.jp/2026/03/your-screen-protector-is-not-all-it-s-cracked-up-to-be-xzk.html",
+      "summary": "スマホの画面保護フィルム、実はもういらない説2026.03.14 11:3568,652 Maxwell Zeff - Gizmodo US ［原文］ （ そうこ ） 2024年3月8日の記事を編集して再掲載しています。 スマートフォンを買い替えた時、一緒に買いがちなもの。ケース、ストラップホルダー、スマホリング、カードがはいるスリーブ、etc…。スマホの使...",
+      "bookmarks": 105
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "プログラマーを引退します - うみさまより。",
+      "url": "https://umisama.hatenablog.com/entry/2026/03/14/131453",
+      "summary": "私、うみさまはプログラマ（コーダ）として二十余年、現役選手として戦ってまいりました。 子供の頃から指をキーボードに吸い付け、端から見れば意味不明なアルファベット片をエディタに叩き込んでまいりました。 周りから、奇異の目で視られる日もありました。 幼少期、地域の子供会のおじちゃんからは、プログラミング...",
+      "bookmarks": 165
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "GPU普及の立役者，John Spitzer氏が語るゲームグラフィックスの未来とAI活用［GDC 2026］",
+      "url": "https://www.4gamer.net/games/869/G086964/20260313089/",
+      "summary": "GPU普及の立役者，John Spitzer氏が語るゲームグラフィックスの未来とAI活用［GDC 2026］ ライター：西川善司 GDC 2026の「GDC Luminaries」というセッションに，NVIDIAの副社長であるJohn Spitzer氏が登壇して，「Driving Innovation ＆ RTX Advances with John Spitzer, Vice President at NVIDIA」という講演を行った...",
+      "bookmarks": 12
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "【最強のメモアプリ対決】EvernoteとNotionを比較してみた | ライフハッカー・ジャパン",
+      "url": "https://www.lifehacker.jp/article/2603-evernote-vs-notion-best-note-taking-app/",
+      "summary": "著者Lindsey Ellefson - Lifehacker US [原文]翻訳ライフハッカー・ジャパン編集部 2026.03.14 lastupdate 私は先日、EvernoteとNotionの比較テストを、数日かけて実施しました。 どちらのアプリも、アイデアのメモやスケジュールの管理、タスクの整理に役立ちます。私自身のテストのほかに、これらのアプリを長く使って...",
+      "bookmarks": 37
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "MicroGPT explained interactively",
+      "url": "https://growingswe.com/blog/microgpt",
+      "summary": "MicroGPT explained interactively Trying my best to visualize it. I'm a n00b at machine learning though Andrej Karpathy wrote a 200-line Python script that trains and runs a GPT from scratch, with no libraries or dependencies, just pure Python. The script contains the algorithm that powers LLMs li...",
+      "bookmarks": 47
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "グーグル、35億人のChromeユーザーにゼロデイ警告──攻撃はすでに進行中 | Forbes JAPAN 公式サイト（フォーブス ジャパン）",
+      "url": "https://forbesjapan.com/articles/detail/93724",
+      "summary": "2023年以降、毎週のセキュリティ更新は珍しいことではなくなった。しかし、グーグルが最初の更新からわずか48時間後にChromeブラウザー向けの2回目のセキュリティ更新を配信したとなれば、深刻な事態が起きていると分かる。実際その通りであり、グーグルはChromeユーザーを標的にしたゼロデイ脆弱性が少なくとも2件ある...",
+      "bookmarks": 64
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "データエンジニアリングを体系的に学べる一冊『Data Engineering Design Patterns』を読む - Findy Media",
+      "url": "https://findy-code.io/media/articles/modoku-ikki-202603",
+      "summary": "「あの人も読んでる」略して「も読」。さまざまな寄稿者が最近気になった情報や話題をシェアする企画です。他のテックな人たちがどんな情報を追っているのか、ちょっと覗いてみませんか？ はじめまして。stable株式会社 代表の宮﨑一輝（@ikki_mz）です。 stable株式会社という会社は、データエンジニアリングを専門領域...",
+      "bookmarks": 54
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "たった200行の純粋なPythonコードだけで構成されGPTの学習と推論を実行できる「MicroGPT」をインタラクティブに解説",
+      "url": "https://gigazine.net/news/20260314-microgpt-explained-interactively/",
+      "summary": "MicroGPTは作者のAndrej Karpathy氏によるとLLMをどこまで簡素化できるのかを10年にわたり追求した集大成とのことで、依存関係のない純粋なPythonで書かれた200行の単一ファイルのみであるにもかかわらずGPTに学習と推論を行わせることができます。動作原理についてはAndrej氏のブログで説明されていますが、より初心者...",
+      "bookmarks": 181
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "証券システムと、それを取り巻く世界",
+      "url": "https://zenn.dev/mi_01_24fu/books/securities-system-flow",
+      "summary": "個人投資家が「注文ボタン」を押すと、その注文は証券会社のシステムを経由して取引所へ送信されます。条件が合えばすぐに約定することもありますが、板の状況によっては約定せず注文が板に並び続けることもあります。ほんの一つの注文の裏側では、余力の仮拘束、取引所とのプロトコル通信、板寄せやザラバでのマッチン...",
+      "bookmarks": 122
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "企業が採用現場で導入し始めている「AI面接官」と実際に面接してみるとどんな感じなのか？",
+      "url": "https://gigazine.net/news/20260313-job-interviewed-by-ai-bot/",
+      "summary": "近年は採用面接を人間ではなくAIが行う「AI面接官」が実用化されており、実際にいくつかの企業は採用現場で導入を勧めています。テクノロジー系メディアのThe VergeでAIレポーターを務めるハイデン・フィールド氏が、実際にAI面接官による採用面接を受けてみた様子について動画で報告しました。 An AI bot interviewed m...",
+      "bookmarks": 12
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "VitePressを用いてContext EngineeringとDocument Hostingを両立する - プププなテクブ",
+      "url": "https://blog.inorinrinrin.com/entry/2026/03/14/180826",
+      "summary": "Coding Agent全盛の今、Docs as Code*1を用いたContext Engineeringが本格化しています。 最近OpenAIによって提唱された新たな概念・Herness Engineeringにおいても、もはやAIへ与えられる設計ドキュメント(コンテキスト)は前提として語られているほどです。 openai.com またエムスリー様においても、Docs as Codeの取り...",
+      "bookmarks": 22
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Introducing account regional namespaces for Amazon S3 general purpose buckets | Amazon Web Services",
+      "url": "https://aws.amazon.com/blogs/aws/introducing-account-regional-namespaces-for-amazon-s3-general-purpose-buckets/",
+      "summary": "AWS News Blog Introducing account regional namespaces for Amazon S3 general purpose buckets Today, we’re announcing a new feature of Amazon Simple Storage Service (Amazon S3) you can use to create general purpose buckets in your own account regional namespace simplifying bucket creation and manag...",
+      "bookmarks": 9
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "MacBook NeoではA18 Proチップとソフトウェアによりroot権限を持つソフトウェアであっても画面上のカメラインジケータライトを表示させずにカメラを動作させることができない設計に。",
+      "url": "https://applech2.com/archives/20260314-macbook-neo-on-screen-camera-indicator.html",
+      "summary": "MacBook NeoではA18 Proチップとソフトウェアによりroot権限を持つものであっても画面上のカメラインジケータライトを表示させずにカメラを動作させることができない設計になっているそうです。詳細は以下から。 Appleが2026年03月11日より販売を開始したA18 Proチップや13インチLiquid Retinaディスプレイ、を搭載した...",
+      "bookmarks": 21
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "夫が子供に急いで欲しい時に『早く！』と言う言葉を使わずに“天国と地獄”を流して思いのままに子供を動かしていて完全に育児の才能アリだった",
+      "url": "https://togetter.com/li/2674571",
+      "summary": "夫は「早く！」と言わずに曲を流し、音楽で子の行動を自然に促す。命令だと「やらされ感」が生じるが、音楽は自発性を引き出し、怒鳴らずに効率的に動かせる育児法である。",
+      "bookmarks": 170
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "サイゼリヤは一個あたりは安いが満足するまで食べると高いイメージで安いと持ち上げられるのがわからない話…なお男子高校生なら、こうなるのもわかる",
+      "url": "https://togetter.com/li/2674758",
+      "summary": "サイゼは単品は安いが満腹まで食べると割高になる印象。味は並で、コスパは吉野家や大戸屋の方が優秀。好物はラム肉とドリア、辛味チキン好きも多い。",
+      "bookmarks": 127
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "初デートで振られた。どこに行った？",
+      "url": "https://anond.hatelabo.jp/20260315094945",
+      "summary": "初デートで振られた。どこに行った？",
+      "bookmarks": 45
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "コンビニ人間って小説を読んだんだけどイメージしてたのと違った",
+      "url": "https://anond.hatelabo.jp/20260315082243",
+      "summary": "や、べつにオモロくなかったわけではない、んだけど、こー、なんつー、の？もっと機械、というかUSB？USB充電？、コンビニのコンセントでUSBで接続して充電するような人間が活躍する本だと思ってたんだよな。",
+      "bookmarks": 38
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "子なし夫婦の遺産相続はどうなる？起こりやすいトラブルや生前対策も解説｜相続大辞典｜【相続税】専門の税理士60名以上｜税理士法人チェスター",
+      "url": "https://chester-tax.com/encyclopedia/8998.html",
+      "summary": "子供がいない夫婦の相続について、みなさんはこのようにお考えではありませんか？ 「どちらか一方が亡くなった場合、配偶者が全財産を相続できる」 実は、これは大きな誤解です。 子供がいない夫婦のどちらかが亡くなった場合、残された配偶者だけではなく、亡くなった人の両親または兄弟姉妹にも相続する権利があります...",
+      "bookmarks": 29
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "パスタの国のイタリア人が、なぜみんな日本の「ラーメン」に熱中するのか？ | ライフスタイル | LEON レオン オフィシャルWebサイト",
+      "url": "https://www.leon.jp/lifestyle/335823",
+      "summary": "イタリアでは日本食の代名詞といえば「SUSHI」だった。でも今、ミラノやローマの街角で、ファッショナブルな大人たちが列をなす先にあるのは、魚の握りではない。湯気を立てる一杯の「RAMEN」だ。一過性のブームを超え、イタリア人の食文化に深く浸透しつつあるラーメン。さらにはスーパーの棚を埋め尽くすカップ麺やイ...",
+      "bookmarks": 38
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "50歳になりました　そして結婚しました | ろじっくぱらだいす(Logic Paradise)",
+      "url": "https://logipara.com/diary-text/2026-03-14/",
+      "summary": "50歳になりました。 えっ本当に？（当惑） 自分でも信じられませんが、あのワタナベも、いよいよ50歳になりました。えっ本当に？（当惑） Key作品をプレイしては号泣してフォントサイズ72で叫んだりしてた男も、放っておけば勝手に50歳になるんですね。恐ろしいことです。なぜここまで誰も止めてくれなかったのか。 まだ...",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "パン屋さんで片手にパンが載ったトレー、もう片方に子供を抱っこしているお母さんがいたので「良かったら持ちますよ」と声がけしたらおもしろい出来事が",
+      "url": "https://togetter.com/li/2674576",
+      "summary": "パン屋でトレー片手に子ども抱えた母に「持ちます」と声をかけたら、母が子どもを差し出した。びっくりしてトレーだけ預かり、周囲は大笑い。気まずさと面白さが混ざった出来事。",
+      "bookmarks": 53
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "カレールウの箱の裏に書いてある通りに作ったカレーを食べてみてほしい「カスタムする前にノーマルを極めましょうと」「指示通り作ったら薄いよね？」",
+      "url": "https://togetter.com/li/2674631",
+      "summary": "レッド5 @fw11_red5 私は昔から裏通りです。肉多めぐらいにはしますが。裏を見ないで水加減適当な奴に限って隠し味とか入れがちで、そんな奴は嫌いです。#カレー x.com/monko1215/stat… 2026-03-14 11:58:20 Fラン社畜 @fran_syatiku @monko1215 みんな「我がレシピこそ最高のカレー」を言うけど バーモンドカレーを箱の...",
+      "bookmarks": 158
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "公共空間におけるトイレの話",
+      "url": "https://anond.hatelabo.jp/20260314152130",
+      "summary": "一部のミソジニーをこじらせている男性が「女のトイレを増やすだと！あいつら個室で化粧でもしてるんだろう！生意気な！」と意気軒高なはてなブックマークでしたね。 まぁそういう人もいるだろうが、行列できてる時にそこまでセルフィッシュになれる人もそう多くないと思うよ、とか、そういう発想になるという男性も個室...",
+      "bookmarks": 177
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "年をとったことで今まで着ていた服が似合わなくなり、思い切って服屋の店員さんに相談したら「おおっ！」となる体験ができた",
+      "url": "https://togetter.com/li/2674569",
+      "summary": "かたこり @katakorizine 中年になり、着てた服が体型や顔の変化で似合わなくなって、何着たら好きな感じになるのか･･･と思っていたとき、（服と関係なく）化粧品屋さんで化粧品の相談をしたら思いの外いい買い物が出来たので、服もプロに相談してみたらいいのでは？と思ってそうしたら、とても楽しかったという話（1/2）...",
+      "bookmarks": 29
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "海に向かって神輿を担いで突っ込む「神幸祭」、六十年に一度の周期で開催される幻のお祭りだがどうやって引き継がれているのか不思議",
+      "url": "https://togetter.com/li/2674606",
+      "summary": "リンク 地球の歩き方 【千葉・多古町】60年に一度、幻の祭り「神幸祭」の一日を追う 千葉県多古町で、なんと60年ぶりの祭りが開催されました。「丙午（ひのえうま）」の年だけ行われる「神幸祭（じんこうさい）」です。1606年から始まり、今回で第8回目を迎える五穀豊穣を願うこの祭り。前回は昭和41年（1966年）に行わ...",
+      "bookmarks": 24
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "空中でどんな風に落としてもネコが必ず足から着地する秘密は脊椎のねじれにある",
+      "url": "https://gigazine.net/news/20260313-flexible-feline-spines-falling-cat/",
+      "summary": "なぜネコは落下時に必ず足で着地することができるのかについて、「背骨の柔軟性」に着目した新しい実験結果が発表されました。 Torsional flexibility of the thoracic spine is superior to that of the lumbar spine in cats: Implications for the falling cat problem - Higurashi - The Anatomical Record - Wiley ...",
+      "bookmarks": 21
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "祖母の葬儀、火葬してお骨上げするとき周囲の大人は「これペースメーカーや」と興味津々で収骨していたが、甥は「かわいそう」とガチ泣きしていた",
+      "url": "https://togetter.com/li/2674507",
+      "summary": "祖母の葬儀で火葬後の収骨を見た小学校一年の甥が「かわいそう」と声を上げて泣き、大人たちは骨の状態に興味を示して「ペースメーカーだ」などと言いながら淡々と作業していた。火葬やその後の会食も死を受け入れるための儀礼であり、子どもは現実を直視して感情を表し、大人は慣れや好奇心で振る舞う。どちらの反応も...",
+      "bookmarks": 157
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "彼女の性癖についていけない",
+      "url": "https://anond.hatelabo.jp/20260314085041",
+      "summary": "もう無理だと思う 俺がさ、う◯こしてるところ見たいって言ってきてさ ずっと断ってたんだけど、根負けして見せたんだよ そしたらすごく興奮してさ 「増田くんのう◯こは宇宙一…いやそれ以上だよ…」 とか言ってるの 意味が分からないし、とにかく恥ずかしいし、臭いし、なんなのこれ セックスは今のところ普通のセックスな...",
+      "bookmarks": 202
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "住宅購入シミュレーター",
+      "url": "https://city-development-research.vercel.app/souba",
+      "summary": "年収と資産から購入できる駅を把握するシミュレーター",
+      "bookmarks": 633
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「飲んだ後のシメで300円くらいで食べるイメージ」最近流行っている麻辣湯、言うほど美味しいのか？→ブームの要因がとても気になる「客層は10代~20代の若い女の子」",
+      "url": "https://togetter.com/li/2674368",
+      "summary": "麻辣湯がここまで注目されるほど特別に美味しいか疑問だ。元々は労働者向けの安く早い軽食で、日常的に食べる「ほどほどに美味い」ご飯の一種に過ぎない。都内では化学的な味付けやトッピングで価格が上がり、注文次第では高額になることもある。ブームは一過性の可能性が高い。",
+      "bookmarks": 135
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "中国人同僚が「デリバリーピザが片方に寄っていた」と言ったら、米国同僚が「正しいデリバリーピザの注文方法」を教えていた…めっちゃアメリカな内容だった",
+      "url": "https://togetter.com/li/2674409",
+      "summary": "あひるさん @5ducks5 中国人同僚「デリバリーピザ頼んだら箱の中で片方に寄ってたんよ……」 私「あるあるだな😂」 🇺🇸人同僚A「前回チップ払わなかったんじゃねーの😂」 🇺🇸B「お前らに正しいデリバリーピザの注文方法を教えてやる。 まず注文はアプリではなく電話だ。 アプリではお前の人柄は伝わらん。 そして注文前にち...",
+      "bookmarks": 240
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "【100均ガジェット分解】(75)ダイソーの「ボイスコントロールライト」｜tomorrow56 (ThousanDIY)",
+      "url": "https://note.com/tomorrow56/n/n4107b2aeff57",
+      "summary": "本記事は月刊I/O 2025年6月号に掲載された記事をベースに、内容を追記・修正をして再構成したものです。 ダイソーで音声を認識しON/OFFができる「ボイスコントロールライト」が発売されましたので、早速分解してみます。 パッケージの外観 パッケージと製品の外観ダイソーの「ボイスコントロールライト」は1個300円(税別...",
+      "bookmarks": 26
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "『ダイエットのためにナッツだけ食べてるんです！ナッツって健康にいいんですよ！』と言う人に「結構カロリー高いよ」と教えたら鬱ゲーの主人公みたいになった",
+      "url": "https://togetter.com/li/2674294",
+      "summary": "にょぐ@VRC @nyoguta_vrc この前NAGiSAであった人が 「私ダイエットのためにナッツだけ食べてるんです！知ってますか！？ナッツって健康にいいんですよ！！」 と言ってたから、結構カロリー高いよと教えたら 「……え……嘘……そんな……じゃあ私が今までやってきたことって……」 って鬱ゲーの主人公みたいになってた 2026-03-12...",
+      "bookmarks": 59
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "防衛大の恋愛事情でムカついたこと、しんどい思いをしたのは俺なのに付き合ったのは…「いい人」「きっと幸せになれる」",
+      "url": "https://togetter.com/li/2674276",
+      "summary": "はじめ @hajime20250823 防衛大の恋愛事情でムカついたこと。 防衛大には、至る所で吊り橋効果が発動する。考えてみれば当たり前だ。男性でも過酷な訓練に、女性がついていくことは難しく、男性の手を借りる場面が多くなる。防衛大の3学年にはクソ重い荷物を持ってチームで7キロ弱走る競技会がある。女子学生ももちろん...",
+      "bookmarks": 36
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ダイソーの店員さんに『はんだごて』が全然伝わらなくて、スタッフ二人が『パンダ御殿…パンダ御殿…』ってずっと言ってた",
+      "url": "https://togetter.com/li/2674239",
+      "summary": "mok✳︎close comm @uokkom ダイソーの人たちに ハンダゴテが全然伝わらなくて スタッフふたりが 「パンダ御殿…パンダ御殿…」 ってずっと言ってて死ぬかと思った 2026-03-12 19:37:23",
+      "bookmarks": 81
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "エバニューの超軽量な折りたたみマットでアウトドアを快適に！｜2026年3月（2週目）の編集部が買ってよかったもの - ソレドコ",
+      "url": "https://soredoko.jp/entry/2026/03/13/103000",
+      "summary": "スタッフが自腹で買って実際に試してみて「よかった！」と実感するおすすめ商品をピックアップ！ 今週は、レジャーやアウトドアで重宝する折りたたみ式のマットを紹介します。気になったら、ぜひチェックしてみてくださいね。 ▼買ってよかったもの2025と先週分はこちら アウトドアで大活躍！ EVERNEW 折りたたみヒップマ...",
+      "bookmarks": 18
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "新宿で行列をつくるスープカレー店「東京ドミニカ」のLINE戦略。常連客を生むアイデア力、寄り添い力 - おなじみ丨近くの店から、なじみの店へ。",
+      "url": "https://onaji.me/entry/2026/03/13",
+      "summary": "本格的な札幌スープカレーを東京・新宿で提供し続けている人気店「東京ドミニカ 新宿本店」に、LINE公式アカウントの活用方法を伺いました。 お店の運営をもっとラクにはじめてみよう！ LINE公式アカウント 一度ならず、何度も足を運んでくれる「おなじみ」のお客さんは、飲食店にとって心強い存在です。多くの常連客の...",
+      "bookmarks": 37
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "新橋にある「烏森絶メシ食堂」の取り組みがおもしろい、閉店したりしかけたりしている店からレシピを教わり再現した名物メニューが揃う",
+      "url": "https://togetter.com/li/2674174",
+      "summary": "たべろう【ごはん/東京】 @GourmetCast 新橋に ちょっと面白い食堂がある。 後継者不足などで 閉店してしまった店から レシピを教わり料理を再現。 そして 売上の一部をその店に還元。 今はなき洋食店 「キッチンビーバー」の 名物定食をいただきました😙 新橋「烏森絶メシ食堂」 ビーバー定食1000円（税込） #東京1000...",
+      "bookmarks": 118
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ワインに樽のカバーをつける",
+      "url": "https://dailyportalz.jp/kiji/wine-taru-cover",
+      "summary": "ワインのパックに樽のカバーをつけたらグレードアップするのではないか。 樽のワインが家にあったらかっこいいので作ってみた。 激安パックワイン 近所のスーパーで、瓶ではなくパックのワインが売っていた。 スーパーで一番安かったワイン。３ℓで1400円だった 注ぎ口がついていて、そこからワインを注ぐ使用になってい...",
+      "bookmarks": 30
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "彼氏が寝言で言いました「布巾死んだわ」 どんな夢？",
+      "url": "https://anond.hatelabo.jp/20260313095351",
+      "summary": "彼氏が寝言で言いました「布巾死んだわ」 どんな夢？",
+      "bookmarks": 55
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "上司や取引先の人などに“ご馳走される”時の心得『トリュフの追加はやめましょう』→奸智に⾧けたレストランは、ホストが断りづらい空気を利用してゲストに高級食材を勧めてくる",
+      "url": "https://togetter.com/li/2674081",
+      "summary": "Forbes JAPAN @forbesjapan 今回は飲食店でエスコートされる側の心構え。上司や取引先、恩師やメンター、人生の大先輩。親密さよりも礼節が優先される、一寸の失礼も許されない関係性における振る舞いについて。 →「ご馳走される会食」のマナー。事前・注文・会計時・お礼・事後までの基本動作 forbesjapan.com/articles...",
+      "bookmarks": 98
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "クレカ乗車で「定期券」はどう変わるのか?　熊本に見る交通系IC“棲み分け”【鈴木淳也のPay Attention】",
+      "url": "https://www.watch.impress.co.jp/docs/series/suzukij/2093082.html",
+      "summary": "",
+      "bookmarks": 87
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "せんべろ東京マップ（東京都内の立ち飲み・大衆酒場・居酒屋を地図から検索） | せんべろnet",
+      "url": "https://1000bero.net/tokyo_map/",
+      "summary": "せんべろ東京マップについて ちょっと一杯できるお店を、現在いる場所からGoogleMapで探せたら便利なのではなかろうか？ そんなことを思いつき、東京・神奈川・千葉・埼玉で1000円、1500円程からちょっと一杯できるおすすめの飲み屋さんをまとめた「せんべろマップ」を作成しました。 せんべろとは？ 1000円でべろべろに...",
+      "bookmarks": 593
+    }
+  ],
+  "zenn": [
+    {
+      "source": "zenn",
+      "title": "Coding Agent に loop して欲しいのは prdじゃない skill だ",
+      "url": "https://zenn.dev/takumiyoshikawa/articles/6930a0e58bc196",
+      "summary": "要約\nRalph loopから始まり、Harness Engineering, AI-DLCと名前を変えてcoding agentを長期実行するコンセプトは世の中を席巻している。\nせっかくなので自分が使いやすい形でloopの実行をするためのOSSを作ってみたので中身を解説したい。\nhttps://github.com/takumiyoshikawa/skill-loop\n\n モチベーション\n私が最初にRalph Loopのコンセプトを試した時に一番最初に感じた感想は機能しないだった。基本的には、その理由はprdと呼ばれる実行計画が粗悪なものであり、そのrepo特有の事情を全く考慮しな...",
+      "author": "yoshi"
+    },
+    {
+      "source": "zenn",
+      "title": "ネットワーク何もわからん！そんな私がネスペ合格までに役立った本まとめ",
+      "url": "https://zenn.dev/collabostyle/articles/843a1b7479c930",
+      "summary": "どうもお疲れ様です。MESIです。\n私は普段アプリケーション開発をメインでやっています。\nそのためネットワーク機器を構築したり設定したりする機会はほとんどなく、エンジニア2年目くらいまではネットワークについてほとんど知識がありませんでした。\n当時は\nプライベートIPアドレスとグローバルIPアドレスの違いもよくわからない\nというレベルでした。\nしかし業務でクラウドやインフラに触れる機会が増え、ネットワークの知識も必要だと感じるようになりました。\nそこでネットワークの勉強を始めました。\nその後、地道に勉強を続けた結果、最終的には ネットワークスペシャリスト試験に合格するレベル まで知識を身に...",
+      "author": "MESI"
+    },
+    {
+      "source": "zenn",
+      "title": "生成AIでパワポを作る方法一覧【2026年3月版】",
+      "url": "https://zenn.dev/ncukondo/articles/ai-generate-pptx-methods-2026",
+      "summary": "はじめに\n生成AIを使ったスライド作成ツールの紹介記事は増えていますが、その多くはPDFやHTML出力が中心です。しかし実際の仕事では、上司や共著者が追加編集する、提出物としてパワポ形式(PPTX)が指定される、といった理由からPPTXでの出力が必要な場面が少なくありません。\n本記事では、2026年3月時点で利用可能な方法をGUI完結型・Markdown型・コード生成型の3カテゴリに分けて、PPTX出力の観点から整理します。\n\n PPTX出力の「編集可能性」に注意\nまず前提として、PPTX出力に対応していても、中身が編集可能とは限らないという点を押さえておく必要があります。\nたとえば...",
+      "author": "ncukondo"
+    },
+    {
+      "source": "zenn",
+      "title": "懇親会でぼっちにならないテクニック",
+      "url": "https://zenn.dev/philosophum/articles/4bdf97acbb2299",
+      "summary": "勉強会などのイベントに参加して、懇親会でぼっちになってしまった経験はありませんか？\n私は何度もあります。知り合いがいるイベントに参加しても、わりかしぼっち感を味わってます。\n色々考えると、懇親会でぼっちにならないためには、やっぱり努力と勇気が必要だと思っています。私は大体勇気が足りずに逃げ帰ることが多いです。\nそれでも、いくつか使えるテクニックがあるので紹介します。\nこの記事では、まず今すぐ使える当日のテクニックを紹介し、その後に時間をかけて準備できる方法も紹介します。完璧な解決策ではありませんが、少しでもぼっちを感じる人が減れば幸いです。\n\n 懇親会が始まる、今からでもできるテクニック...",
+      "author": "beli"
+    },
+    {
+      "source": "zenn",
+      "title": "O'Reilly Online Learningで始める技術書多読という読み方",
+      "url": "https://zenn.dev/penginpenguin/articles/83da148f861840",
+      "summary": "はじめに\nぺんぎん（@jitepengin）です。\n普段の業務や、プライベートでのアウトプットのために、技術書を読んでいる方も多いと思います。\n次のような悩みを持っている人は多いのではないでしょうか。\n\n技術書が高くてなかなか手が出ない\n積読ばかり増えてしまう\n1冊読み切るのに時間がかかる\n新しい分野を広く知りたい\n\n幅広い分野やさまざまな技術要素を追おうとすると、特に金銭的な面で負担が大きくなりがちです。\nわたしも技術書を割と読むほうなのですが、O'Reilly Online Learningを使って技術書を「多読」しています。\n本記事では、O'Reilly Online Lear...",
+      "author": "ぺんぎん"
+    },
+    {
+      "source": "zenn",
+      "title": "新登場したVite+が速すぎる！— ESLint 100倍、しかも Next.js でも動く",
+      "url": "https://zenn.dev/ashunar0/articles/26d33059997e38",
+      "summary": "はじめに\nJS開発のツール設定、プロジェクトごとに毎回つらくないだろうか。 ESLint、Prettier、Vitest、husky、lint-staged — 設定ファイルだけで5個以上、バージョン競合で半日溶けた経験がある人も多いはずだ。\n2026年3月、Viteの作者Evan YouのVoidZero社から Vite+ Alpha が発表された。これらを 1コマンド・1設定ファイルに統一する ツールチェーンだ。実際にReact + TypeScriptプロジェクトとNext.jsプロジェクトの両方で試したので、何が変わるのかを整理する。\nhttps://viteplus.dev...",
+      "author": "あさひ"
+    },
+    {
+      "source": "zenn",
+      "title": "OpenClawライクなソフトをまとめてみた",
+      "url": "https://zenn.dev/karaage0703/articles/0e2e3484169db2",
+      "summary": "OpenClawが310K starsを超え、AIパーソナルアシスタント界隈が盛り上がっています。OpenClaw以外にも「Claw系」と呼ばれる派生プロジェクトや、独立系のCLIコーディングエージェントが数多く登場しています。\nこの記事では、OpenClaw的なソフト（パーソナルAIアシスタント＆CLIコーディングエージェント）を個人的にまとめました。自分が使っているものや調査で見つけたものを、カテゴリ別に紹介します。\n!\nすべてのツールを実際に試したわけではありません。GitHubのREADMEやドキュメントをベースに情報をまとめています。また、この記事の調査にはAIを活用しています...",
+      "author": "からあげ"
+    },
+    {
+      "source": "zenn",
+      "title": "【Flutter】API トークンを「適切」に管理する",
+      "url": "https://zenn.dev/chooyan/articles/2eddee6e2f5eac",
+      "summary": "みなさんのアプリでは API トークンをセキュアに管理できていますか？\nもしこの質問を見て「Yes/No」の 2 択が頭に浮かんでしまった方、ぜひこの記事を読んでみてください。\n一方で「いや、セキュアかどうかなんて評価次第だし」「というか API トークンって言ってもいろいろあるし」と思った方にとってはもしかしたら目新しい話はないかもしれません。\nこの記事ではそんな「モバイルアプリにおける API トークンの取り扱い」について、自分が調べて学んだ内容をまとめたいと思います。\n\n 機密情報を .env ファイルに入れて取り扱う\nAPI トークンに限らず、バックエンドのベース URL や F...",
+      "author": "中條 剛（ちゅーやん）"
+    },
+    {
+      "source": "zenn",
+      "title": "Playwright + OWASP ZAP + Claude Code で E2E テストから脆弱性診断まで一気通貫でできるかやってみた",
+      "url": "https://zenn.dev/rescuenow/articles/7192f8ca6ebe48",
+      "summary": "はじめに\n最近、他チームのエンジニアが「Playwright で書いた E2E テストを OWASP ZAP に通して脆弱性診断をやってみた」という話を聞きました。\n「E2E のシナリオってそのまま脆弱性診断にも使えるの？」\n気になったので自分でも試してみました。その記録です。\n\n やったこと（全体像）\nシンプルな Todo アプリを題材に、以下の流れで試しました。\n1. Next.js で Todo アプリを構築\n2. Playwright で E2E テスト（12シナリオ）を作成\n3. バックエンドを FastAPI + MySQL に変更（Docker）\n4. E2E シナリオ...",
+      "author": "takeuchi_kazuya"
+    },
+    {
+      "source": "zenn",
+      "title": "最初に伝えるべきは「結論」ではなく「要約」",
+      "url": "https://zenn.dev/knowledgework/articles/2bee3329c16bc1",
+      "summary": "こんにちは、ナレッジワークの munetoshi です。\nこの記事は、KNOWLEDGE WORK Blog Sprint 2026 Spring の 10 本目の記事です。\n\n技術文書の冒頭には「結論」ではなく、文脈や目的を含んだ「要約」を書きましょう。本記事では、要約から書くことの利点、そう書くためのテクニックについて解説します。\nここでは、「結論」と「要約」を以下のように定義します。\n\n結論: 議論や演繹の結果。話題の出発点 (仮定や前提) から導かれた最終的な帰結や判断。\n要約: その文章の主張の重要な要素をまとめたもの。結論だけでなく、目的や文脈、重要な議論の展開も含むことがあ...",
+      "author": "munetoshi"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude CodeやCodexのスキルの管理を楽にするツール「faceted-prompting」",
+      "url": "https://zenn.dev/nrs/articles/88f158aca0505b",
+      "summary": "はじめに\nプロンプトが長く、そして増えてくると、どんどんと保守性が下がってきます。\n役割、ルール、知識、作業指示、出力形式。\n最初はひとつのファイルに入っていても困りません。\nところが運用を続けると、一部だけ差し替えたい、同じルールを別のスキルでも使いたい、Claude Code と Codex の両方で使いたい、といった欲が出てきます。\nそのたびに長いプロンプトを丸ごと編集するのは、かなりつらい。\nこれは大きな課題です。\n以前、私はこの問題に対する考え方として、Faceted Prompting というものを書きました。\nhttps://zenn.dev/nrs/articles/...",
+      "author": "nrs"
+    },
+    {
+      "source": "zenn",
+      "title": "バグチケットに気づく頃にはもう直っている仕組みを作った",
+      "url": "https://zenn.dev/notahotel/articles/399fc929f48d01",
+      "summary": "タイトルの通りです。実装的には大したことはありません。GitHubのIssue起票をトリガーにして、Claude Code Actionを発火するだけです。\n\nclaude-qa-auto-fix.yml\nname: Auto Fix QA Bug\n\non:\n  issues:\n    types: [labeled]\n\n...\n\njobs:\n  auto-fix-qa-bug:\n    if: |\n      github.event.label.name == 'QA-bug'\n\n...\n\n    steps:\n...\n      - name: Run Claude QA bugf...",
+      "author": "haru067"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude Code 全社導入までの意思決定と歴史",
+      "url": "https://zenn.dev/gemcook/articles/claude-code-company-wide",
+      "summary": "はじめに\n「やばい、今すぐに意思決定をしないと取り残される」——そう感じたのは、このポストをきっかけに社長と話していた時でした。\nhttps://x.com/tsuchinao83/status/2021730479997956553?s=20\n社長に「Cursor・Windsurf・Claude Code、Devinとかとりあえず色々手を出して使ってるけど、社内のAIリテラシーを標準化して、メンバー全員がAIを等しく使えるくらいの環境を作っていかないと時代に取り残される。最新のツールへのチャレンジも必要だし、流行りがコロコロ変わる中での意思決定は難しいと思うが、全社導入を急いで欲し...",
+      "author": "soso"
+    },
+    {
+      "source": "zenn",
+      "title": "プログラマの抱いている不動産データについての誤謬",
+      "url": "https://zenn.dev/estie/articles/39efe1ebf6b188",
+      "summary": "こんにちは。ソフトウェアエンジニアのyasuandです。株式会社estieのデータマネジメントグループ（DMG）という部署で、登記簿データの管理システムを作っています。\n登記簿に限らず不動産データと日々触れ合っていると、時々”変な”データと出会うことがあります。住所の読みが面白いという程度ならその場でスルーして終わりなのですが、なかにはデータモデリング上の扱いが問題になるものも存在します。\nそこで今回は『プログラマの抱いている名前についての誤謬』をオマージュして『プログラマの抱いている不動産データについての誤謬』というタイトルで、建物を中心とした不動産データに関して多くの方が誤解している...",
+      "author": "yasuand"
+    },
+    {
+      "source": "zenn",
+      "title": "Anthropic公式が33ページのスキル設計書を出したので、将軍のスキルクリエイターと答え合わせしたら先を行ってた",
+      "url": "https://zenn.dev/shio_shoppaize/articles/shogun-skill-creator-v2",
+      "summary": "!\nこのシリーズが初めての方はこちらから\n\nhttps://zenn.dev/shio_shoppaize/articles/5fee11d03a11a1\nhttps://github.com/yohey-w/multi-agent-shogun\n\nAnthropicが33ページのPDFを出した。\n\"The Complete Guide to Building Skills for Claude\"\nClaude Codeのスキル設計に関する、初めての公式ガイド。全33ページ。英語。2026年2月発行。\nで、オレはこれを読んで、自分の将軍システムについているスキルクリエイター（スキルを設計...",
+      "author": "おしお"
+    },
+    {
+      "source": "zenn",
+      "title": "中古PC3台で自宅スパコン（もどき）を構築した話",
+      "url": "https://zenn.dev/hosoyayusaku/articles/f2b948436f4723",
+      "summary": "🎯 この記事の対象読者\n\n中古PCや廃棄予定ハードを再利用して、手元で分散計算を試したい方\nクラウドの裏側にある「通信」「起動」「停止」の物理的な制約を、自分の環境で理解したい方\nPXEブート、NFS root、OpenMPI、HPL といった技術に興味がある方\n単なる成功談よりも、「なぜ失敗したか」「何を変えたら伸びたか」を知りたい方\n\n\n 💡 この記事を読むと得られること\n\nストレージなしの中古小型PCを使って、ディスクレスクラスタを構築する考え方\n「ノードを増やしたのに遅くなる」という、分散計算でありがちな失敗の中身\n\n1GbEでは詰まり、2.5GbEでは伸びたという、通信ボト...",
+      "author": "Hosoya Yusaku / CivicTech Developer"
+    },
+    {
+      "source": "zenn",
+      "title": "Go言語 基礎から始める完全ガイド 2026",
+      "url": "https://zenn.dev/gaku1234/books/go-basics-complete-guide-2026",
+      "summary": "Go初学者のための体系的な基礎ガイド。環境構築から基本構文、制御フロー、関数、ポインタ、構造体、インターフェース、エラーハンドリングまで。他言語経験者がGoの考え方を確実に身につけられる構成です。",
+      "author": "GK"
+    },
+    {
+      "source": "zenn",
+      "title": "インターン先でCI/CDパイプラインをゼロから構築し、リリース頻度を110倍にした話",
+      "url": "https://zenn.dev/satotakahumi/articles/3f950feea0d8b2",
+      "summary": "1.はじめに\nAIによる高速な開発が当たり前になる中、私はインターンとして参加したプロジェクトで「品質をどう守るか」という課題に向き合いました。\n本記事では、AIを活用した開発の中で、品質を継続的に守る仕組みづくりに取り組んだ経験と、そこから得た学びを振り返ります。\n※本記事は、インターン生という一開発者の視点による個人の振り返りです。当時のチームの状況や判断を批判する意図は一切なく、むしろ未熟な提案を受け入れ、議論の機会をくださったチームへの感謝を込めて執筆しています。\n※インターン先に掲載の許可を得ております。\n簡単なまとめ\n!\n\n課題：AI生成コード前提の開発での品質担保がボト...",
+      "author": "kado"
+    },
+    {
+      "source": "zenn",
+      "title": "MySQLが好きな私が、今はPostgreSQLを勧めたい理由",
+      "url": "https://zenn.dev/catatsuy/articles/f3721135c6f8f6",
+      "summary": "私はMySQLが好きです。長く使ってきましたし、オンプレミスでの運用もやってきました。\nしかし現職に来てからは、PostgreSQLを使う機会が増えました。最初は正直かなり抵抗感がありました。ずっとMySQLを使ってきたので、慣れの問題もありますし、PostgreSQLに対して必要以上に構えていたところもあったと思います。\nただ、実際に使っていくうちに、PostgreSQLの良さが少しずつ見えてきました。最近では、新規開発でどちらを選ぶかと聞かれたら、PostgreSQLを選びたいと思うようになっています。\n私はMySQLを長く使ってきたので、昔のMySQLの雑さも知っています。ただ同時...",
+      "author": "catatsuy"
+    },
+    {
+      "source": "zenn",
+      "title": "仕様駆動開発はやめた方がええ",
+      "url": "https://zenn.dev/simossyi/articles/309e8cd88a90c3",
+      "summary": "前回記事から1ヶ月くらい経ったのでその間に得られた知見からの所見を述べる。\nやっぱり実装に関するドキュメントはいらん。仕様は全てコードにある。コードをSSoT(Single Source of Truth)とすべきだ。ドキュメントとコードの二重管理はコストが大きすぎる。特にドキュメント側の管理コストが大きく、どれだけagentにドキュメントを修正しろと指示を出してもドキュメント修正の実行が確率的であるし、ドキュメントを更新するトークン数が無駄。コード読めばわかることを自然言語にわざわざ起こさんでいい。仕様がわからんくなったらclaudeに聞けばいいのでドキュメントを永続化する必要性が皆無...",
+      "author": "しもし"
+    }
+  ]
+}
