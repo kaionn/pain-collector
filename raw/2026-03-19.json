@@ -8,7 +8,7 @@
       "title": "OpenAIも、ついにChatGPTの料金を見直し。「使い放題プラン」廃止も示唆 | Business Insider Japan",
       "url": "https://www.businessinsider.jp/article/2603-openai-may-drop-unlimited-chatgpt-plans-exec-says/",
       "summary": "OpenAIのChatGPT責任者は、ChatGPTを「使い放題」できる時代が終わりを迎えつつある可能性を示唆した。Matthias Balk/picture alliance via Getty Images AI関連コストが急増し、利用者が爆発的に増加するなか、OpenAIはChatGPTの「無制限（使い放題）」プランを廃止する可能性がある、と同社責任者が語った。彼は「料金...",
-      "bookmarks": 49
+      "bookmarks": 55
     },
     {
       "source": "hatena",
@@ -16,7 +16,7 @@
       "title": "Coding Agent時代のドキュメントについて考えていること",
       "url": "https://nyosegawa.com/posts/docs-in-agent-era/",
       "summary": "こんにちは！逆瀬川ちゃん (@gyakuse) です！ 今日はCoding Agent時代のドキュメントについて、最近考えていることを書いていきたいと思います。悩み中なので、荒れた内容になっていますが、ご容赦を。コード規模、チーム規模などなどによって、正解は異なるものだと思います。あくまで私の実践の一例として読んでくれれ...",
-      "bookmarks": 260
+      "bookmarks": 268
     },
     {
       "source": "hatena",
@@ -24,7 +24,7 @@
       "title": "GitHub Copilot CLI の公式ハンズオンやってみた (第0章/7章) - Qiita",
       "url": "https://qiita.com/chomado/items/6d26b6ffc11d163dfd71",
       "summary": "00-quick-start 早速、最初の章を進めてみましょう。 1. 事前準備 このハンズオンを進めるにあたって必要なもの： Copilot が利用可能な GitHub アカウント サブスクリプションの種類は こちら 学生・教員の場合は、GitHub Education を通じて Copilot Pro を無料で利用できます ターミナルの基本操作 cd や ls といった...",
-      "bookmarks": 59
+      "bookmarks": 62
     },
     {
       "source": "hatena",
@@ -32,6 +32,14 @@
       "title": "Google Home アプリ、Gemini 機能が日本でも順次展開へ。音声操作の遅延も40%改善など | HelenTech",
       "url": "https://helentech.jp/news-83442/",
       "summary": "Google は 2026 年 3 月 17 日（現地時間）、今月 2 回目となる Gemini for Home の大型アップデートを展開しています。 今回のアップデートでは、音声アシスタントの応答速度が最大 40% 改善されたほか、アラームやタイマーの機能強化が行われました。さらに、日本を含む 14 カ国で Google Home アプリの新しい Gemini ...",
+      "bookmarks": 23
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "A18 Proチップを搭載したMacBook NeoのXcodeベンチマーク。",
+      "url": "https://applech2.com/archives/20260318-xcode-benchmark-macbook-neo-a18-pro.html",
+      "summary": "記事内に広告が含まれています。This article contains advertisements. A18 Proチップを搭載したMacBook NeoのXcodeベンチマークのまとめです。詳細は以下から。 Appleは現地時間2026年03月11日より、iPhone 16 Proにも搭載されているApple A18 Proチップを搭載した「MacBook Neo」の販売を開始しましたが、このMacBook...",
       "bookmarks": 16
     },
     {
@@ -40,15 +48,15 @@
       "title": "無料の国交省、中小企業庁、総務省データ用「リモートMCPサーバー」公開",
       "url": "https://atmarkit.itmedia.co.jp/ait/articles/2603/18/news055.html",
       "summary": "AI（人工知能）活用やDX（デジタルトランスフォーメーション）のコンサルティング企業AI HYVEと生成AIシステム企画・開発・導入支援を行うN-3は2026年2月12日、行政サービスをAIエージェントから利用可能にする「リモートMCPサーバー」を無料で公開したと発表した。 本取り組みは、「バイブコーディングの普及および行政...",
-      "bookmarks": 140
+      "bookmarks": 142
     },
     {
       "source": "hatena",
       "category": "テクノロジー",
-      "title": "A18 Proチップを搭載したMacBook NeoのXcodeベンチマーク。",
-      "url": "https://applech2.com/archives/20260318-xcode-benchmark-macbook-neo-a18-pro.html",
-      "summary": "記事内に広告が含まれています。This article contains advertisements. A18 Proチップを搭載したMacBook NeoのXcodeベンチマークのまとめです。詳細は以下から。 Appleは現地時間2026年03月11日より、iPhone 16 Proにも搭載されているApple A18 Proチップを搭載した「MacBook Neo」の販売を開始しましたが、このMacBook...",
-      "bookmarks": 14
+      "title": "無料でローカルAIモデルのメモリ使用量を最大80％削減し処理速度を2倍に向上させる「Unsloth Studio」、Windows・macOS・Linux対応でチャットだけならCPUのみでもOKでスマホでも動作可能",
+      "url": "https://gigazine.net/news/20260318-unsloth-studio/",
+      "summary": "ローカル環境でオープンソースのAIモデルを訓練、実行、および出力するための統合されたウェブUI「Unsloth Studio」は複雑なプログラミングコードを記述することなく直感的に操作でき、ベータ版として公開されています。ユーザーは100％オフラインの環境でAIモデルを自身のコンピュータ上で動かすことができ、データのプ...",
+      "bookmarks": 68
     },
     {
       "source": "hatena",
@@ -61,18 +69,10 @@
     {
       "source": "hatena",
       "category": "テクノロジー",
-      "title": "無料でローカルAIモデルのメモリ使用量を最大80％削減し処理速度を2倍に向上させる「Unsloth Studio」、Windows・macOS・Linux対応でチャットだけならCPUのみでもOKでスマホでも動作可能",
-      "url": "https://gigazine.net/news/20260318-unsloth-studio/",
-      "summary": "ローカル環境でオープンソースのAIモデルを訓練、実行、および出力するための統合されたウェブUI「Unsloth Studio」は複雑なプログラミングコードを記述することなく直感的に操作でき、ベータ版として公開されています。ユーザーは100％オフラインの環境でAIモデルを自身のコンピュータ上で動かすことができ、データのプ...",
-      "bookmarks": 62
-    },
-    {
-      "source": "hatena",
-      "category": "テクノロジー",
       "title": "「PowerToys 0.98」が公開、新しいキーマップエディターや「CursorWrap」のマルチモニター改善など／",
       "url": "https://forest.watch.impress.co.jp/docs/news/2094252.html",
       "summary": "",
-      "bookmarks": 11
+      "bookmarks": 13
     },
     {
       "source": "hatena",
@@ -85,6 +85,14 @@
     {
       "source": "hatena",
       "category": "テクノロジー",
+      "title": "Edge.js - Run Node.js safely, anywhere, with any JS engine",
+      "url": "https://edgejs.org/",
+      "summary": "Edge.js reimagines Node: fully sandboxed, engine-agnostic, and built for AI and serverless workloads. Ubiquitous by design.",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
       "title": "「ブラウザ自動化」の限界を解消？　Googleが新標準「WebMCP」早期プレビュー公開",
       "url": "https://atmarkit.itmedia.co.jp/ait/articles/2603/18/news058.html",
       "summary": "「ブラウザ自動化」の限界を解消？　Googleが新標準「WebMCP」早期プレビュー公開：AIエージェントがWebサイトを直接操作するための2つのAPIを提案 Googleは、AIエージェントがWebサイトと構造化された方法でやりとりするための新しいWeb標準「WebMCP」の早期プレビュー版を公開した。Web開発者がAIエージェント向けにツ...",
@@ -93,18 +101,10 @@
     {
       "source": "hatena",
       "category": "テクノロジー",
-      "title": "Edge.js - Run Node.js safely, anywhere, with any JS engine",
-      "url": "https://edgejs.org/",
-      "summary": "Edge.js reimagines Node: fully sandboxed, engine-agnostic, and built for AI and serverless workloads. Ubiquitous by design.",
-      "bookmarks": 4
-    },
-    {
-      "source": "hatena",
-      "category": "テクノロジー",
       "title": "Node.js互換でコンテナよりも高密度と高速起動を実現する「Edge.js」、Wasmerが発表",
       "url": "https://www.publickey1.jp/blog/26/nodejsedgejswasmer.html",
       "summary": "WebAssemblyランタイム「Wasmer」を開発提供するWasmer社は、Node.js互換かつコンテナよりも高密度な集約と高速起動を実現する「[Edge.js](https://edgejs.org/)」を発表しました。 What if you could run ANY Node.js app unmodified, safely anywhere… without Docker, containers, or security headaches? Introducin...",
-      "bookmarks": 32
+      "bookmarks": 33
     },
     {
       "source": "hatena",
@@ -213,14 +213,6 @@
     {
       "source": "hatena",
       "category": "テクノロジー",
-      "title": "1on1は「報告」ではなく「自分への投資」である。成長を最大化するための対話ハック | Wantedly Engineer Blog",
-      "url": "https://www.wantedly.com/companies/wantedly/post_articles/1051752",
-      "summary": "こんにちは、QA Squad の青柳です。 日々の業務に追われていると、週次の1on1がつい「タスクの進捗を共有して終わるだけの時間」になってはいないでしょうか。私自身も以前は、1on1を受動的な報告の場として捉えていました。しかし、1on1を自分自身の成長のために「使い倒す」という意識に変えたところ、上長との期待値...",
-      "bookmarks": 40
-    },
-    {
-      "source": "hatena",
-      "category": "テクノロジー",
       "title": "Amazon、米国で広告なし4K/Atmosの「Prime Video Ultra」開始。通常Prime会員はHD解像度に",
       "url": "https://av.watch.impress.co.jp/docs/news/2094329.html",
       "summary": "",
@@ -244,11 +236,19 @@
     },
     {
       "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ニコニコのショート動画、4月15日スタート　「コメントの一体感」はそのまま",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/18/news093.html",
+      "summary": "ニコニコは3月17日、縦型の短尺動画を投稿できる「ニコニコショート」を4月15日から提供すると発表した。「ニコニコならではのコメントの一体感」を楽しめるという。 縦型の視聴画面は当初、モバイル版のニコニコ動画アプリのみ対応する。PC版は今後のアップデートで対応する予定だ。 併せてクリエイター向けの情報も公...",
+      "bookmarks": 24
+    },
+    {
+      "source": "hatena",
       "category": "暮らし",
       "title": "なぜブックオフは生き残り、他の新古書店は消えたのか｜都立家政のブックマート",
       "url": "https://note.com/yngwie5150/n/nf149dd3824d0",
       "summary": "ブックオフは生き残った。 でも、ブックマートやブックアイランドのような新古書店はほぼ消えた。 この差はなんだったのか。 ブックオフは「仕組みの店」だ。 50坪以上の大型店舗。 初期投資は2000万〜で既に別事業がある会社が加入するフランチャイズだ。 マニュアル化されていて、誰がやっても同じように運営できる。 ...",
-      "bookmarks": 138
+      "bookmarks": 141
     },
     {
       "source": "hatena",
@@ -256,7 +256,7 @@
       "title": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、姿のまま放置だと意外とすぐシナシナになりますし | mond",
       "url": "https://mond.how/ja/topics/04uiz5zxxuzyhoz/3nd5ch7dwzoopaw",
       "summary": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、...",
-      "bookmarks": 104
+      "bookmarks": 106
     },
     {
       "source": "hatena",
@@ -352,7 +352,7 @@
       "title": "ニッチェ・江上敬子さんに聞く、夫と話し合うコツ｜夫婦は他人だから「すり合わせ」が全て - りっすん by イーアイデム",
       "url": "https://www.e-aidem.com/ch/listen/entry/2026/03/18/103000",
       "summary": "お笑いコンビ・ニッチェの江上敬子さんに「パートナーと信頼し合える関係を築くコツ」について伺いました。 仲の良かったカップルが、結婚や出産を経て衝突するようになる……というのは、よく聞く話です。 江上さんも、結婚後にパートナーとの関係性が変化した1人。 幾度ものすり合わせを経て、今は協力しながら育児がで...",
-      "bookmarks": 51
+      "bookmarks": 52
     },
     {
       "source": "hatena",
@@ -448,7 +448,7 @@
       "title": "辺野古沖転覆事故を海のプロの目から考察｜瀬崎公介/KousukeSezaki",
       "url": "https://note.com/irukaoyaji/n/nd7fe4b625bc2",
       "summary": "本日、辺野古沖で2隻の船に分乗し、平和学習に参加していた同志社国際高校の生徒1名と船長1名が転覆し、亡くなってしまうという痛ましい事故が発生しました。心からお悔やみ申し上げます。 報道の断片的な情報での判断は稚拙ではありますが、船長歴30年以上の私の目から見ると疑問に感じる点が幾つもありました。尚、本...",
-      "bookmarks": 67
+      "bookmarks": 68
     },
     {
       "source": "hatena",
@@ -472,7 +472,7 @@
       "title": "子供の頃に読んだ「生活図鑑」は、大人が知っていて当たり前のことの総集編でとても役に立った…「冒険図鑑」「工作図鑑」などシリーズ愛読者が思い出を語る",
       "url": "https://togetter.com/li/2675737",
       "summary": "マコト @mak0t0_T @Fukuinkan_PR 今も売ってるんですか！？ 私も読みたいし娘にも読んでほしい(私に生活力があまりなく教えられないため...) 2026-03-17 09:42:50",
-      "bookmarks": 260
+      "bookmarks": 261
     },
     {
       "source": "hatena",
