@@ -26,7 +26,7 @@ jobs:
       - name: Run weekly analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: python -c "
           from datetime import datetime, timezone, timedelta;
           from src.weekly_trends import run;

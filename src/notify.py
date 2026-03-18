@@ -225,12 +225,16 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
             issue_number = int(issue_url.rstrip("/").split("/")[-1])
 
             # Project に自動追加
-            subprocess.run(
+            proj_result = subprocess.run(
                 ["gh", "project", "item-add", "1", "--owner", "kaionn", "--url", issue_url],
                 capture_output=True,
                 text=True,
                 timeout=30,
             )
+            if proj_result.returncode == 0:
+                print(f"[GitHub] Project に追加: #{issue_number}")
+            else:
+                print(f"[GitHub] Project 追加失敗: {proj_result.stderr[:200]}")
 
             return {"number": issue_number, "title": title}
         else:
