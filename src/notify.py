@@ -224,17 +224,8 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
             # Issue 番号を抽出
             issue_number = int(issue_url.rstrip("/").split("/")[-1])
 
-            # Project に自動追加
-            proj_result = subprocess.run(
-                ["gh", "project", "item-add", "1", "--owner", "kaionn", "--url", issue_url],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            if proj_result.returncode == 0:
-                print(f"[GitHub] Project に追加: #{issue_number}")
-            else:
-                print(f"[GitHub] Project 追加失敗: {proj_result.stderr[:200]}")
+            # Project に自動追加 (GraphQL API)
+            _add_to_project(issue_url, issue_number)
 
             return {"number": issue_number, "title": title}
         else:
@@ -243,3 +234,47 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
         print(f"[GitHub] Issue 作成失敗: {e}")
 
     return None
+
+
+# Project V2 ID (kaionn/projects/1)
+_PROJECT_ID = "PVT_kwHOBZbkF84BR2G2"
+
+
+def _add_to_project(issue_url: str, issue_number: int) -> None:
+    """GraphQL API で Issue を Project に追加する。"""
+    import json
+
+    # Issue の node ID を取得
+    node_result = subprocess.run(
+        [
+            "gh", "api", "graphql",
+            "-f", f'query=query {{ resource(url: "{issue_url}") {{ ... on Issue {{ id }} }} }}',
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if node_result.returncode != 0:
+        print(f"[GitHub] Issue node ID 取得失敗: {node_result.stderr[:200]}")
+        return
+
+    try:
+        node_id = json.loads(node_result.stdout)["data"]["resource"]["id"]
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        print(f"[GitHub] Issue node ID パース失敗: {e}")
+        return
+
+    # Project に追加
+    add_result = subprocess.run(
+        [
+            "gh", "api", "graphql",
+            "-f", f'query=mutation {{ addProjectV2ItemById(input: {{projectId: "{_PROJECT_ID}", contentId: "{node_id}"}}) {{ item {{ id }} }} }}',
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if add_result.returncode == 0:
+        print(f"[GitHub] Project に追加: #{issue_number}")
+    else:
+        print(f"[GitHub] Project 追加失敗: {add_result.stderr[:200]}")
