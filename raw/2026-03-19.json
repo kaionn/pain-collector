@@ -1,0 +1,648 @@
+{
+  "date": "2026-03-19",
+  "reddit": [],
+  "hatena": [
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Coding Agent時代のドキュメントについて考えていること",
+      "url": "https://nyosegawa.com/posts/docs-in-agent-era/",
+      "summary": "こんにちは！逆瀬川ちゃん (@gyakuse) です！ 今日はCoding Agent時代のドキュメントについて、最近考えていることを書いていきたいと思います。悩み中なので、荒れた内容になっていますが、ご容赦を。コード規模、チーム規模などなどによって、正解は異なるものだと思います。あくまで私の実践の一例として読んでくれれ...",
+      "bookmarks": 172
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "無料の国交省、中小企業庁、総務省データ用「リモートMCPサーバー」公開",
+      "url": "https://atmarkit.itmedia.co.jp/ait/articles/2603/18/news055.html",
+      "summary": "AI（人工知能）活用やDX（デジタルトランスフォーメーション）のコンサルティング企業AI HYVEと生成AIシステム企画・開発・導入支援を行うN-3は2026年2月12日、行政サービスをAIエージェントから利用可能にする「リモートMCPサーバー」を無料で公開したと発表した。 本取り組みは、「バイブコーディングの普及および行政...",
+      "bookmarks": 78
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "CHUWIのCPU偽装、AMD「黙認も関与もしていない」と声明",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2094593.html",
+      "summary": "",
+      "bookmarks": 45
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「ブラウザ自動化」の限界を解消？　Googleが新標準「WebMCP」早期プレビュー公開",
+      "url": "https://atmarkit.itmedia.co.jp/ait/articles/2603/18/news058.html",
+      "summary": "「ブラウザ自動化」の限界を解消？　Googleが新標準「WebMCP」早期プレビュー公開：AIエージェントがWebサイトを直接操作するための2つのAPIを提案 Googleは、AIエージェントがWebサイトと構造化された方法でやりとりするための新しいWeb標準「WebMCP」の早期プレビュー版を公開した。Web開発者がAIエージェント向けにツ...",
+      "bookmarks": 71
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "GitHub Copilot CLI の公式ハンズオンやってみた (第0章/7章) - Qiita",
+      "url": "https://qiita.com/chomado/items/6d26b6ffc11d163dfd71",
+      "summary": "00-quick-start 早速、最初の章を進めてみましょう。 1. 事前準備 このハンズオンを進めるにあたって必要なもの： Copilot が利用可能な GitHub アカウント サブスクリプションの種類は こちら 学生・教員の場合は、GitHub Education を通じて Copilot Pro を無料で利用できます ターミナルの基本操作 cd や ls といった...",
+      "bookmarks": 7
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "裁判官2500人を可視化「裁判官マップ」公開、口コミ投稿に「圧力になる」と懸念も…開発者の弁護士に聞く - 弁護士ドットコムニュース",
+      "url": "https://www.bengo4.com/c_18/n_20136/",
+      "summary": "全国の裁判官の所属裁判所や担当部、経歴などを一覧できるウェブサービス「裁判官マップ」が3月14日、公開された。 目玉の機能は「口コミ」だ。裁判官の訴訟指揮や審理の姿勢について、弁護士や当事者などのユーザーが匿名で投稿したり、閲覧できるようになっている。 裁判官に関する情報が可視化されることに期待する声...",
+      "bookmarks": 373
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ロシアが改良ドローンをイランに逆輸出か　衛星画像データも提供し攻撃支援、米報道",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/18/news128.html",
+      "summary": "米イスラエルとイランの交戦で、米紙ウォールストリート・ジャーナル（WSJ、電子版）は3月17日、複数の消息筋の話として、ロシアが偵察衛星で得た画像データや改良したドローン（無人機）技術をイランに提供し、米軍基地への攻撃を支援していると伝えた。ロシアの狙いは盟友イランとの関係を維持しつつ、エネルギー資源...",
+      "bookmarks": 13
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "無料でローカルAIモデルのメモリ使用量を最大80％削減し処理速度を2倍に向上させる「Unsloth Studio」、Windows・macOS・Linux対応でチャットだけならCPUのみでもOKでスマホでも動作可能",
+      "url": "https://gigazine.net/news/20260318-unsloth-studio/",
+      "summary": "ローカル環境でオープンソースのAIモデルを訓練、実行、および出力するための統合されたウェブUI「Unsloth Studio」は複雑なプログラミングコードを記述することなく直感的に操作でき、ベータ版として公開されています。ユーザーは100％オフラインの環境でAIモデルを自身のコンピュータ上で動かすことができ、データのプ...",
+      "bookmarks": 19
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "【令和最新版】生成AIは間違い探しをどれだけ解けるのか？GPT5.4 VS Gemini3.1 pro VS Opus4.6｜朝日新聞社 メディア研究開発センター",
+      "url": "https://note.com/asahi_ictrad/n/n8d23fb9a1640",
+      "summary": "メディア研究開発センターの山本です。2025年2月に「生成AIは間違い探しを解けるのか？」という観点で、ChatGPT o1とGemini 2.0 Flashに間違い探しを解かせる実験を行いました。 そのときの結論は「まだ人間を超えたとは言い難い」でした。単純な1問ものは解けても、表情の変化、複数箇所の同時比較、向きの違いの検出に...",
+      "bookmarks": 70
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "伊藤直也が「技術の原点」として読んだ3冊",
+      "url": "https://bookplus.nikkei.com/atcl/column/070300541/030400009/",
+      "summary": "ニフティで「ココログ」を作り、はてなでCTOとして「はてなブックマーク」などを生み出す過程で、大規模データの構築、検索などの技術を体系化し、それを技術ブログで公開するなどして大規模ウェブサービスの基礎を共有化し、コミュニティを盛り上げた。現在はホテル予約サイト「一休.com」のCTO。 CTOは技術力がないと...",
+      "bookmarks": 283
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "カメラのいらないテレビ電話アプリ「POPOPO」　”見られ感”がない国産SNS",
+      "url": "https://www.watch.impress.co.jp/docs/news/2094495.html",
+      "summary": "",
+      "bookmarks": 71
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Gitに「なぜ変えたか？」は残らない　元GitHub CEOが「Entire CLI」を開発",
+      "url": "https://atmarkit.itmedia.co.jp/ait/articles/2603/18/news061.html",
+      "summary": "元GitHub CEOのトーマス・ドームケ氏は2026年2月10日（米国時間）、新会社Entireの設立と6000万ドルのシード資金調達を発表した。同社は、AI（人工知能）エージェントと人間が協働するソフトウェア開発プラットフォームの構築を目指すという。 現在のソフトウェア開発ライフサイクルは人間同士の協働が前提 近年、Anthro...",
+      "bookmarks": 34
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Node.js互換でコンテナよりも高密度と高速起動を実現する「Edge.js」、Wasmerが発表",
+      "url": "https://www.publickey1.jp/blog/26/nodejsedgejswasmer.html",
+      "summary": "WebAssemblyランタイム「Wasmer」を開発提供するWasmer社は、Node.js互換かつコンテナよりも高密度な集約と高速起動を実現する「[Edge.js](https://edgejs.org/)」を発表しました。 What if you could run ANY Node.js app unmodified, safely anywhere… without Docker, containers, or security headaches? Introducin...",
+      "bookmarks": 15
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "GitHub - opendataloader-project/opendataloader-pdf: PDF Parsing for RAG — Convert to Markdown & JSON, Fast, Local, No GPU",
+      "url": "https://github.com/opendataloader-project/opendataloader-pdf",
+      "summary": "You signed in with another tab or window. Reload to refresh your session. You signed out in another tab or window. Reload to refresh your session. You switched accounts on another tab or window. Reload to refresh your session. Dismiss alert",
+      "bookmarks": 8
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "specre/README.ja.md at main · yoshiakist/specre",
+      "url": "https://github.com/yoshiakist/specre/blob/main/README.ja.md",
+      "summary": "You signed in with another tab or window. Reload to refresh your session. You signed out in another tab or window. Reload to refresh your session. You switched accounts on another tab or window. Reload to refresh your session. Dismiss alert",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "グーグル、「パーソナルインテリジェンス」を無料開放　個人に最適化したAI回答",
+      "url": "https://www.watch.impress.co.jp/docs/news/2094361.html",
+      "summary": "",
+      "bookmarks": 6
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ゲームのグラフィック向上AI技術『DLSS5』が批判と共にネットミーム化、キャラがリアル（？）になったネタ画像が大量に投下される",
+      "url": "https://togetter.com/li/2676103",
+      "summary": "NVIDIA GeForce @NVIDIAGeForce Announcing NVIDIA DLSS 5, an AI-powered breakthrough in visual fidelity for games, coming this fall. DLSS 5 infuses pixels with photorealistic lighting and materials, bridging the gap between rendering and reality. Learn More → nvidia.com/en-us/geforce/… pic.x.com/Uv...",
+      "bookmarks": 28
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "1on1は「報告」ではなく「自分への投資」である。成長を最大化するための対話ハック | Wantedly Engineer Blog",
+      "url": "https://www.wantedly.com/companies/wantedly/post_articles/1051752",
+      "summary": "こんにちは、QA Squad の青柳です。 日々の業務に追われていると、週次の1on1がつい「タスクの進捗を共有して終わるだけの時間」になってはいないでしょうか。私自身も以前は、1on1を受動的な報告の場として捉えていました。しかし、1on1を自分自身の成長のために「使い倒す」という意識に変えたところ、上長との期待値...",
+      "bookmarks": 35
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude Code 知らないと損する隠しコマンド・時短術 20選 - Qiita",
+      "url": "https://qiita.com/miruky/items/48ede59ebe33b4b774ac",
+      "summary": "Deleted articles cannot be recovered. Draft of this article would be also deleted. Are you sure you want to delete this article?",
+      "bookmarks": 78
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Devin だけでは足りなかったので、エラー調査 AI Agent を自作した — AI 時代のエラー対応のやり方 - inSmartBank",
+      "url": "https://blog.smartbank.co.jp/entry/2026/03/18/110000",
+      "summary": "こんにちは。スマートバンクでEMをしている mitani です。 最近は、AIにコードを書かせるだけでなく、Sentry などのエラー調査を Claude Code や Devin といった AI Agent に任せる事例も増えてきました。また、最近ではSentry SeerというAIデバッグエージェントも出ています。 本記事では、そこから一歩進めて 「エラー...",
+      "bookmarks": 27
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「Windows 12」がようやく「Linux」移行の決め手になるかもしれない理由",
+      "url": "https://japan.zdnet.com/article/35244877/",
+      "summary": "筆者は定期的に今後起こり得る事象について予測を立てている。その際、重点を置くのが「Linux」の将来だ。今回、筆者は確信を持って断言する。オープンソースの未来がいよいよ転換期を迎えようとしている。その理由は「Windows 12」にある。 本題に入る前に、Windows 12に関する情報の多くは現時点で単なる噂にすぎない...",
+      "bookmarks": 30
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Amazon、米国で広告なし4K/Atmosの「Prime Video Ultra」開始。通常Prime会員はHD解像度に",
+      "url": "https://av.watch.impress.co.jp/docs/news/2094329.html",
+      "summary": "",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "［AI作文]日本基督教団（UCCJ）の左翼傾倒",
+      "url": "https://anond.hatelabo.jp/20260318204058",
+      "summary": "UCCJの歴史的立場をめぐる長年の論点は三つ。「キリスト教徒が、必ずしも日本原罪論（日本国家が永遠に戦争責任を負う『原罪』を持つという考え）に与する必要はない」、「人はみな罪を背負って生き、個人の贖いが大事」という聖書的な本質、そして牧師が政治思想を強要することの倫理的問題です。 以下、事実ベースで整...",
+      "bookmarks": 4
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "携帯各社、「JAPANローミング」を4月1日開始　災害時に他社回線に切り替えて通信を維持",
+      "url": "https://k-tai.watch.impress.co.jp/docs/news/2094408.html",
+      "summary": "",
+      "bookmarks": 40
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "アバター通話アプリ「POPOPO」正式発表　自動でカメラカット切り替え、そのままライブ配信も",
+      "url": "https://www.itmedia.co.jp/mobile/articles/2603/18/news096.html",
+      "summary": "POPOPOは“カメラのいらないテレビ電話”をうたっており、映画監督の庵野秀明氏やアーティストのGACKT氏、西村博之（ひろゆき）氏、手塚眞氏、ドワンゴの川上量生氏、エンジニアのMIROこと岩城進之介氏、サービスデザイナーの深津貴之氏、デザイナーの有馬トモユキ氏、空間ディレクターの加藤圭氏らが役員や開発メンバーと...",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "平成初期に帰ろう。あの頃のガビガビ画面を再現するジェネレータ",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2094370.html",
+      "summary": "",
+      "bookmarks": 19
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "TypeScript 7.0の現在地と備え方",
+      "url": "https://speakerdeck.com/uhyo/typescript-7-dot-0noxian-zai-di-tobei-efang",
+      "summary": "2026-03-18 TypeScript 7.0を読み解く「uhyo さんに聞く、ネイティブ化の背景とこれから」",
+      "bookmarks": 14
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ニコニコのショート動画、4月15日スタート　「コメントの一体感」はそのまま",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/18/news093.html",
+      "summary": "ニコニコは3月17日、縦型の短尺動画を投稿できる「ニコニコショート」を4月15日から提供すると発表した。「ニコニコならではのコメントの一体感」を楽しめるという。 縦型の視聴画面は当初、モバイル版のニコニコ動画アプリのみ対応する。PC版は今後のアップデートで対応する予定だ。 併せてクリエイター向けの情報も公...",
+      "bookmarks": 23
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "要約しようにも素人専門家だらけ？ Google、健康情報をAIが要約する機能をひっそり廃止【やじうまWatch】",
+      "url": "https://internet.watch.impress.co.jp/docs/yajiuma/2094301.html",
+      "summary": "",
+      "bookmarks": 61
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "iPhone/iPad/Macに脆弱性、Appleが「バックグラウンドセキュリティ改善」を実施／クロスオリジン問題「CVE-2026-20643」を解決",
+      "url": "https://forest.watch.impress.co.jp/docs/news/2094087.html",
+      "summary": "",
+      "bookmarks": 9
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "なぜブックオフは生き残り、他の新古書店は消えたのか｜都立家政のブックマート",
+      "url": "https://note.com/yngwie5150/n/nf149dd3824d0",
+      "summary": "ブックオフは生き残った。 でも、ブックマートやブックアイランドのような新古書店はほぼ消えた。 この差はなんだったのか。 ブックオフは「仕組みの店」だ。 50坪以上の大型店舗。 初期投資は2000万〜で既に別事業がある会社が加入するフランチャイズだ。 マニュアル化されていて、誰がやっても同じように運営できる。 ...",
+      "bookmarks": 85
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "にんじん",
+      "url": "https://anond.hatelabo.jp/20260318221514",
+      "summary": "今朝のこと。１歳7ヶ月になる娘の足に縞模様の靴下を履かせようとしたときだった。 「にんじん、にんじん！」 ふいに娘がイヤイヤと首を振り、声を上げた。なんだろう？ごはんの話ではない。ハッとして引き出しを探り、洗濯が終わったばかりの「にんじん柄の靴下」を見せてみた。すると娘はぱぁっと花が咲いたような笑顔...",
+      "bookmarks": 48
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、姿のまま放置だと意外とすぐシナシナになりますし | mond",
+      "url": "https://mond.how/ja/topics/04uiz5zxxuzyhoz/3nd5ch7dwzoopaw",
+      "summary": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、...",
+      "bookmarks": 48
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "【WBC】日本人として言いたいことがある…それで、ベネズエラ料理はどこで食べられるの？「クソわかる 食を通じてベネズエラを感じたい」",
+      "url": "https://togetter.com/li/2676239",
+      "summary": "リンク Full-Count（フルカウント） ― 野球ニュース・速報・コラム ― ベネズエラ、初のWBC王者に 9回に勝ち越し…米国スター軍団を撃破し6回目で掴んだ世界一 ベネズエラ代表は17日（日本時間18日）、ローンデポパークで行われたワールド・ベースボール・クラシック（WBC）決勝で米国代表に勝利した。9回にエウヘニオ・ス...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「とある蕎麦屋のゴマだれ蕎麦にハマり週に数回食べる生活を続けていたらオペレーションで味に差が出ることに気づいた」悲しい展開のSNS投稿に希望の光",
+      "url": "https://togetter.com/li/2676101",
+      "summary": "𝔸𝕔𝕥𝕚𝕧𝕖𝕀𝕟𝕕𝕖𝕩 @ActiveIndex 東京駅の越後そばのゴマだれ蕎麦にハマり、2年ほど週数回食べていた時、ゴマだれの濃さのバラつきが激しい事に気がついた。ゴマだれのオペレーションを毎回観察していたら、タレを入れてる麦茶の容器のシェイクの回数が原因だったので課題と原因と改善案を認めて感謝の気持ちと一緒に会社に送...",
+      "bookmarks": 69
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "進化するNISA　「こどもNISA」など来年以降に拡充されること【お金の教室】",
+      "url": "https://www.watch.impress.co.jp/docs/series/tsukamoto/2091692.html",
+      "summary": "",
+      "bookmarks": 11
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "クレカ・キャッシュレス決済で一時障害　日本カードネットワークが発表　Xでは「やはり現金は必要」の声",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/18/news131.html",
+      "summary": "キャッシュレス決済基盤を提供する日本カードネットワーク（東京都新宿区）は3月18日、一部サービスに障害が発生していると発表した。これにより、同社のサービスを採用する店舗などでクレジットカード決済などが利用できない状態になっている。 この障害の発生に合わせて、Xでは「クレカ決済が利用できなかった」「やは...",
+      "bookmarks": 18
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ラップで包むのちょっと待って！　仕上がりの差が出る冷凍ごはんに「目からウロコ」【冷凍テク4選】",
+      "url": "https://grapee.jp/food/food-storage/2194446",
+      "summary": "grapeフード編集部 プロフィール 『grapeフード編集部』は、毎日の食事をもっと楽しく、美味しい情報を発信する専門チームです。 冷凍したごはんを温めると、パサついたりムラができたりして味が落ちたと感じることはありませんか。 実は、保存する前のほんの少しの工夫で、解凍後の味わいが劇的に変わるのです。 本記事...",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ネットでスニーカーを見ていたら妻が「持ってるじゃん！」興味がないと似たようなもんに見えるんだろうけどさ！と下駄箱を見たら…",
+      "url": "https://togetter.com/li/2676107",
+      "summary": "ネットで気に入ったスニーカーを見ていたら妻が「持ってるじゃない」と言った。妻はスニーカーに興味がないため、同じものに見えるのだろうと思いつつ下駄箱を確認したら本当に同じ物があった。「マニア以外は違いがわからない」ではない展開に驚きと笑いが広がる。趣味や好みが変わらないことに安心する声や、同じもの...",
+      "bookmarks": 25
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "犬のおまわりさんってよく聴いたら頭おかしくない？",
+      "url": "https://anond.hatelabo.jp/20260317232626",
+      "summary": "まいごのまいごの子猫ちゃん、あなたのおうちどこですかぁ？と聞いてて おうちを聞いても分からない、名前を聞いても分からない、にゃんにゃん！と泣くだけ 犬のおまわりさん、困ってしまってワンワンと吠えるだけ よくよく聞くと犬のおまわりさん何も出来てないじゃん 挙句困ってワンワン吠えてるだけとかアホなんか",
+      "bookmarks": 79
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "工場で作業してたらスーツの男性がやって来てセールスだと思って塩対応してたら突然「私、労働基準監督署の者です」と正体を明かされ神対応をすることになった",
+      "url": "https://togetter.com/li/2676068",
+      "summary": "工場で作業中、スーツの男性が来てセールスかと塩対応したら「労働基準監督署です」と名乗り、対応を一変させた。抜き打ちで訪問することがあるらしく、最初に身分証や名刺を提示する。初回は是正要請が多いとの話も。税務署や消防署の訪問も恐ろしいという声や、匿名アンケートを残してほしい、長時間残業の改善を期待...",
+      "bookmarks": 37
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ロボット掃除機を導入したら、愛犬のゴールデンレトリバーのかわいいシーンが見られた「口のたぷたぷもお鼻もたまらねぇ」",
+      "url": "https://togetter.com/li/2676074",
+      "summary": "北関東の鷹🐶ゴールデンレトリバーとの暮らし🏠 @northernKantoTK ロボット掃除機を導入したおかげで掃除の手間が減ったのは言わずもがなですが、愛犬の可愛いシーンを納めることも出来るので、購入して正解でした☺️ #ゴールデンレトリバー pic.x.com/A29w768bGI 2026-03-17 13:53:16 北関東の鷹🐶ゴールデンレトリバーと...",
+      "bookmarks": 30
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "イラン情勢悪化の影響でわさビーフの生産停止→「重油で揚げてると勘違いしてる人がいて草」大喜利会場になる",
+      "url": "https://togetter.com/li/2676086",
+      "summary": "リンク 47NEWS 「わさビーフ」生産停止 ポテチ、重油調達困難 山芳製菓は17日、看板商品のポテトチップス「わさビーフ」など主力製品の生産を停止していると明らかにした。イラン情勢悪化の影響で、兵庫県朝来市の工場で用いる重油の調達が困難になったため。 工場では、 ... 5 users 🍹グァバちゃん @BanziroG いろんな...",
+      "bookmarks": 38
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "頼む、聞いてくれ、愛されるプロダクトが作れたんだ｜sugitani",
+      "url": "https://note.com/sugitani/n/n07993c05d836",
+      "summary": "総登録数が約15,000人、ひと月の利用人数MAUが約2,500人、1日あたりの利用人数DAUが平均で約700人、サブスク加入者は約100人…のSNSと聞いてどう思うだろうか？ たぶんほとんどの方が存在価値がわからないくらい小さい！と思うんじゃないだろうか？普段から随所で目にする何百万人が利用！とかの景気の良い数字に比べると...",
+      "bookmarks": 9
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "YouTubeの広告ウザすぎて年齢を200歳にしたら、5秒で飛ばせるお葬式のCMばっかりになった「勇者ヒンメルがそうした」「これはマジ」",
+      "url": "https://togetter.com/li/2675847",
+      "summary": "YouTubeの広告ウザすぎて年齢を200歳にしたら、5秒で飛ばせるお葬式のCMばっかりになった「勇者ヒンメルがそうした」「これはマジ」",
+      "bookmarks": 14
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "自死遺族のTwitter見ているんだけど",
+      "url": "https://anond.hatelabo.jp/20260317190009",
+      "summary": "40代シングルマザー、10代の息子が首つり自殺、みたいなアカウント群を見ているんだけど 弱者女性が弱者男性を産んだら、弱者男性の人生は詰んだって感じのものが多い （自死遺族のツイートに「いいね」をすると、芋づる式に界隈が見つかりやすい） 40代シングルマザーも中学時代に不登校を経験していて、10代の息子も中...",
+      "bookmarks": 17
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ニッチェ・江上敬子さんに聞く、夫と話し合うコツ｜夫婦は他人だから「すり合わせ」が全て - りっすん by イーアイデム",
+      "url": "https://www.e-aidem.com/ch/listen/entry/2026/03/18/103000",
+      "summary": "お笑いコンビ・ニッチェの江上敬子さんに「パートナーと信頼し合える関係を築くコツ」について伺いました。 仲の良かったカップルが、結婚や出産を経て衝突するようになる……というのは、よく聞く話です。 江上さんも、結婚後にパートナーとの関係性が変化した1人。 幾度ものすり合わせを経て、今は協力しながら育児がで...",
+      "bookmarks": 41
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "婚活ナシで若い女性と再婚した、妖怪みたいなオッサンの強み",
+      "url": "https://blog.tinect.jp/?p=90865",
+      "summary": "「婚活って短期決戦の、条件の突きつけあいやねん。そんなん無理に決まってるやろ」 先日、婚活を諦めたという50代の友人と話していた時の事だ。 ふと思い付きでぶつけた疑問を、そんなふうに否定されてしまった。 「何人かの候補の人と、1年でも2年でも時間を掛けて理解と共感を積み上げたら、誰か1人くらいとうまくい...",
+      "bookmarks": 265
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "春からのお弁当生活にぴったり「高機能で便利なお弁当箱」無印良品やサーモス、山崎実業など5選 - ソレドコ",
+      "url": "https://soredoko.jp/entry/2026/03/18/103000",
+      "summary": "会社や学校に「お弁当」を持参したい人に向け、お弁当箱（ランチボックス）を紹介。サーモスや山崎実業、無印良品などが手がける「機能性に優れた弁当箱」を5つピックアップしました。 春からの新生活、お弁当作りを始めようと思っている人も多いのでは？ 今回は「機能性の高さ」や「使いやすさ」を軸に5つのお弁当箱を...",
+      "bookmarks": 30
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "中国の青島にある市場でヒトデを人生初の実食、「可食部あるんだ」「ビールのアテにいい」の声も",
+      "url": "https://togetter.com/li/2675935",
+      "summary": "Lillian @Lily0727K 青島で、人生初めてヒトデを食べました！ 青島は海鮮の街、新鮮な魚介が並ぶ市場に行けば、必ずヒトデも売られています！ 焼いて剥いて中身を口に入れると、まさにウニと蟹味噌を合わせたような濃厚な美味！ 自分が知らない海の幸に、海外で出会えるなんて、日本にいた頃は想像すらしなかったです！ ...",
+      "bookmarks": 25
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "DGX Spark で NemoClaw を試す｜npaka",
+      "url": "https://note.com/npaka/n/n5bd56ce0cc28",
+      "summary": "「DGX Spark」で「NemoClaw」を試したので簡単にまとめました。 1. NemoClaw「NVIDIA NemoClaw」は、 「OpenClaw」の常時稼働型アシスタントを安全に実行するためのオープンソーススタックです。 2. 前提条件・Linux Ubuntu 22.04 LTS 以降 ・Node.js 20以降 および npm 10以降 （インストーラーはNode.js 22を推奨） ・...",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "電話1本で「赤飯2100食」捨てたいわき市教委の誤算…「提供止めれば廃棄」の給食ルール、求められた慎重な判断 | 弁護士JPニュース",
+      "url": "https://www.ben54.jp/news/3312",
+      "summary": "3月11日、いわき市（福島県）の5つの市立中学校で卒業生の祝いに赤飯の給食を用意したところ、同日午前に「震災のあった日に赤飯はおかしい」と電話があったことから、市教育委員会の判断で提供が取りやめられ、生徒たちには学校で備蓄した非常用の缶詰パンが出されていたことが、13日に明らかになった。 そして、調理済...",
+      "bookmarks": 163
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "マクドナルドでダブル肉厚ビーフを注文したら中身がミディアムレアでネッチョリしてた→「怖すぎる...私なら潜伏期間中怖くて何もできなくなるレベル」",
+      "url": "https://togetter.com/li/2675882",
+      "summary": "マクドのダブル肉厚ビーフがミディアムレアでネッチョリして不味いと指摘。冷凍パティを通常の焼き時間で加熱した焼き不足の可能性が高く、明らかな調理ミスとして店員や店舗へ連絡すべきだという意見が多数。",
+      "bookmarks": 52
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "春の虫対策にフマキラー「凍殺ジェット」がおすすめ　殺虫成分ゼロ＆瞬間凍結で一人暮らしの“お守り”にも - ソレドコ",
+      "url": "https://soredoko.jp/entry/2026/03/17/103000",
+      "summary": "暖かくなると活動的になる「虫」。「虫が苦手」「部屋に殺虫剤をまくのは嫌」という方に推したいのが、フマキラー「凍殺ジェット」です。離れた場所から安全に狙い撃ちでき、殺虫成分ゼロ＆-85℃の冷気で瞬間凍結！ これから一人暮らしを始める人にもぴったりな“お守りアイテム”を紹介します。 3月も折り返しに入り、少し...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「MUFGスタジアム」のリニューアルエリアが公開、多彩なグルメが楽しめる「スタナカ」やVIPルーム「LIMINAL SUITE」など",
+      "url": "https://k-tai.watch.impress.co.jp/docs/news/2093863.html",
+      "summary": "",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "辺野古沖転覆事故を海のプロの目から考察｜瀬崎公介/KousukeSezaki",
+      "url": "https://note.com/irukaoyaji/n/nd7fe4b625bc2",
+      "summary": "本日、辺野古沖で2隻の船に分乗し、平和学習に参加していた同志社国際高校の生徒1名と船長1名が転覆し、亡くなってしまうという痛ましい事故が発生しました。心からお悔やみ申し上げます。 報道の断片的な情報での判断は稚拙ではありますが、船長歴30年以上の私の目から見ると疑問に感じる点が幾つもありました。尚、本...",
+      "bookmarks": 60
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "独身偽装は女もする",
+      "url": "https://anond.hatelabo.jp/20260317213900",
+      "summary": "ここにいる奴は俺と同じで女性耐性低めだろうし 注意喚起として筆を取っている 流石に俺よりはマシだろうが聞いてくれ ざっくり言えばタイトル通り 元カノは結婚して今年で10年 子供も2人いる 旦那とはしばらくセックスレスからの別居状態 それ目的でマチアプをやっていたと言われた (マチアプやってるからだよ、と思わ...",
+      "bookmarks": 76
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ヨシダプロの実家にラーメンを作りに行ってきた",
+      "url": "https://dailyportalz.jp/kiji/yoshidapro-Ramen-cooking/page/2",
+      "summary": "スープに食材を加える 鶏ガラなどから作るラーメンのスープは最低でも2時間、できれば3時間くらい煮込みたいところである。いつものように作ってしまったが、他所様の家でキッチンを借りて作るのにまったく向いていない料理だ。 すぐできる冷やし中華にすればよかったな、というか別に鶏ガラから作らなくてもよかったな...",
+      "bookmarks": 13
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "子供の頃に読んだ「生活図鑑」は、大人が知っていて当たり前のことの総集編でとても役に立った…「冒険図鑑」「工作図鑑」などシリーズ愛読者が思い出を語る",
+      "url": "https://togetter.com/li/2675737",
+      "summary": "マコト @mak0t0_T @Fukuinkan_PR 今も売ってるんですか！？ 私も読みたいし娘にも読んでほしい(私に生活力があまりなく教えられないため...) 2026-03-17 09:42:50",
+      "bookmarks": 259
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "公示地価2.8%上昇、バブル後最大の伸び　投資マネーが押し上げ - 日本経済新聞",
+      "url": "https://www.nikkei.com/article/DGXZQOUA111YJ0R10C26A3000000/",
+      "summary": "国土交通省が17日発表した2026年1月1日時点の公示地価は、全用途の全国平均が前年比で2.8%上昇した。5年連続でプラスとなり、伸び幅はバブル期以降で最大となった。都心を中心にオフィス需要が高水準で推移するとの見方が強く、国内外からの投資マネーが25年に過去最大となって地価を押し上げた。東京圏は5.7%、大阪圏は...",
+      "bookmarks": 15
+    }
+  ],
+  "zenn": [
+    {
+      "source": "zenn",
+      "title": "Claude Codeでのふるまいから隠れたSkillを見つける",
+      "url": "https://zenn.dev/chigichan24/articles/eed4a60d102997",
+      "summary": "はじめに\n!\n前置きとして、この記事では Claude Code を LLM Agent の一例として扱います。\nただし、ここで述べる考え方自体は Claude Code 固有のものではなく、他の Agent 的な開発体験にも応用できると思っています。\n\nLLM Agent を日常的に使っていると、だんだん「毎回似たような作業をしているな」と感じることがあります。そしてその先で、多くの人が一度はこう考えるはずです。\n\n自分が繰り返している作業パターンを見つけて、Skill として再利用できないだろうか？\n\nただ、実際にやろうとすると意外と難しいです。なぜなら、Skill を作る前に、...",
+      "author": "chigichan24"
+    },
+    {
+      "source": "zenn",
+      "title": "DGX SparkでNemoClawをローカル実行",
+      "url": "https://zenn.dev/karaage0703/articles/8bf663501cd4bc",
+      "summary": "NVIDIAがGTC 2026で発表したNemoClawを、DGX Spark上でローカルLLM（Ollama + Nemotron）だけで動かしてみました。APIキーなし、ローカル環境で動かしています。\nこの記事では、セットアップ手順をまとめます。\n\n NemoClawとは\nNemoClawは、AIエージェントをサンドボックス環境で安全に実行するためのオープンソースツールです。\n3つのコンポーネントで構成されています（AIを使って調査、AIと議論して作成しました）:\n\n\n\nコンポーネント\n役割\n\n\n\n\nNemoClaw\nセットアップCLI。ゲートウェイ起動・サンドボックス作成・推論設定...",
+      "author": "からあげ"
+    },
+    {
+      "source": "zenn",
+      "title": "「AIっぽい」の正体は文体じゃない — 全業務をAIエージェントで回して気づいたこと",
+      "url": "https://zenn.dev/omori432/articles/ai-likeness-not-about-writing-style",
+      "summary": "RIOです。AnotherBallでモバイルエンジニアをしていて、Avvyというアプリを開発しています。（@rioX432）\n日々の業務では、Claude Codeをメインのパートナーとして使っています。開発はもちろん、テックブログの執筆、調査レポートの作成、コードレビュー、デザインまで。できることは片っ端からAIに任せて、業務全体をAIエージェントで回すことを目指しています。\nその結果、日常的にもらうようになったフィードバックがあります。\n\n「AIっぽくて嫌」\n「AIっぽくて中身がない」\n「AIのレビューをそのまま出力されると困る。文脈を理解した上での指摘が欲しい」\n「AI生成されたレ...",
+      "author": "RIO"
+    },
+    {
+      "source": "zenn",
+      "title": "Vite+ の異常なタスクランナー: vite-task は如何にしてキャッシュの手動依存管理をなくしたか",
+      "url": "https://zenn.dev/herp_inc/articles/strange-task-runner",
+      "summary": "原題『Vite+の異常なタスクランナー または vite-task は如何にしてキャッシュの手動依存管理を止めてファイルアクセスを自動捕捉するようになったか』[1]\n\n先日、ついに Vite+ の alpha 版がリリースされました。oxc エコシステムの全面バックアップを受けた高速なネイティブ実装ツールチェーンが揃い踏みしており、開発コミュニティも沸き立っています。\n私も仕事で扱っているプロジェクトを手元で Vite+ に置き換えてみたのですが、 vp (ヴイピー) 鬼はえええ！このまま遅いやつら全部 Vite+ に置き換えていこうぜ！ という気持ちになりました。\nそんな Vite+ ...",
+      "author": "asa1984"
+    },
+    {
+      "source": "zenn",
+      "title": "フロントエンドのディレクトリ構成で再帰的な features 構成を推したい",
+      "url": "https://zenn.dev/pksha/articles/recursive-features-directory-structure",
+      "summary": "はじめに\nこんにちは。PKSHA Technology で SWE をしている須藤です。\n私の所属する PKSHA Speech Insight（PSI）チームでは、React + TypeScript で複数の Web アプリケーションを開発しています。\nFeature 型のディレクトリ構成は広く採用されていますが、feature の数が増えるにつれて「切り方の基準がブレる」「shared フォルダが肥大化する」「テストの粒度が定まらない」といった課題が表面化します。\n私たちのプロジェクトでも 200 を超える feature を運用する中で、フラットな features/ が構造...",
+      "author": "msuto"
+    },
+    {
+      "source": "zenn",
+      "title": "システム設計における妥協案の作り方: 理想像の STEP1 として妥協案を設計する",
+      "url": "https://zenn.dev/knowledgework/articles/c3f2f5986a24a6",
+      "summary": "mayah です。株式会社ナレッジワークでは創業時より CTO をしており、プロダクト全体の技術方針やアーキテクチャを定める役割をしています。\nこの記事は、KNOWLEDGE WORK Blog Sprint 2026 Spring の 12 本目の記事です。\n本日はシステム設計における妥協案の作り方について話してみたいと思います。\nシステム設計を行うに当たって、妥協はつきものです。最初から理想的な設計のもとに実装ができればいいのですが、締め切りまでの時間がなくて少ない工数で作れる方法を選ばなければならなかったり、工数が多いとそもそも ROI が合わなかったり、様々な理由で妥協した設計を...",
+      "author": "mayah"
+    },
+    {
+      "source": "zenn",
+      "title": "AIコードレビューを「単一責任の原則」で育てた話",
+      "url": "https://zenn.dev/globis/articles/d0c73d2b176ba5",
+      "summary": "はじめに\nこんにちは！グロービスのDevEx（Developer Experience）チームに所属するemi084です。\nAIコードレビューを導入したものの、「的外れな指摘が多い」「レビュー品質が安定しない」と感じることはありませんか？\n私たちも最初は的外れな指摘が何件も飛んできて、チームメンバーがAIレビューを無視し始める問題が発生してしまいました。\nこの記事では、私たちのチームがその課題を「単一責任の原則をAIにも適用する」という発想で乗り越えてきた実践例を紹介します。観点ごとにエージェントを分割し、過去の失敗パターンをナレッジとして教え込むことで、AIレビュワーを「チームの一...",
+      "author": "emi084"
+    },
+    {
+      "source": "zenn",
+      "title": "URLの代わりに「距離」を返すサーバーを作った",
+      "url": "https://zenn.dev/gold/articles/ada62ecdf10526",
+      "summary": "URLの代わりに「距離」を返すサーバーを作った\nこの記事は、どっちかというと作ったものを誰かに触ってほしくて書いた記事です。\n\n\n まず打ってみてください\n説明より先に、これを打ってみてほしいです。\ncurl \"https://space.gold3112.online/field?interest=programming&amp;format=text\"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  GOLDEN PROTOCOL  ·  field state\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━...",
+      "author": "gold"
+    },
+    {
+      "source": "zenn",
+      "title": "ちいさくはじめる Nix",
+      "url": "https://zenn.dev/trifolium/books/1c0373f3570334",
+      "summary": "Nix に興味があるけど、何から始めたらいいかわからない人のための入門書です。\nHomebrew など従来のパッケージ管理の状態から少しずつ Nix 管理に置き換えていく方法を解説します。\nNix を活用するのに必要な知識を体系的にまとめるのを目的としています。\n\n本書は下記レポジトリで公開しています。\nhttps://github.com/ryuryu333/zenn-contents/tree/main/books/1c0373f3570334",
+      "author": "ryu_trifolium"
+    },
+    {
+      "source": "zenn",
+      "title": "GitHub Actions 互換のローカルタスクランナーを作った",
+      "url": "https://zenn.dev/mizchi/articles/introduce-actrun",
+      "summary": "TL;DR - ローカル実行できる GitHub Actions Runner\nGitHub Actions のワークフローをローカルで実行するツール actrun を作りました。\nhttps://github.com/mizchi/actrun\nMoonBit で書いてクロスコンパイルしてるので、 npx, native, docker いずれでも使えます。\n# npx（インストール不要）\nnpx @mizchi/actrun .github/workflows/ci.yml\n\n# curl\ncurl -fsSL https://raw.githubusercontent.com/...",
+      "author": "mizchi"
+    },
+    {
+      "source": "zenn",
+      "title": "今更ですが、Claude Codeで、ミュージックプレイヤーみたいなものを作ってみた",
+      "url": "https://zenn.dev/churadata/articles/3a1382e4f6990f",
+      "summary": "生成AI使っていますか？\nがく＠ちゅらデータエンジニアです。\n昨今、生成AIを使っての開発ってのは、かなりかなり浸透してきて、生成AIがないと話にならん！な状況になりつつあると思います。\n全然使わないまんまじゃまずいなぁーーと思い、業務でも色々取り入れて試行錯誤してるところです。\n\n 朝、ふと思いついた\nいつも通り、下娘を幼稚園に送り、帰りにYoutubeMusicでアニソンを聴きながら帰ってきたときにふと思いました。\n「仕事中に作業用のBGMで、『こんな音楽流して』『リラックス用にカフェジャズを流して』みたいなこととが出来ないか？」\nと考えました。アレクサとかでできるあれです。\nスマー...",
+      "author": "Gaku Tashiro＠ちゅらデータエンジニア"
+    },
+    {
+      "source": "zenn",
+      "title": "rmの代わりにtrashを使ってCoding Agentに安全にファイルを削除させる",
+      "url": "https://zenn.dev/lef237/articles/23f77b0dade38f",
+      "summary": "LinuxやmacOSのターミナルでファイルを削除するとき rm コマンドを使います。特にCoding Agentは頻繁にrm を使ってファイルを削除しがちです。\nrm は強力で、削除したファイルは基本的に復元できません。\n特に rm -rf のようなコマンドは、誤操作すると重要なデータを一瞬で消してしまう危険があります。このコマンドをClaude CodeのようなCoding Agentに使わせたくない方も多いと思います。\nrmを使わずに、Coding Agentにファイルやディレクトリを安全に削除させたい...!\n今回の記事ではtrash コマンドについて簡単に説明します。\n\n tr...",
+      "author": "LEF"
+    },
+    {
+      "source": "zenn",
+      "title": "queryOptions の型推論を支える DataTag、その裏側の unique symbol — TanStack Query",
+      "url": "https://zenn.dev/tsuboi/articles/tanstack-query-options-unique-symbol",
+      "summary": "はじめに\nTanStack Query v5 で導入された queryOptions は、React と TypeScript エコシステムにおける開発者体験に大きな変化をもたらしました。設定オブジェクトを定義するだけで、別ファイルで呼び出される useQuery の戻り値の型が、型注釈なしで完璧に推論されます。\n// queries/users.ts - 設定の一元化\nexport const userQueries = {\n  detail: (userId: string) =&gt; queryOptions({\n    queryKey: ['users', userId]...",
+      "author": "Tsuboi"
+    },
+    {
+      "source": "zenn",
+      "title": "AI機能搭載のRSSリーダーを作った",
+      "url": "https://zenn.dev/babarot/articles/ai-rss-reader-oksskolten",
+      "summary": "なぜRSSリーダーか\n情報収集は基本活字で、昔からRSSリーダーをよく使ってきた。Google Readerの時代からFeedly、Miniflux、FreshRSSと渡り歩いたしPocketのようなRead it later系も使ってきたが落ち着いて使い続けられるサービスがなかった (もっとここがこうだったらな〜とか。サービス自体がなくなることもあった)\nそもそも自分がRSSリーダーを使うのは、情報源を自分でコントロールしたいというのが大きい。SNSのアルゴリズムはエンゲージメントに最適化されているため、気づかないうちにフィルターバブルに閉じ込められる。流れてくる情報は「自分が見た...",
+      "author": "babarot"
+    },
+    {
+      "source": "zenn",
+      "title": "もし、勤めている会社がM&Aされたらエンジニアはどう行動するか？",
+      "url": "https://zenn.dev/knowledgework/articles/0160b8d008d1e9",
+      "summary": "はじめに\nこんにちは！元Poetics、現ナレッジワーク所属のryogaと申します！\nこの記事は、KNOWLEDGE WORK Blog Sprint11本目の記事です！\n「株式会社ナレッジワーク」は2025年の7月1日に「株式会社Poetics」を吸収合併し事業と組織体制を一つにするM&amp;Aを行いました。\n当時、入社一年目のPoetics社でエンジニアをやっていた私の視点からM&amp;Aされる側の過程で起こったことなどを書いていきます。もしスタートアップで働いているエンジニアの方がいれば、将来のM&amp;Aの経験に備えてぜひ参考にしてください。\n\n なぜM&amp;Aが発...",
+      "author": "ryoga"
+    },
+    {
+      "source": "zenn",
+      "title": "Chromium(V8)のArray.prototype.flatを最大約5倍高速化した",
+      "url": "https://zenn.dev/dinii/articles/675d47a6c21c83",
+      "summary": "はじめに\n!\n修正や追加等はコメントまたはGitHubで編集リクエストをお待ちしております。\n\nダイニーで一番若いエンジニアのriya amemiya(21歳)です。\nタイトルの通り、V8の Array.prototype.flat（以下 flat）を高速化しました。\nパッチはこちらです。\nhttps://chromium-review.googlesource.com/c/v8/v8/+/7526287\n\n最初のコミットから約1ヶ月、やりきりました。\nChrome 147（V8 14.7）でリリースされます。\nhttps://chromiumdash.appspot.com/com...",
+      "author": "Riya Amemiya"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude Code / CodexでKaggle金メダルを取った話",
+      "url": "https://zenn.dev/chiman/articles/b233cc808d6af3",
+      "summary": "TL;DR\n\n実装と分析をAIに任せることで、実験量が桁違いに増えた（5-Fold CV合計1,515回）\n実装から解放された分、人間はアイディアとデータ観察に集中できた\nただし、スコアを押し上げたアイディアのほとんどは人間発。AIの提案の打率は低かった\nAIに素早く実験を回させるための環境・構成づくりも重要だった\nこの構図はKaggleに限らず、定量評価できるR&amp;D全般で起きうると感じている\n\n今回のコンペで使ったコード・設定・分析結果を公開しています。\nhttps://github.com/Chihiro-n/csiro-biomass-agentic-solution\n\n ...",
+      "author": "kinosuke"
+    },
+    {
+      "source": "zenn",
+      "title": "音楽の生成・編集が可能な高性能ローカル音楽生成AI【ACE-Step-1.5】から音楽生成AIの仕組みを完全に理解する",
+      "url": "https://zenn.dev/asap/articles/6a717d7a68ec02",
+      "summary": "はじめに\n!\nこの記事はすべて人力で記述しています。\n誤りがあれば、こっそりと教えてください。\n\nhttps://github.com/ace-step/ACE-Step-1.5\n最近、AIで音楽を生成できるオープンソースモデル「ACE-Step 1.5」を試す機会があったので、備忘録として残します。\n性能や操作感において、Sunoなどの商用モデルに匹敵するクオリティで、しかもローカル環境で動かせるという、なかなかロマンのあるモデルです。\nまた、このモデルはテキストからの音楽生成だけでなく、音楽の一部分修正なども行うことができ、しかもそれらの機能を単一のモデルによって達成している（マ...",
+      "author": "asap"
+    },
+    {
+      "source": "zenn",
+      "title": "課題ベースで学ぶClaude Code便利機能",
+      "url": "https://zenn.dev/hsaki/articles/why-claude-code-function",
+      "summary": "この記事について\n「とりあえずClaude Codeを入れてみたけど、なんか使いこなせていない気がする」「あの機能の存在は知っているけど、自分には関係ないと思っていた」という方はいませんか？\n本記事では、Claude Codeを使いはじめた人が日々の作業の中で感じるよくある「つまずき」や「不満」を出発点に、それを解消するClaude Codeの機能を紹介していきます。\n\nClaude.aiチャットとClaude Codeのagentモードは何が違うの？\nCLAUDE.md、Hook、MCP、Skillなど設定項目が多すぎてどこから手をつければいいかわからない\n\nという部分を、「こうい...",
+      "author": "さき(H.Saki)"
+    },
+    {
+      "source": "zenn",
+      "title": "仕様駆動開発(SDD)って、本当に不要なの？",
+      "url": "https://zenn.dev/karamage/articles/a0b7111698ecb2",
+      "summary": "仕様駆動開発なんて要らない、やめておけ。\n仕様駆動開発不要論が界隈を飛び交っています。\nhttps://zenn.dev/simossyi/articles/309e8cd88a90c3\nしもしさんの「仕様駆動開発はやめた方がええ」という記事を読んで、共感しました。めちゃくちゃわかる。でも、うーん、ちょっと待てよ、と。\n人の意見を鵜呑みにせずに、いったん自分の中で本当に不要なのか考えてみたいと思いました。\n\n 仕様駆動開発不要論について\nしもしさんの主張を整理すると、\n\n実装に関するドキュメントは不要で、仕様はすべてコードにある。\nドキュメントとコードの両方をメンテナンスするコストが大き...",
+      "author": "karamage"
+    }
+  ],
+  "hackernews": [
+    {
+      "source": "hackernews",
+      "title": "The worst volume control UI in the world",
+      "body": "",
+      "score": 9,
+      "num_comments": 4,
+      "url": "https://uxdesign.cc/the-worst-volume-control-ui-in-the-world-60713dc86950",
+      "created_utc": 1773829358
+    },
+    {
+      "source": "hackernews",
+      "title": "Ask HN: How is AI-assisted coding going for you professionally?",
+      "body": "Comment sections on AI threads tend to split into &quot;we&#x27;re all cooked&quot; and &quot;AI is useless.&quot; I&#x27;d like to cut through the noise and learn what&#x27;s actually working and what isn&#x27;t, from concrete experience.If you&#x27;ve recently used AI tools for professional coding work, tell us about it.What tools did you use? What worked well and why? What challenges did you hit, and how (if at all) did you solve them?Please share enough context (stack, project type, team size, experience level) for others to learn from your experience.The goal is to build a grounded picture of where AI-assisted development actually stands in March 2026, without the hot air.",
+      "score": 424,
+      "num_comments": 603,
+      "url": "https://news.ycombinator.com/item?id=47388646",
+      "created_utc": 1773590303
+    }
+  ]
+}
