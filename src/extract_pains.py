@@ -11,6 +11,8 @@ from collections.abc import Callable
 
 BATCH_SIZE = 20
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 SYSTEM_PROMPT = """\
 あなたはユーザーの日常的な不満や困りごと（ペイン）を抽出するアナリストです。
 
@@ -71,6 +73,34 @@ willingness_to_pay の判断基準:
 """
 
 
+def _build_system_prompt() -> str:
+    """フィードバックルールを反映した動的システムプロンプトを構築する."""
+    prompt = SYSTEM_PROMPT
+
+    rules_path = os.path.join(BASE_DIR, "feedback_rules.json")
+    if not os.path.exists(rules_path):
+        return prompt
+
+    try:
+        with open(rules_path, encoding="utf-8") as f:
+            rules = json.load(f)
+    except Exception:
+        return prompt
+
+    exclude_patterns: list[str] = rules.get("exclude_patterns", [])
+    priority_patterns: list[str] = rules.get("priority_patterns", [])
+
+    if exclude_patterns:
+        prompt += "\n\n以下のパターンはフィードバックにより「ノイズ」と判定されたため、特に除外してください:\n"
+        prompt += "\n".join(f"- {p}" for p in exclude_patterns)
+
+    if priority_patterns:
+        prompt += "\n\n以下のパターンはフィードバックにより「良い抽出」と評価されたため、優先してください:\n"
+        prompt += "\n".join(f"- {p}" for p in priority_patterns)
+
+    return prompt
+
+
 def extract(posts: list[dict]) -> list[dict]:
     """投稿リストからペインを抽出する."""
     if not posts:
@@ -123,7 +153,7 @@ def _call_github_models(token: str) -> Callable[[str], str]:
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": _build_system_prompt()},
                 {
                     "role": "user",
                     "content": f"以下の投稿からペインを抽出してください:\n\n{batch_text}",
@@ -139,7 +169,7 @@ def _call_github_models(token: str) -> Callable[[str], str]:
 def _call_claude(batch_text: str) -> str:
     """Claude Code CLI を呼び出してペイン抽出する."""
     prompt = (
-        f"{SYSTEM_PROMPT}\n\n"
+        f"{_build_system_prompt()}\n\n"
         f"以下の投稿からペインを抽出してください:\n\n{batch_text}"
     )
 

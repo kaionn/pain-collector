@@ -5,7 +5,11 @@
 """
 
 import json
+import os
 import subprocess
+from datetime import datetime, timezone, timedelta
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def collect_feedback() -> dict:
@@ -95,3 +99,56 @@ def run() -> None:
     """フィードバック集計を実行して表示する."""
     report = generate_feedback_report()
     print(report)
+
+
+def learn_rules() -> dict:
+    """フィードバックから学習ルールを抽出して feedback_rules.json に保存する."""
+    fb = collect_feedback()
+
+    exclude_patterns: list[str] = []
+    priority_patterns: list[str] = []
+
+    # bad issues からノイズパターンを抽出
+    for issue in fb["bad"]:
+        title = issue.get("title", "")
+        # "[カテゴリ] ペインテキスト" 形式からカテゴリを抽出
+        if title.startswith("[") and "]" in title:
+            bracket_end = title.index("]")
+            category = title[1:bracket_end].strip()
+            pain_text = title[bracket_end + 1:].strip()
+            pattern = f"{category}: {pain_text}" if pain_text else category
+        else:
+            pattern = title
+
+        if pattern and pattern not in exclude_patterns:
+            exclude_patterns.append(pattern)
+
+    # good issues から優先パターンを抽出
+    category_count: dict[str, int] = {}
+    for issue in fb["good"]:
+        title = issue.get("title", "")
+        if title.startswith("[") and "]" in title:
+            bracket_end = title.index("]")
+            category = title[1:bracket_end].strip()
+            category_count[category] = category_count.get(category, 0) + 1
+
+        pain_text_part = title[title.index("]") + 1:].strip() if "]" in title else title
+        if pain_text_part and pain_text_part not in priority_patterns:
+            priority_patterns.append(pain_text_part)
+
+    jst = timezone(timedelta(hours=9))
+    rules = {
+        "exclude_patterns": exclude_patterns,
+        "priority_patterns": priority_patterns,
+        "updated_at": datetime.now(jst).isoformat(),
+    }
+
+    rules_path = os.path.join(BASE_DIR, "feedback_rules.json")
+    with open(rules_path, "w", encoding="utf-8") as f:
+        json.dump(rules, f, ensure_ascii=False, indent=2)
+
+    print(f"[learn_rules] 除外パターン: {len(exclude_patterns)} 件")
+    print(f"[learn_rules] 優先パターン: {len(priority_patterns)} 件")
+    print(f"[learn_rules] 保存先: {rules_path}")
+
+    return rules

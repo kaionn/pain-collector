@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, extract_pains, feedback, market_check, notify, weekly_trends
+from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive
 
 JST = timezone(timedelta(hours=9))
 
@@ -128,14 +128,16 @@ def process_day(
     reddit_posts: list[dict],
     hatena_posts: list[dict],
     zenn_posts: list[dict],
+    hn_posts: list[dict] | None = None,
 ) -> None:
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
     print(f"=== Pain Collector: {date_str} ===\n")
 
-    all_posts = reddit_posts + hatena_posts + zenn_posts
+    hn_posts = hn_posts or []
+    all_posts = reddit_posts + hatena_posts + zenn_posts + hn_posts
     print(
         f"投稿数: Reddit {len(reddit_posts)} 件 + はてブ {len(hatena_posts)} 件"
-        f" + Zenn {len(zenn_posts)} 件 = {len(all_posts)} 件\n"
+        f" + Zenn {len(zenn_posts)} 件 + HN {len(hn_posts)} 件 = {len(all_posts)} 件\n"
     )
 
     # 生データを JSON で保存
@@ -149,6 +151,7 @@ def process_day(
                 "reddit": reddit_posts,
                 "hatena": hatena_posts,
                 "zenn": zenn_posts,
+                "hackernews": hn_posts,
             },
             f,
             ensure_ascii=False,
@@ -187,6 +190,10 @@ def process_day(
     # LINE Notify で TOP3 を通知
     notify.send_top_pains(pains, date_str)
 
+    # 高ポテンシャルなペインのディープダイブレポートを自動生成
+    print("--- ディープダイブ ---")
+    deep_dive.run(pains, date_str)
+
 
 def main() -> None:
     """メイン処理."""
@@ -208,6 +215,16 @@ def main() -> None:
         action="store_true",
         help="フィードバック集計レポートを表示する",
     )
+    parser.add_argument(
+        "--learn",
+        action="store_true",
+        help="フィードバックから学習ルールを抽出する",
+    )
+    parser.add_argument(
+        "--deep-dive",
+        action="store_true",
+        help="高ポテンシャルなペインのディープダイブレポートを生成する",
+    )
     args = parser.parse_args()
 
     today = datetime.now(JST).date()
@@ -216,8 +233,29 @@ def main() -> None:
         feedback.run()
         return
 
+    if args.learn:
+        feedback.learn_rules()
+        return
+
     if args.weekly:
         weekly_trends.run(today)
+        return
+
+    if args.deep_dive:
+        # 直近の日次レポートの raw データからディープダイブ対象を探す
+        raw_path = os.path.join(BASE_DIR, "raw", f"{today.isoformat()}.json")
+        if not os.path.exists(raw_path):
+            print("本日の raw データがありません。先に日次収集を実行してください。")
+            return
+        with open(raw_path, encoding="utf-8") as f:
+            raw_data = json.load(f)
+        all_posts = (
+            raw_data.get("reddit", []) + raw_data.get("hatena", [])
+            + raw_data.get("zenn", []) + raw_data.get("hackernews", [])
+        )
+        pains = extract_pains.extract(all_posts)
+        pains = market_check.enrich_pains(pains, top_n=5)
+        deep_dive.run(pains, today.isoformat())
         return
 
     if args.backfill > 0:
@@ -231,9 +269,12 @@ def main() -> None:
         print("\n--- Zenn 収集 ---")
         zenn_posts = collect_zenn.collect()
 
+        print("\n--- Hacker News 収集 ---")
+        hn_posts = collect_hn.collect()
+
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
-            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts)
+            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts)
             print("\n" + "=" * 60 + "\n")
     else:
         # 通常: 収集 → 抽出 → 保存
@@ -246,7 +287,10 @@ def main() -> None:
         print("\n--- Zenn 収集 ---")
         zenn_posts = collect_zenn.collect()
 
-        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts)
+        print("\n--- Hacker News 収集 ---")
+        hn_posts = collect_hn.collect()
+
+        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts)
 
 
 if __name__ == "__main__":

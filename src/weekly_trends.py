@@ -7,8 +7,10 @@
 import glob
 import json
 import os
+from collections import Counter
 from datetime import date, timedelta
 
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -59,8 +61,11 @@ def load_daily_pains(target_date: date, days: int = 7) -> list[dict]:
             with open(raw_path, encoding="utf-8") as f:
                 data = json.load(f)
 
-            # raw には reddit/hatena/zenn の生データが入っている
-            posts = data.get("reddit", []) + data.get("hatena", []) + data.get("zenn", [])
+            # raw には reddit/hatena/zenn/hackernews の生データが入っている
+            posts = (
+                data.get("reddit", []) + data.get("hatena", [])
+                + data.get("zenn", []) + data.get("hackernews", [])
+            )
             all_pains.extend(posts)
         except (json.JSONDecodeError, OSError) as e:
             print(f"[週次] {d.isoformat()} の読み込みに失敗: {e}")
@@ -103,6 +108,162 @@ def calculate_novelty(new_pain: str, historical_pains: list[str]) -> float:
     tfidf = TfidfVectorizer().fit_transform(corpus)
     similarities = cosine_similarity(tfidf[-1:], tfidf[:-1])
     return 1.0 - float(similarities.max())
+
+
+def cluster_pains(pains: list[dict], threshold: float = 0.3) -> list[dict]:
+    """類似ペインをクラスタリングして代表ペインとグループサイズを返す.
+
+    TF-IDF + cosine similarity で類似度 threshold 以上のペインをグループ化する。
+    グリーディに最も類似度が高いペア同士を同一クラスタにマージしていく。
+
+    Returns:
+        [{"representative": "代表ペイン", "count": グループサイズ, "members": [...]}]
+    """
+    if len(pains) < 2:
+        return [{"representative": p["pain"], "count": 1, "members": [p["pain"]]} for p in pains]
+
+    texts = [p["pain"] for p in pains]
+
+    try:
+        tfidf = TfidfVectorizer().fit_transform(texts)
+        sim_matrix = cosine_similarity(tfidf)
+    except ValueError:
+        return [{"representative": t, "count": 1, "members": [t]} for t in texts]
+
+    # Union-Find でクラスタリング
+    n = len(texts)
+    parent = list(range(n))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if sim_matrix[i][j] >= threshold:
+                union(i, j)
+
+    # クラスタごとに集約
+    clusters: dict[int, list[int]] = {}
+    for i in range(n):
+        root = find(i)
+        clusters.setdefault(root, []).append(i)
+
+    result = []
+    for members in clusters.values():
+        member_texts = [texts[i] for i in members]
+        # 最も他のメンバーとの類似度合計が高いものを代表にする
+        if len(members) == 1:
+            rep = member_texts[0]
+        else:
+            sims = [sum(sim_matrix[i][j] for j in members) for i in members]
+            rep_idx = members[np.argmax(sims)]
+            rep = texts[rep_idx]
+        result.append({
+            "representative": rep,
+            "count": len(members),
+            "members": member_texts,
+        })
+
+    result.sort(key=lambda x: x["count"], reverse=True)
+    return result
+
+
+def _render_bar(value: int, max_value: int, width: int = 20) -> str:
+    """テキストベースのバーチャートを描画する."""
+    if max_value == 0:
+        return ""
+    filled = round(value / max_value * width)
+    return "█" * filled + "░" * (width - filled)
+
+
+def _render_sparkline(daily_counts: list[int]) -> str:
+    """日次出現数をスパークラインで描画する."""
+    if not daily_counts:
+        return ""
+    blocks = " ▁▂▃▄▅▆▇█"
+    max_val = max(daily_counts) if max(daily_counts) > 0 else 1
+    return "".join(blocks[min(round(v / max_val * 8), 8)] for v in daily_counts)
+
+
+def generate_cluster_section(clusters: list[dict]) -> str:
+    """クラスタリング結果のレポートセクションを生成する."""
+    if not clusters:
+        return ""
+
+    max_count = max(c["count"] for c in clusters)
+
+    lines = [
+        "\n## Pain Clusters\n",
+        "類似ペインをグルーピングした結果（TF-IDF + cosine similarity）:\n",
+        "| クラスタ | 件数 | 分布 |",
+        "|----------|------|------|",
+    ]
+    for c in clusters[:15]:
+        bar = _render_bar(c["count"], max_count, 15)
+        lines.append(f"| {c['representative'][:40]} | {c['count']} | {bar} |")
+    lines.append("")
+
+    # 件数2以上のクラスタの詳細
+    multi = [c for c in clusters if c["count"] >= 2]
+    if multi:
+        lines.append("### 重複ペイン詳細\n")
+        for c in multi[:10]:
+            lines.append(f"**{c['representative']}** ({c['count']} 件)")
+            for m in c["members"]:
+                if m != c["representative"]:
+                    lines.append(f"  - {m}")
+            lines.append("")
+
+    return "\n".join(lines)
+
+
+def generate_trend_visualization(pains: list[dict], trends: list[dict], target_date: date) -> str:
+    """日次出現数のスパークラインとカテゴリ分布チャートを生成する."""
+    lines = []
+
+    # カテゴリ分布
+    cat_counter: Counter = Counter()
+    for p in pains:
+        cat_counter[p.get("pain", "").split("（")[0][:10]] += 1
+
+    # 日次ペイン数のスパークライン
+    daily_counts = []
+    for i in range(6, -1, -1):
+        d = target_date - timedelta(days=i)
+        count = sum(1 for p in pains if p.get("date") == d.isoformat())
+        daily_counts.append(count)
+
+    if any(c > 0 for c in daily_counts):
+        lines.append("\n## Daily Pain Volume\n")
+        sparkline = _render_sparkline(daily_counts)
+        days_label = " ".join(
+            (target_date - timedelta(days=6 - i)).strftime("%m/%d") for i in range(7)
+        )
+        lines.append(f"```")
+        lines.append(f"{sparkline}  ({sum(daily_counts)} 件/7日間)")
+        lines.append(f"{days_label}")
+        lines.append(f"```\n")
+
+    # トレンドスコアの横棒グラフ
+    if trends:
+        lines.append("\n## Opportunity Score Chart\n")
+        lines.append("```")
+        for t in trends[:10]:
+            score = t.get("market_opportunity_score", 0)
+            bar = "█" * score + "░" * (10 - score)
+            theme = t.get("trend_theme", "")[:20]
+            lines.append(f"{theme:<20} {bar} {score}/10")
+        lines.append("```\n")
+
+    return "\n".join(lines)
 
 
 def analyze_trends(target_date: date) -> list[dict]:
@@ -151,48 +312,59 @@ def generate_weekly_report(trends: list[dict], pains: list[dict], target_date: d
         f"抽出トレンド数: {len(trends)} 件\n",
     ]
 
+    # Trend Visualization（スパークライン + スコアチャート）
+    viz = generate_trend_visualization(pains, trends, target_date)
+    if viz:
+        lines.append(viz)
+
     if not trends:
         lines.append("トレンドが見つかりませんでした。\n")
-        return "\n".join(lines)
-
-    # サマリーテーブル
-    lines.extend([
-        "| # | テーマ | スコア | 出現数 | 方向 | カテゴリ |",
-        "|---|--------|--------|--------|------|----------|",
-    ])
-    for i, t in enumerate(trends, 1):
-        score = t.get("market_opportunity_score", 0)
-        score_bar = "🟩" * min(score, 10) + "⬜" * max(0, 10 - score)
-        lines.append(
-            f"| {i} | {t.get('trend_theme', '')} | {score_bar} {score}/10 "
-            f"| {t.get('occurrence_count', 0)} 回 | {t.get('trend_direction', '')} "
-            f"| {t.get('category', '')} |"
-        )
-    lines.append("")
-
-    # 詳細セクション
-    for i, t in enumerate(trends, 1):
-        score = t.get("market_opportunity_score", 0)
-        theme = t.get("trend_theme", "")
-        direction = t.get("trend_direction", "")
-        count = t.get("occurrence_count", 0)
-        category = t.get("category", "")
-        reasoning = t.get("reasoning", "")
-        reps = t.get("representative_pains", [])
-
-        direction_emoji = {"rising": "📈", "stable": "➡️", "declining": "📉"}.get(direction, "")
-
-        lines.append(f"\n## {i}. {theme} ({score}/10) {direction_emoji}\n")
-        lines.append(f"- カテゴリ: {category}")
-        lines.append(f"- 出現回数: {count} 回 / 方向: {direction}")
-        lines.append(f"- 分析: {reasoning}")
+    else:
+        # サマリーテーブル
+        lines.extend([
+            "| # | テーマ | スコア | 出現数 | 方向 | カテゴリ |",
+            "|---|--------|--------|--------|------|----------|",
+        ])
+        for i, t in enumerate(trends, 1):
+            score = t.get("market_opportunity_score", 0)
+            score_bar = "🟩" * min(score, 10) + "⬜" * max(0, 10 - score)
+            lines.append(
+                f"| {i} | {t.get('trend_theme', '')} | {score_bar} {score}/10 "
+                f"| {t.get('occurrence_count', 0)} 回 | {t.get('trend_direction', '')} "
+                f"| {t.get('category', '')} |"
+            )
         lines.append("")
 
-        if reps:
-            lines.append("代表的なペイン:")
-            for rep in reps:
-                lines.append(f"- {rep}")
+        # 詳細セクション
+        for i, t in enumerate(trends, 1):
+            score = t.get("market_opportunity_score", 0)
+            theme = t.get("trend_theme", "")
+            direction = t.get("trend_direction", "")
+            count = t.get("occurrence_count", 0)
+            category = t.get("category", "")
+            reasoning = t.get("reasoning", "")
+            reps = t.get("representative_pains", [])
+
+            direction_emoji = {"rising": "📈", "stable": "➡️", "declining": "📉"}.get(direction, "")
+
+            lines.append(f"\n## {i}. {theme} ({score}/10) {direction_emoji}\n")
+            lines.append(f"- カテゴリ: {category}")
+            lines.append(f"- 出現回数: {count} 回 / 方向: {direction}")
+            lines.append(f"- 分析: {reasoning}")
             lines.append("")
+
+            if reps:
+                lines.append("代表的なペイン:")
+                for rep in reps:
+                    lines.append(f"- {rep}")
+                lines.append("")
+
+    # Pain Clustering セクション
+    if pains:
+        clusters = cluster_pains(pains)
+        cluster_section = generate_cluster_section(clusters)
+        if cluster_section:
+            lines.append(cluster_section)
 
     return "\n".join(lines)
 
