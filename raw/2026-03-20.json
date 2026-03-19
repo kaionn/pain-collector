@@ -1,0 +1,648 @@
+{
+  "date": "2026-03-20",
+  "reddit": [],
+  "hatena": [
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "CLAUDE.mdを設計するとClaude Codeの生産性が別物になる — 実際の設定と運用ワークフローを公開 - Qiita",
+      "url": "https://qiita.com/nogataka/items/1ad4e4ccaf47816c63e0",
+      "summary": "はじめに Claude Codeを使い始めた直後は感動します。自然言語でコードが書ける、テストも回してくれる、リファクタリングまでやってくれる。ところが1ヶ月ほど経つと、壁にぶつかります。 「前にも同じ指示を出したのに、また違うスタイルで書いてくる」 「プロジェクトのルールを毎回説明するのが面倒」 「サブエージ...",
+      "bookmarks": 257
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "エプスタインはGoogleの検索結果を操作しWikipediaの記事を改ざんする大規模な印象操作を展開していたことが発覚",
+      "url": "https://gigazine.net/news/20260319-jeffrey-epstein-changed-online-image/",
+      "summary": "児童性的虐待や人身売買の疑いで2019年に逮捕されて獄中死を遂げたジェフリー・エプスタインは、2008年に逮捕された際の過去を抹消するべく、Googleの検索結果やWikipediaの記事を書き換えるなど、大規模な印象操作を進めてたとニューヨーク・タイムズが報じています。 Inside Jeffrey Epstein’s Push to Cleanse His Pa...",
+      "bookmarks": 119
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "とある銭湯、常に100円硬貨不足で困っていたけれど、AI が優秀な提案をしてくれて遂に悩みが解決「有益すぎる」",
+      "url": "https://togetter.com/li/2676547",
+      "summary": "銭湯が常に100円硬貨不足で困っていたが、AIの提案で自販機管理会社に連絡し、営業所へ両替を依頼することで解決。自販機本体に管理会社の連絡先が記載されている。非営利かつ特定対象でない両替は法令上問題なく、両替商の許可は不要。年間取引額が100万円超える場合は財務省への届け出が必要。",
+      "bookmarks": 52
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "AIバグ発見システム「Sashiko」がGoogle社員によって開発される、日本の「刺し子」に由来する名前でLinuxカーネルの未発見バグを次々に検出",
+      "url": "https://gigazine.net/news/20260319-sashiko-linux-bug-ai/",
+      "summary": "Google社員のRoman Gushchin氏がAIを用いたバグ発見システム「Sashiko」を開発して公開しました。Sashikoは主にLinuxカーネルのパッチに含まれるバグを発見するために設計されていますが、Linuxカーネル以外のプロジェクトでも使用することができます。 Sashiko https://sashiko.dev/ Sashikoは日本伝統の刺しゅう技法で...",
+      "bookmarks": 37
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "生成AI時代のドキュメント基盤",
+      "url": "https://zenn.dev/nuits_jp/articles/2026-03-19-genai-documentation-foundation",
+      "summary": "本項はFindy様のイベント 仕様駆動開発（Spec-Driven Development） Lunch Talk で発表した発表原稿を、加筆修正したものになります。 スライドはこちら 生成AI時代のドキュメント基盤 - Docswell 生成AI、活用されていますか？ 生成AI、活用されていますか？ 私はもう毎日、どっぷりつかっています。 仕様駆動開発にも...",
+      "bookmarks": 152
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "労働しなくてよさそうな人の飲食店の話は生成AIが書きました",
+      "url": "https://anond.hatelabo.jp/20260319220620",
+      "summary": "https://anond.hatelabo.jp/20260318204555 これ俺が投稿したやつなんだけど、ネタバレすると全文AIが書いてます。 Claude Opus 4.6に投げたプロンプトはこれだけ。 次のネタで増田書いて ∙労働しなくて良さそうな人がやってる飲食店の雰囲気が苦手 ∙30代〜50代のオーナー。老人は別に気にならない 3行。以上。手直しゼ...",
+      "bookmarks": 29
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Astral to join OpenAI",
+      "url": "https://astral.sh/blog/openai",
+      "summary": "I started Astral to make programming more productive. From the beginning, our goal has been to build tools that radically change what it feels like to work with Python – tools that feel fast, robust, intuitive, and integrated. Today, we're taking a step forward in that mission by announcing that ...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude Codeに特化したデザインシステムを作って工夫したこと｜坪田 朋",
+      "url": "https://blog.tsubotax.com/n/n6f3701611d98",
+      "summary": "こんにちは、坪田です。 前回のClaude記事で触れた、Claude CodeやAI最適化したデザインシステムを作ってみたのでまとめです。 Claude Codeが生成するUIの品質が安定しない課題最初の頃は、何か作っても 「いかにもAIが作りました」感のあるデザインで生成されてしまう ストレスがあって、例えば、コンポーネントに強め...",
+      "bookmarks": 8
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "新種「トカラムシクイ」発見　鳥類は「ヤンバルクイナ」以来45年ぶり",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/19/news123.html",
+      "summary": "山階鳥類研究所と森林研究・整備機構森林総合研究所は3月18日、鹿児島県トカラ列島のムシクイ個体群が新種だったため「トカラムシクイ」として新種記載したと発表した。日本国内で新しい学名を伴う鳥類種の報告は、1981年の「ヤンバルクイナ」以来、45年ぶりという。 これまでは東京都伊豆諸島の島々に分布する「イイジ...",
+      "bookmarks": 32
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "液体レンズのオートフォーカスメガネを体験　無音でスッと視界クリアに - 家電 Watch",
+      "url": "https://kaden.watch.impress.co.jp/docs/news/2094511.html",
+      "summary": "",
+      "bookmarks": 254
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "楽天の最新AI、ベースは“中国DeepSeek製”？　担当者に聞いた",
+      "url": "https://www.itmedia.co.jp/aiplus/articles/2603/19/news099.html",
+      "summary": "「DeepSeekのAIモデルをベースに開発したのでは」――楽天グループ（以下、楽天）の日本語LLM「Rakuten AI 3.0」を巡り、X上でこのような指摘が相次いでいる。同モデルを公開したHugging Faceのページの一部に、AI開発企業の中国DeepSeekのAIモデル「DeepSeek」の表記が見られたためだ。ITmedia AI＋編集部が楽天に確認し...",
+      "bookmarks": 47
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Codex の最新アップデートを全部キャッチアップする | ドクセル",
+      "url": "https://www.docswell.com/s/fumiya-kume/Z4NQYD-2026-03-19-195137",
+      "summary": "Codexのアップデートを”全部”追うのは不可能です 🏳 ● Codex CLI, Codex app, Codex Cloud, Codex pr review… 多すぎる ○ ● ChatGPT.app も一応含めますか ...? 2026年に入ってからの開発加速が劇的 ○ https://github.com/openai/codex/graphs/contributors?selectedMetric=additions https://github.com/openai/codex/gr...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "【完全版】唸るほど凄い「Claude Cowork」活用法、最強すぎた「ChatGPT使い分け術」",
+      "url": "https://www.sbbit.jp/article/cont1/182054",
+      "summary": "「ChatGPT活用で生産性が上がった」と言いながら、実は単純作業に追われている――そんな矛盾を多くの現場で見てきました。この問題の本質は、ChatGPTが「クラウド処理型AI」であるため、ローカルファイルの一括操作を苦手としていることです。その“苦手”を補えるのが、Claude Coworkです。ChatGPTと正しく使い分けること...",
+      "bookmarks": 187
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "コードは負債である（資産ではない） » p2ptk[.]org",
+      "url": "https://p2ptk.org/ai/5471",
+      "summary": "以下の文章は、コリイ・ドクトロウの「Code is a liability (not an asset)」という記事を翻訳したものである。 Pluralistic コードは資産ではなく負債だ。テック業界の経営者たちはそれを理解していない。AIはプログラマーの1万倍のコードを生成できるからすばらしいと彼らは言うが、それはすなわち1万倍の負債を生み出...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "IT革命をスキップし直接AIの波へ。NVIDIAフアンCEOが語る日本の勝機",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2094741.html",
+      "summary": "",
+      "bookmarks": 4
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「自分でやり切る」だけでチームは強くならない - NTT docomo Business Engineers' Blog",
+      "url": "https://engineers.ntt.com/entry/202603-chisaka/entry",
+      "summary": "NTTドコモビジネス イノベーションセンター テクノロジー部門 MetemcyberPJでの経験を通じ、私は「自分でやり切ること」と「チームとして成果を出すこと」のバランスの重要性を学びました。若手社員でも幅広い業務に挑戦できる環境の中で、責任感を持ちながらも周囲と協力することで、個人の成長とチーム成果の両立が可...",
+      "bookmarks": 12
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude Codeをフル活用！本気で使える厳選Skills/Plugin 8選",
+      "url": "https://zenn.dev/itsuki_y/articles/0eb054f14523d7",
+      "summary": "Claude Codeを使い始めてから8ヶ月。これまで数十個のSkillsやPluginをインストールしては試行錯誤（いじり倒す）してきました。 最初は「何これ、全部すげえ！」と新鮮でしたが、結局プラグインを入れすぎると互いに干渉し合ったり、使わなくなって埃をかぶったり（吃灰）するものが多いことに気づきました。 最終的に...",
+      "bookmarks": 69
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Machine Payments Protocol",
+      "url": "https://mpp.dev/",
+      "summary": "The open protocol for machine-to-machine payments. Charge for API requests, tool calls, or content—agents and apps pay per request in the same HTTP call.",
+      "bookmarks": 8
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "複数リポジトリでClaude Codeのルール・スキルを一元管理する | DevelopersIO",
+      "url": "https://dev.classmethod.jp/articles/async-claude-code-rules-and-skills/",
+      "summary": "はじめに Claude Code を複数のリポジトリで使っていると、同じルールやスキルを各リポジトリにコピーしたくなります。 ただ、この運用は長く続けると負担が増えていきます。 共通ルールを更新するたびに、各リポジトリを修正する必要がある どこまでが共通で、どこからがリポジトリ固有なのかが曖昧になる スキルや運用...",
+      "bookmarks": 19
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Microsoft、「PowerShell 7.6」を一般公開 ～「.NET 10」ベースの長期サポート版／エンジンの信頼性向上やネイティブコマンドハンドリング、タブ補完の改善に取り組む",
+      "url": "https://forest.watch.impress.co.jp/docs/news/2094664.html",
+      "summary": "",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「AIっぽい」の正体は文体じゃない — 全業務をAIエージェントで回して気づいたこと",
+      "url": "https://zenn.dev/omori432/articles/ai-likeness-not-about-writing-style",
+      "summary": "どれも、相手の状況を考えて取捨選択するプロセス——つまり先ほど定義した「思考」——が抜けています。全部に共通するのは、誰の思考も通っていない出力だということです。 AIは——少なくともここで定義した意味では——思考しません。咀嚼も判断も責任も、AIのプロセスには含まれていません。学習データの中から最も確率の高...",
+      "bookmarks": 16
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "OpenAI、コーディングエージェント「Codex」に新機能「サブエージェント」を正式導入／雑事を片付ける子分を複数生成し、並列実行",
+      "url": "https://forest.watch.impress.co.jp/docs/news/2094681.html",
+      "summary": "",
+      "bookmarks": 13
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Apple、MacBook Neoの製造に、新しいクローズドループ陽極酸化処理プロセスを初めて導入 | NEWS | Mac OTAKARA",
+      "url": "https://www.macotakara.jp/news/entry-50726.html",
+      "summary": "Foxconn龍華キャンパス内にエコ湿地庭園 Appleが、中国のサプライヤーは、Appleのサプライヤークリーンウォータープログラムを通じて昨年、過去最高の550億リットルの淡水を節約したと発表しています。 これは、中国浙江省杭州市西湖区にある湖「西湖」を約4回満たす量に相当します。 Appleはこの成果を基に、サプライヤ...",
+      "bookmarks": 4
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "「ビッグモーターみたいになるのかな」ニコニコレンタカーで車を借りたら米粒程の飛び石2つで88,000円を請求...似た体験談が続々と集まる中、公式Xで声明が出る",
+      "url": "https://togetter.com/li/2676094",
+      "summary": "KT@車 @HARRIER80_GR 有識者の方 お知恵をお貸し下さい🥹 友人が某ニコニコレンタカーから車を借りたのですが返却したらボディ2箇所に極小の飛び石があり88,000円を請求されました🥹 保険には入っていたのですが無申告で返却したとの事で実費での支払いを求められています💦 この場合、支払い義務はございますか🥹 pic.x.co...",
+      "bookmarks": 10
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "How Stripe’s Minions Ship 1,300 PRs a Week",
+      "url": "https://blog.bytebytego.com/p/how-stripes-minions-ship-1300-prs",
+      "summary": "npx workos: An AI Agent That Writes Auth Directly Into Your Codebase (Sponsored)npx workos launches an AI agent, powered by Claude, that reads your project, detects your framework, and writes a complete auth integration directly into your existing codebase. It’s not a template generator. It reads...",
+      "bookmarks": 32
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "ブラウザを自然言語で操作する Claude in Chrome を使ってみた | DevelopersIO",
+      "url": "https://dev.classmethod.jp/articles/claude-in-chrome-browser-automation-practical-use/",
+      "summary": "Claude in Chrome を使って、2026年3月の運賃改定前後の IC 運賃を自動で調べてみました。使い方、向いている作業、セキュリティ上の注意点をまとめています。 こんにちは。CX 事業本部製造ビジネステクノロジー部所属の hongkii です。 去年の 12 月に Claude in Chrome が公開されました。 公開直後はセキュリティ面の...",
+      "bookmarks": 31
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude CodeのSpinner Verbsに、Kindleのハイライトを無作為に表示する - hitode909の日記",
+      "url": "https://blog.sushi.money/entry/2026/03/18/174452",
+      "summary": "Claude Codeを使っていると、Philosophising...みたいな文字が出て、最初は「おっ哲学をやってるんだな、いいことだ」とか思っていたけど、だんだん、ランダムに出てるだけだと気づいていた。 最近、spinnerVerbsをカスタマイズすることができるようになっている。 appendすると追加、replaceで全部置き換え。 Claude Co...",
+      "bookmarks": 9
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Claude Coworkをスマホから操作できる新機能「Dispatch」",
+      "url": "https://www.watch.impress.co.jp/docs/news/2094782.html",
+      "summary": "",
+      "bookmarks": 5
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "撤退への布石？　BS民放5社、4K番組を「WOWOWオンデマンド」で無料配信へ　「TVer」からも誘導",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/19/news092.html",
+      "summary": "BS4K放送からの撤退を検討していると報じられた民放BS局5社が3月19日、制作した4K番組を秋から「WOWOWオンデマンド」でも無料配信すると発表した。視聴者の利便性向上のため、民放公式の動画配信サービス「TVer」からWOWOWオンデマンドへの遷移・誘導にも取り組む。 発表したのは、BS日本、BS朝日、BS-TBS、BSテレビ東京...",
+      "bookmarks": 31
+    },
+    {
+      "source": "hatena",
+      "category": "テクノロジー",
+      "title": "Radix UIを活かすCompound Components設計",
+      "url": "https://zenn.dev/microcms/articles/3d25e5b24574a1",
+      "summary": "はじめに React コンポーネントの設計は、規模が大きくなるにつれて難しくなっていきます。boolean props が増えていったり、renderHeader のような render props が乱立したり、コンポーネントの中身が条件分岐だらけになったり。 こうした問題へのアプローチとして Composition Patterns という考え方があります。この...",
+      "bookmarks": 7
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "どうか、このとおりだ",
+      "url": "https://anond.hatelabo.jp/20260319215829",
+      "summary": "30代になっても出会いがなかったやつはどうしたらいいのだろう。風俗にもいかないおかげでただの30代童貞の誕生である。 男職場すぎて出会えるわけでもなく、かといって派遣なもんだから収入的にも魅力がないし、女性にとってメリットがないのは目に見えている。 勿論ここまで何もないということは、容姿も人並み以下だ...",
+      "bookmarks": 69
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "【山形県山形市・ホテルUFO　217号室】ラブホに行って、それからそばを食う。 | あまみのラブホ探訪",
+      "url": "https://shumatsutraveler.club/?p=7911",
+      "summary": "2025年初夏、山形県山形市にある「ホテルUFO」へ行ってきました。 円形建屋のラブホテルといえば、日本各地にいくつかあります。例えば千葉・幕張のホテルUFO、新潟・中央区のホテルブルーシャトーなど。 そしてここ、山形県山形市にあるホテルUFOも、その代表格でしょう。 ユニークな屋号と見た目は、山形の名所と言っ...",
+      "bookmarks": 51
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ローストビーフってイマイチじゃない？『俺のBBAのローストビーフはクソうまかったぞ』と出された画像が猛者すぎる「こういう人になりたい」",
+      "url": "https://togetter.com/li/2676438",
+      "summary": "「俺のBBAのローストビーフがめちゃくちゃ旨かった」という投稿。サーロインと思われる気合の入った肉を香草や野菜とともにオーブンで仕上げ、切るのは立派な筋引き包丁。出来上がったローストビーフは仲間でしっかり火入れされつつパサつきのない仕上がり。料理の腕と包丁さばきが注目され「こんな風に年を取りたい」と...",
+      "bookmarks": 143
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "留置場にいる彼氏から届いたという封筒を見せてもらったらまさに留置場ボールペンで書かれた字だった「あの筆跡の正体それか」",
+      "url": "https://togetter.com/li/2676522",
+      "summary": "留置場で貸し出される先端約2mmの専用ボールペンは垂直に当てないと書けず字がカクカクになる。その筆跡が「留置場の字」として見分けられる理由だ。その他、持ち込めるものの制限など留置場に関する情報。",
+      "bookmarks": 24
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "下腹部の筋トレでぽっこりお腹を解消！脂肪を落とすだけじゃない、効果的なトレーニングとは - lala a live(ララアライブ)│フォーネスライフ",
+      "url": "https://foneslife.com/healthcare-magazine/entry/2026/03/19/103000_01",
+      "summary": "下腹部の筋トレで「ぽっこりお腹を解消したい」という人に、効果的な方法を紹介します。 実は下腹部のぽっこりには、単なる筋力不足だけでなく、姿勢のクセや体の使い方、さらには年齢による変化も大きく関係しています。 本記事では痩せにくい原因をタイプ別に整理し、効率よく引き締めるための筋トレのコツを分かりや...",
+      "bookmarks": 177
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「お前の料理は美味くない、母を見習え」と言われ続けながら努力してたが最終的に義母に教えを請うべく連絡をした、その1週間後味の素とほんだしが送られてきた",
+      "url": "https://togetter.com/li/2676387",
+      "summary": "更科悠乃@小説「快傑令嬢リロット」ただいま連載中！@空想科学小説作家 @yuno_sarashina 「お前の料理はいつになっても美味くならんな。母さんを見習え」 「このマザコンが」 内心毒づきながらも私は努力した。 「出汁がだめだ、出汁が」 いい鰹節や昆布で取っているのに成果はなく、悔しい限りだが、義母に状況を伝え教...",
+      "bookmarks": 149
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "管理会社から騒音の苦情が入ったと連絡が来た、しかし該当する時間に心当たりがないので録音の提出などを求めた→集合住宅は予想外のところから音が響くことがよくある",
+      "url": "https://togetter.com/li/2676489",
+      "summary": "よーてりー🇩🇪 @Uleaf2010 管理会社から騒音の苦情が入ってると連絡が。特に日中と夜がうるさいと。 でもうちの子供、直近二週間毎日登園してるから日中、家にいなくて、夜は8時までに就寝してるのでうちではないと思う、 でも本当にうるさいなら改善したいので日時とその騒音録音して教えてくださいって答えた。 2026-03...",
+      "bookmarks": 20
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "貧乏だと頭が悪くなる、ではなく、おそらく正確には、お金の心配が考える余力を削る。Scienceに掲載された研究によると、低所得者は高額出費を想像しただけで認知課題の成績が低下するという話",
+      "url": "https://posfie.com/@taimport/p/tgQFBZk",
+      "summary": "Nobuhiro Ariyoshi MD @AriyoshiMd 貧乏だと頭が悪くなる、ではなく、おそらく正確には、お金の心配が考える余力を削る Scienceに掲載された研究：低所得者は、高額出費を想像しただけで認知課題の成績が低下。 インドの農家でも、収穫前の苦しい時期は、収穫後より同じ人の成績が悪かった。 貧困は、判断力そのものを鈍...",
+      "bookmarks": 20
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「たしかにこれは捨てるのもったいないから持って帰るわ」QUOカードを名刺にするアイデア、結果的に使わず長い間持ってもらえることになりそうで賢い",
+      "url": "https://togetter.com/li/2676441",
+      "summary": "QUOカードを名刺代わりにする発想が話題に。捨てにくく持ち帰られやすい一方、店で使うのは恥ずかしく抵抗があるため家庭で保管されがち。クーポン付名刺の応用で印象付けや営業効果が期待でき、初期投資の効果的活用として評価されている。",
+      "bookmarks": 34
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "惣菜がウマすぎると噂のスーパー『ヤオコー』で作り方を学ぶ - イーアイデム「ジモコロ」",
+      "url": "https://www.e-aidem.com/ch/jimocoro/entry/miku29",
+      "summary": "きっと、 みなさんの心は、この化け物に支配されないように、それでも0には消さず、抑え込みながら生活しているのではないでしょうか 日本は僕が産まれたときからずっと不景気などと言っていて、おそらくこの調子ではモーニング娘が言っていた「wow wow wow wow」も叶わないのでしょう…… ――実は、パートさんにも年に2回...",
+      "bookmarks": 7
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "独立後3年で「屋号変更か廃業」。人気ラーメン店『夢を語れ』が実践する、異色の人材育成メソッド - おなじみ丨近くの店から、なじみの店へ。",
+      "url": "https://onaji.me/entry/2026/03/19",
+      "summary": "（C）TINY URBAN KITCHEN 「ラーメンを食べた後に夢を語れる店」として国内外に店舗を展開。同時にこれまで多くの修行生を受け入れてきた『夢を語れ』の代表・西岡津世志さんに、人材育成に対する考え方やノウハウを伺いました。 お客さんとのコミュニケーションをさらに深めるはじめてみよう！ LINE公式アカウント 大盛...",
+      "bookmarks": 107
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "スキー場のカレーがうまいのでスキー場のカレーを食べに行く　「こういうのがいいんだよ」がそこにある",
+      "url": "https://dailyportalz.jp/kiji/skijo-curry",
+      "summary": "1993年群馬生まれ、神奈川在住。会社員です。辛いものが好きですが、おなかが弱いので食べた後大抵ぐったりします。好きな調味料は花椒。 前の記事：北海道一うまいと言われた菓子「ハスカップジュエリー」はすっぱ甘くて最高 ＞ 個人サイト ＞ぼんやり参謀 ＞ライターwiki エクスキューズ：最近のスキー飯はすごい 本編...",
+      "bookmarks": 67
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "着ているバンドTシャツのバンドを聴くギャルは存在しないのか……イラストから議論が発生",
+      "url": "https://togetter.com/li/2676294",
+      "summary": "リンク AERA DIGITAL（アエラデジタル） 「聴かないバンドのTシャツを着るな」 あなたは賛成派？ 反対派？ 知らずにバンドTを着ている人も | AERA DIGITAL（アエラデジタル） 海外バンドのTシャツが若者たちのおしゃれアイテムになって、どれくらい経つだろうか？ 2 users 722 リンク Wikipedia ジョイ・ディヴィジョン ...",
+      "bookmarks": 212
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ヨメトメ☆にっき ～専業主婦歴30年の姑との日々～ - 桃聖純矢 / 第７話　舅の悩み | モーニング・ツー",
+      "url": "https://comic-days.com/episode/2551460909514249691",
+      "summary": "ヨメトメ☆にっき ～専業主婦歴30年の姑との日々～ 桃聖純矢 夫婦で構えた新居は、江戸の風情が残る文京地区、根津。立地は最高、ただし夫くんの実家の前。在宅でライター業をしている私の目と鼻の先に住むのは、ピンと背筋の伸びたお義母さん。日々の掃除は欠かさず、3食すべて手作り。丁寧な暮らしと無縁の私とは、そり...",
+      "bookmarks": 25
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "遠く日向は眠れ猫のように　文・橋本薫（Helsinki Lambda Club） - SUUMOタウン",
+      "url": "https://suumo.jp/town/entry/nippori-hashimoto/",
+      "summary": "著： 橋本薫 「夕焼けだんだん」の坂道で眠る猫のことをふと思い出した。日向の似合う猫のこと。その猫が眠っているのを眺めている時は、なんだかゆっくりと時間が流れていたような気がする。それでもなんの前触れもなく目を開け、余韻もなくぷいっとどこかへ去っていくと、本来の時の流れが身体に戻ってくるような感じ...",
+      "bookmarks": 20
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "実家が太い友人にイライラ",
+      "url": "https://anond.hatelabo.jp/20260318160556",
+      "summary": "実家が太い友人の発言に傷つく。こっちは家賃も光熱費も食費も何もかも家に入れてるの知ってるよね君、って何度思ったか。平気で車買ってもらった話とか、親譲りのブランド物が沢山ある話とかしないでほしい。",
+      "bookmarks": 31
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "家飲みが充実する！さくら製作所の小型ワインセラー｜2026年3月（3週目）の編集部が買ってよかったもの - ソレドコ",
+      "url": "https://soredoko.jp/entry/2026/03/19/103000",
+      "summary": "スタッフが自腹で買って実際に試してみて「よかった！」と実感するおすすめ商品をピックアップ！ 今週はコンパクトで機能性も十分なワインセラーを紹介します。気になったら、ぜひチェックしてみてくださいね。 ▼買ってよかったもの2025と先週分はこちら おいしいワインを楽しむための機能満載！ さくら製作所 ワインセ...",
+      "bookmarks": 12
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、姿のまま放置だと意外とすぐシナシナになりますし | mond",
+      "url": "https://mond.how/ja/topics/04uiz5zxxuzyhoz/3nd5ch7dwzoopaw",
+      "summary": "飲食店では息をするように行う葉物の下ごしらえって案外その経験ないと発想にない場合ありますよね 野菜室に買ってきた野菜をその時の袋のまま保管→開封した袋の隙間から使う分だけ調達、のような感じで 小松菜やら水菜なんかカットして洗って固く絞ったペーパーとポリ袋にでも放り込んでおけば何日でもピンピンですが、...",
+      "bookmarks": 174
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "【WBC】日本人として言いたいことがある…それで、ベネズエラ料理はどこで食べられるの？「クソわかる 食を通じてベネズエラを感じたい」",
+      "url": "https://togetter.com/li/2676239",
+      "summary": "リンク Full-Count（フルカウント） ― 野球ニュース・速報・コラム ― ベネズエラ、初のWBC王者に 9回に勝ち越し…米国スター軍団を撃破し6回目で掴んだ世界一 ベネズエラ代表は17日（日本時間18日）、ローンデポパークで行われたワールド・ベースボール・クラシック（WBC）決勝で米国代表に勝利した。9回にエウヘニオ・ス...",
+      "bookmarks": 85
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "にんじん",
+      "url": "https://anond.hatelabo.jp/20260318221514",
+      "summary": "今朝のこと。１歳7ヶ月になる娘の足に縞模様の靴下を履かせようとしたときだった。 「にんじん、にんじん！」 ふいに娘がイヤイヤと首を振り、声を上げた。なんだろう？ごはんの話ではない。ハッとして引き出しを探り、洗濯が終わったばかりの「にんじん柄の靴下」を見せてみた。すると娘はぱぁっと花が咲いたような笑顔...",
+      "bookmarks": 107
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "なぜブックオフは生き残り、他の新古書店は消えたのか｜都立家政のブックマート",
+      "url": "https://note.com/yngwie5150/n/nf149dd3824d0",
+      "summary": "ブックオフは生き残った。 でも、ブックマートやブックアイランドのような新古書店はほぼ消えた。 この差はなんだったのか。 ブックオフは「仕組みの店」だ。 50坪以上の大型店舗。 初期投資は2000万〜で既に別事業がある会社が加入するフランチャイズだ。 マニュアル化されていて、誰がやっても同じように運営できる。 ...",
+      "bookmarks": 195
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ラップで包むのちょっと待って！　仕上がりの差が出る冷凍ごはんに「目からウロコ」【冷凍テク4選】",
+      "url": "https://grapee.jp/food/food-storage/2194446",
+      "summary": "grapeフード編集部 プロフィール 『grapeフード編集部』は、毎日の食事をもっと楽しく、美味しい情報を発信する専門チームです。 冷凍したごはんを温めると、パサついたりムラができたりして味が落ちたと感じることはありませんか。 実は、保存する前のほんの少しの工夫で、解凍後の味わいが劇的に変わるのです。 本記事...",
+      "bookmarks": 9
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "進化するNISA　「こどもNISA」など来年以降に拡充されること【お金の教室】",
+      "url": "https://www.watch.impress.co.jp/docs/series/tsukamoto/2091692.html",
+      "summary": "",
+      "bookmarks": 24
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "ネットでスニーカーを見ていたら妻が「持ってるじゃん！」興味がないと似たようなもんに見えるんだろうけどさ！と下駄箱を見たら…",
+      "url": "https://togetter.com/li/2676107",
+      "summary": "ネットで気に入ったスニーカーを見ていたら妻が「持ってるじゃない」と言った。妻はスニーカーに興味がないため、同じものに見えるのだろうと思いつつ下駄箱を確認したら本当に同じ物があった。「マニア以外は違いがわからない」ではない展開に驚きと笑いが広がる。趣味や好みが変わらないことに安心する声や、同じもの...",
+      "bookmarks": 35
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "クレカ・キャッシュレス決済で一時障害　日本カードネットワークが発表　Xでは「やはり現金は必要」の声",
+      "url": "https://www.itmedia.co.jp/news/articles/2603/18/news131.html",
+      "summary": "キャッシュレス決済基盤を提供する日本カードネットワーク（東京都新宿区）は3月18日、一部サービスに障害が発生していると発表した。これにより、同社のサービスを採用する店舗などでクレジットカード決済などが利用できない状態になっている。 この障害の発生に合わせて、Xでは「クレカ決済が利用できなかった」「やは...",
+      "bookmarks": 32
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "「とある蕎麦屋のゴマだれ蕎麦にハマり週に数回食べる生活を続けていたらオペレーションで味に差が出ることに気づいた」悲しい展開のSNS投稿に希望の光",
+      "url": "https://togetter.com/li/2676101",
+      "summary": "𝔸𝕔𝕥𝕚𝕧𝕖𝕀𝕟𝕕𝕖𝕩 @ActiveIndex 東京駅の越後そばのゴマだれ蕎麦にハマり、2年ほど週数回食べていた時、ゴマだれの濃さのバラつきが激しい事に気がついた。ゴマだれのオペレーションを毎回観察していたら、タレを入れてる麦茶の容器のシェイクの回数が原因だったので課題と原因と改善案を認めて感謝の気持ちと一緒に会社に送...",
+      "bookmarks": 83
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "YouTubeの広告ウザすぎて年齢を200歳にしたら、5秒で飛ばせるお葬式のCMばっかりになった「勇者ヒンメルがそうした」「これはマジ」",
+      "url": "https://togetter.com/li/2675847",
+      "summary": "YouTubeの広告ウザすぎて年齢を200歳にしたら、5秒で飛ばせるお葬式のCMばっかりになった「勇者ヒンメルがそうした」「これはマジ」",
+      "bookmarks": 24
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "頼む、聞いてくれ、愛されるプロダクトが作れたんだ｜sugitani",
+      "url": "https://note.com/sugitani/n/n07993c05d836",
+      "summary": "総登録数が約15,000人、ひと月の利用人数MAUが約2,500人、1日あたりの利用人数DAUが平均で約700人、サブスク加入者は約100人…のSNSと聞いてどう思うだろうか？ たぶんほとんどの方が存在価値がわからないくらい小さい！と思うんじゃないだろうか？普段から随所で目にする何百万人が利用！とかの景気の良い数字に比べると...",
+      "bookmarks": 17
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "自死遺族のTwitter見ているんだけど",
+      "url": "https://anond.hatelabo.jp/20260317190009",
+      "summary": "40代シングルマザー、10代の息子が首つり自殺、みたいなアカウント群を見ているんだけど 弱者女性が弱者男性を産んだら、弱者男性の人生は詰んだって感じのものが多い （自死遺族のツイートに「いいね」をすると、芋づる式に界隈が見つかりやすい） 40代シングルマザーも中学時代に不登校を経験していて、10代の息子も中...",
+      "bookmarks": 29
+    },
+    {
+      "source": "hatena",
+      "category": "暮らし",
+      "title": "イラン情勢悪化の影響でわさビーフの生産停止→「重油で揚げてると勘違いしてる人がいて草」大喜利会場になる",
+      "url": "https://togetter.com/li/2676086",
+      "summary": "リンク 47NEWS 「わさビーフ」生産停止 ポテチ、重油調達困難 山芳製菓は17日、看板商品のポテトチップス「わさビーフ」など主力製品の生産を停止していると明らかにした。イラン情勢悪化の影響で、兵庫県朝来市の工場で用いる重油の調達が困難になったため。 工場では、 ... 5 users 🍹グァバちゃん @BanziroG いろんな...",
+      "bookmarks": 47
+    }
+  ],
+  "zenn": [
+    {
+      "source": "zenn",
+      "title": "生成AI時代のドキュメント基盤",
+      "url": "https://zenn.dev/nuits_jp/articles/2026-03-19-genai-documentation-foundation",
+      "summary": "本項はFindy様のイベント\n\n仕様駆動開発（Spec-Driven Development） Lunch Talk\n\nで発表した発表原稿を、加筆修正したものになります。\nスライドはこちら\n\n生成AI時代のドキュメント基盤 - Docswell\n\n\n 生成AI、活用されていますか？\n生成AI、活用されていますか？\n私はもう毎日、どっぷりつかっています。\n\n 仕様駆動開発にも注目\nそんな中、仕様駆動開発も注目を集めてきました。\n\nAWS - Kiro\nGitHub - Spec Kit\nFission-AI - OpenSpec\ngotalab - cc-sdd\n\n\n ドキュメントの重要性...",
+      "author": "Atsushi Nakamura"
+    },
+    {
+      "source": "zenn",
+      "title": "LLMをもっと賢くする：ナレッジグラフ実践入門",
+      "url": "https://zenn.dev/knowledge_graph/books/knowledge-graph-llm-guide",
+      "summary": "「ChatGPTは賢いのに、なぜ業務では使いにくいのか」。その答えがナレッジグラフにあります。本書は、RAGだけでは解けない問題の正体を明らかにし、ナレッジグラフがLLMに何をもたらすかを、入門から世界の活用事例、実装アーキテクチャ、AI Agentとの統合まで一気通貫で解説します。エンタープライズ規模でのKG実装は難しい。だからこそ、何が難しいのかを正確に理解することが第一歩です。",
+      "author": "takanorisuzuki"
+    },
+    {
+      "source": "zenn",
+      "title": "Reactをやめて MoonBit で50ページの業務システムを作った",
+      "url": "https://zenn.dev/lehti/articles/c4b813a9192701",
+      "summary": "はじめに\nReact、Vue、Svelte。フロントエンドのフレームワーク選定で普通に出てくる名前だと思う。自分もそうだった。\nでも結局、どれも選ばなかった。代わりにMoonBitという、ほとんど誰も使っていない言語でフロントエンドを書いている。しかも個人プロジェクトではなく、業務で毎日使われている社内CRM/SFAで。\nページ数は50を超えた。顧客管理、契約処理、物件検索、社内チャット、日報、承認フロー、AI文書解析、マーケティング分析。一人で開発して、本番で運用している。\nなぜこうなったのか、実際どうなのかを書いておく。\n\n なぜMoonBitを選んだのか\n正直に言うと、最初はR...",
+      "author": "Lehti"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude Codeをフル活用！本気で使える厳選Skills/Plugin 8選",
+      "url": "https://zenn.dev/itsuki_y/articles/0eb054f14523d7",
+      "summary": "Claude Codeを使い始めてから8ヶ月。これまで数十個のSkillsやPluginをインストールしては試行錯誤（いじり倒す）してきました。\n最初は「何これ、全部すげえ！」と新鮮でしたが、結局プラグインを入れすぎると互いに干渉し合ったり、使わなくなって埃をかぶったり（吃灰）するものが多いことに気づきました。\n最終的に生き残り、私の日常的な開発ワークフローを劇的に変えてくれた「神ツール」は以下の8つだけです。 今日は前置きなしで、私のとっておきをインストールコマンド付きで直接紹介します。そのままコピペして使ってください。\n\n 1. Superpowers：万能の王様\nこれはソフトウェ...",
+      "author": "Itsuki (逸樹)"
+    },
+    {
+      "source": "zenn",
+      "title": "LLM人格を14日運用して見えた設計パターン — 固定プロンプトの先へ",
+      "url": "https://zenn.dev/nabaaatee/articles/b4e90b7ef39026",
+      "summary": "はじめに — 3つの仮説\nLLM にキャラクター設定を与えるのは簡単だ。system prompt に「明るくて好奇心旺盛な性格」と書けばいい。しかし長期運用すると、同じ口調で同じことを言い続けがちだ。\nこれは 一貫性 の問題と 変容の不在 という二つの別の問題が混在している。人間の人格は、核心的な価値観を保ちながら経験を通じて少しずつ変わっていく。この「変わらない部分」と「変わる部分」の共存を、LLM ベースのエージェントにどう実装するか。\n本稿は、筆者が開発・運用している自律エージェント INANNA の 14 日間・1,226 件の経験データ をもとに、以下の 3 つの仮説を観...",
+      "author": "なばて / INANNA開発"
+    },
+    {
+      "source": "zenn",
+      "title": "手動 ER 図メンテから卒業する── GitHub Actions × DBML 自動生成の実践",
+      "url": "https://zenn.dev/finatext/articles/auto-generate-dbml-from-orm",
+      "summary": "こんにちは、ナウキャストで LLM エンジニアをしている Ryotaro です。\nバックエンドの ER 図、ちゃんとメンテナンスできていますか？\n「コードは変えたけど ER 図の更新を忘れた」「いつの間にかドキュメントが実態と乖離していた」という経験は、多くのエンジニアに心当たりがあるのではないでしょうか。\nこの記事では、SQLAlchemy モデルを Single Source of Truth（SSoT）として、GitHub Actions で DBML を自動生成・コミットする仕組みを構築しました。やってみたら結構うまくハマったので、その方法を紹介します。開発者はコードだけ修正すれ...",
+      "author": "Ryotaro"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude Codeでのふるまいから隠れたSkillを見つける",
+      "url": "https://zenn.dev/chigichan24/articles/eed4a60d102997",
+      "summary": "はじめに\n!\n前置きとして、この記事では Claude Code を LLM Agent の一例として扱います。\nただし、ここで述べる考え方自体は Claude Code 固有のものではなく、他の Agent 的な開発体験にも応用できると思っています。\n\nLLM Agent を日常的に使っていると、だんだん「毎回似たような作業をしているな」と感じることがあります。そしてその先で、多くの人が一度はこう考えるはずです。\n\n自分が繰り返している作業パターンを見つけて、Skill として再利用できないだろうか？\n\nただ、実際にやろうとすると意外と難しいです。なぜなら、Skill を作る前に、...",
+      "author": "chigichan24"
+    },
+    {
+      "source": "zenn",
+      "title": "Antigravityは(バックエンドでは)使い物にならない",
+      "url": "https://zenn.dev/beadiest_star64/articles/7e2de21fe1cfde",
+      "summary": "1. 概要\nタイトルの通りですが、Google Antigravityを2週間使い倒して、Antigravityの得意な分野と苦手な分野、個人的なAIコーディングの将来予想をしていきます。\n\n 2. Antigravityはフロントエンド特化\n「VSCodeをベースにブラウザを統合した」という事で大体察すると思いますが、AntigravityはTypeScriptとReactでフロントエンドで開発するには無類の強さを誇ります。\n少なくともToDoアプリを作る程度ならば。\n統合されたブラウザでDOMを操作して確認を行うため、UI崩れが『分かる』ようになったのは、AIコーディングにおいて...",
+      "author": "BeadiestStar64"
+    },
+    {
+      "source": "zenn",
+      "title": "DGX SparkでNemoClawをローカル実行",
+      "url": "https://zenn.dev/karaage0703/articles/8bf663501cd4bc",
+      "summary": "NVIDIAがGTC 2026で発表したNemoClawを、DGX Spark上でローカルLLM（Ollama + Nemotron）だけで動かしてみました。APIキーなし、ローカル環境で動かしています。\nこの記事では、セットアップ手順をまとめます。\n\n NemoClawとは\nNemoClawは、AIエージェントをサンドボックス環境で安全に実行するためのオープンソースツールです。\n3つのコンポーネントで構成されています（AIを使って調査、AIと議論して作成しました）:\n\n\n\nコンポーネント\n役割\n\n\n\n\nNemoClaw\nセットアップCLI。ゲートウェイ起動・サンドボックス作成・推論設定...",
+      "author": "からあげ"
+    },
+    {
+      "source": "zenn",
+      "title": "いいやつと働きたいよね",
+      "url": "https://zenn.dev/simossyi/articles/f6937e4d5748e5",
+      "summary": "claudeはいいやつでcodexはアスペみたいな話があったりなかったりする。まあもちろんなにがいいやつかなんて個人の感性次第ではあるけど。coding agentはcodexを最初に使ってたのだが、あいつは特に人格を感じないというかエーアイくん感が強い。claudeくんには温かみがある。おれはclaudeには人格を感じている。こいつはいいやつだ。Opus4.6が退役して新しく来たOpus5がクソ野郎だったら4o運動を起こすと思う。\nさて、仕事においてもいいやつであるってことは大事だと思う。この主張のためにまずある程度問題を定式化しておく。\nある組織があり、組織は目的のためになんらかの活...",
+      "author": "しもし"
+    },
+    {
+      "source": "zenn",
+      "title": "「AIっぽい」の正体は文体じゃない — 全業務をAIエージェントで回して気づいたこと",
+      "url": "https://zenn.dev/omori432/articles/ai-likeness-not-about-writing-style",
+      "summary": "RIOです。AnotherBallでモバイルエンジニアをしていて、Avvyというアプリを開発しています。（@rioX432）\n日々の業務では、Claude Codeをメインのパートナーとして使っています。開発はもちろん、テックブログの執筆、調査レポートの作成、コードレビュー、デザインまで。できることは片っ端からAIに任せて、業務全体をAIエージェントで回すことを目指しています。\nその結果、日常的にもらうようになったフィードバックがあります。\n\n「AIっぽくて嫌」\n「AIっぽくて中身がない」\n「AIのレビューをそのまま出力されると困る。文脈を理解した上での指摘が欲しい」\n「AI生成されたレ...",
+      "author": "RIO"
+    },
+    {
+      "source": "zenn",
+      "title": "Vite+ の異常なタスクランナー: vite-task は如何にしてキャッシュの手動依存管理をなくしたか",
+      "url": "https://zenn.dev/herp_inc/articles/strange-task-runner",
+      "summary": "原題『Vite+の異常なタスクランナー または vite-task は如何にしてキャッシュの手動依存管理を止めてファイルアクセスを自動捕捉するようになったか』[1]\n\n先日、ついに Vite+ の alpha 版がリリースされました。oxc エコシステムの全面バックアップを受けた高速なネイティブ実装ツールチェーンが揃い踏みしており、開発コミュニティも沸き立っています。\n私も仕事で扱っているプロジェクトを手元で Vite+ に置き換えてみたのですが、 vp (ヴイピー) 鬼はえええ！このまま遅いやつら全部 Vite+ に置き換えていこうぜ！ という気持ちになりました。\nそんな Vite+ ...",
+      "author": "asa1984"
+    },
+    {
+      "source": "zenn",
+      "title": "フロントエンドのディレクトリ構成で再帰的な features 構成を推したい",
+      "url": "https://zenn.dev/pksha/articles/recursive-features-directory-structure",
+      "summary": "はじめに\nこんにちは。PKSHA Technology で SWE をしている須藤です。\n私の所属する PKSHA Speech Insight（PSI）チームでは、React + TypeScript で複数の Web アプリケーションを開発しています。\nFeature 型のディレクトリ構成は広く採用されていますが、feature の数が増えるにつれて「切り方の基準がブレる」「shared フォルダが肥大化する」「テストの粒度が定まらない」といった課題が表面化します。\n私たちのプロジェクトでも 200 を超える feature を運用する中で、フラットな features/ が構造...",
+      "author": "msuto"
+    },
+    {
+      "source": "zenn",
+      "title": "AIコードレビューを「単一責任の原則」で育てた話",
+      "url": "https://zenn.dev/globis/articles/d0c73d2b176ba5",
+      "summary": "はじめに\nこんにちは！グロービスのDevEx（Developer Experience）チームに所属するemi084です。\nAIコードレビューを導入したものの、「的外れな指摘が多い」「レビュー品質が安定しない」と感じることはありませんか？\n私たちも最初は的外れな指摘が何件も飛んできて、チームメンバーがAIレビューを無視し始める問題が発生してしまいました。\nこの記事では、私たちのチームがその課題を「単一責任の原則をAIにも適用する」という発想で乗り越えてきた実践例を紹介します。観点ごとにエージェントを分割し、過去の失敗パターンをナレッジとして教え込むことで、AIレビュワーを「チームの一...",
+      "author": "emi084"
+    },
+    {
+      "source": "zenn",
+      "title": "ちいさくはじめる Nix",
+      "url": "https://zenn.dev/trifolium/books/1c0373f3570334",
+      "summary": "Nix に興味があるけど、何から始めたらいいかわからない人のための入門書です。\nHomebrew など従来のパッケージ管理の状態から少しずつ Nix 管理に置き換えていく方法を解説します。\nNix を活用するのに必要な知識を体系的にまとめるのを目的としています。\n\n本書は下記レポジトリで公開しています。\nhttps://github.com/ryuryu333/zenn-contents/tree/main/books/1c0373f3570334",
+      "author": "ryu_trifolium"
+    },
+    {
+      "source": "zenn",
+      "title": "GitHub Actions 互換のローカルタスクランナーを作った",
+      "url": "https://zenn.dev/mizchi/articles/introduce-actrun",
+      "summary": "TL;DR - ローカル実行できる GitHub Actions Runner\nGitHub Actions のワークフローをローカルで実行するツール actrun を作りました。\nhttps://github.com/mizchi/actrun\nMoonBit で書いてクロスコンパイルしてるので、 npx, native, docker いずれでも使えます。\n# npx（インストール不要）\nnpx @mizchi/actrun .github/workflows/ci.yml\n\n# curl\ncurl -fsSL https://raw.githubusercontent.com/...",
+      "author": "mizchi"
+    },
+    {
+      "source": "zenn",
+      "title": "rmの代わりにtrashを使ってCoding Agentに安全にファイルを削除させる",
+      "url": "https://zenn.dev/lef237/articles/23f77b0dade38f",
+      "summary": "LinuxやmacOSのターミナルでファイルを削除するとき rm コマンドを使います。特にCoding Agentは頻繁にrm を使ってファイルを削除しがちです。\nrm は強力で、削除したファイルは基本的に復元できません。\n特に rm -rf のようなコマンドは、誤操作すると重要なデータを一瞬で消してしまう危険があります。このコマンドをClaude CodeのようなCoding Agentに使わせたくない方も多いと思います。\nrmを使わずに、Coding Agentにファイルやディレクトリを安全に削除させたい...!\n今回の記事ではtrash コマンドについて簡単に説明します。\n\n tr...",
+      "author": "LEF"
+    },
+    {
+      "source": "zenn",
+      "title": "AI機能搭載のRSSリーダーを作った",
+      "url": "https://zenn.dev/babarot/articles/ai-rss-reader-oksskolten",
+      "summary": "なぜRSSリーダーか\n情報収集は基本活字で、昔からRSSリーダーをよく使ってきた。Google Readerの時代からFeedly、Miniflux、FreshRSSと渡り歩いたしPocketのようなRead it later系も使ってきたが落ち着いて使い続けられるサービスがなかった (もっとここがこうだったらな〜とか。サービス自体がなくなることもあった)\nそもそも自分がRSSリーダーを使うのは、情報源を自分でコントロールしたいというのが大きい。SNSのアルゴリズムはエンゲージメントに最適化されているため、気づかないうちにフィルターバブルに閉じ込められる。流れてくる情報は「自分が見た...",
+      "author": "babarot"
+    },
+    {
+      "source": "zenn",
+      "title": "Chromium(V8)のArray.prototype.flatを最大約5倍高速化した",
+      "url": "https://zenn.dev/dinii/articles/675d47a6c21c83",
+      "summary": "はじめに\n!\n修正や追加等はコメントまたはGitHubで編集リクエストをお待ちしております。\n\nダイニーで一番若いエンジニアのriya amemiya(21歳)です。\nタイトルの通り、V8の Array.prototype.flat（以下 flat）を高速化しました。\nパッチはこちらです。\nhttps://chromium-review.googlesource.com/c/v8/v8/+/7526287\n\n最初のコミットから約1ヶ月、やりきりました。\nChrome 147（V8 14.7）でリリースされます。\nhttps://chromiumdash.appspot.com/com...",
+      "author": "Riya Amemiya"
+    },
+    {
+      "source": "zenn",
+      "title": "Claude Code / CodexでKaggle金メダルを取った話",
+      "url": "https://zenn.dev/chiman/articles/b233cc808d6af3",
+      "summary": "TL;DR\n\n実装と分析をAIに任せることで、実験量が桁違いに増えた（5-Fold CV合計1,515回）\n実装から解放された分、人間はアイディアとデータ観察に集中できた\nただし、スコアを押し上げたアイディアのほとんどは人間発。AIの提案の打率は低かった\nAIに素早く実験を回させるための環境・構成づくりも重要だった\nこの構図はKaggleに限らず、定量評価できるR&amp;D全般で起きうると感じている\n\n今回のコンペで使ったコード・設定・分析結果を公開しています。\nhttps://github.com/Chihiro-n/csiro-biomass-agentic-solution\n\n ...",
+      "author": "kinosuke"
+    }
+  ],
+  "hackernews": [
+    {
+      "source": "hackernews",
+      "title": "Show HN: Dumped Wix for an AI Edge agent so I never have to hire junior staff",
+      "body": "I run a building design consultancy. I got tired of paying Wix $40&#x2F;month for a brochure that couldn’t answer simple service questions, and me wasting hours on the same FAQs.So I killed it all and spent 4 months building a &#x27;talker&#x27;: https:&#x2F;&#x2F;axoworks.comThe stack is completely duct-taped: Netlify’s 10s serverless timeout forced me to split the agent into three pieces: Brain (Edge), Hands (Browser), and Voice (Edge). I haven’t coded in 30 years. This was 3 steps forward, 2 steps back, heavily guided by AI.The fight that proved it worked: 2 weeks ago, a licensed architect attacked the bot, trying to prove my business model harms the profession. The AI (DeepSeek-R3) completely dismantled his arguments. It was hilariously caustic.Log: https:&#x2F;&#x2F;logs.axoworks.com&#x2F;chat-architect-vs-concierge-v147.h...A few battle scars:* Web Speech API works fine, right up until someone speaks Chinese without toggling the language mode. Then it forcefully spits out English",
+      "score": 11,
+      "num_comments": 30,
+      "url": "https://news.ycombinator.com/item?id=47441587",
+      "created_utc": 1773935944
+    },
+    {
+      "source": "hackernews",
+      "title": "Jack Bogle would hate what Vanguard has become",
+      "body": "",
+      "score": 25,
+      "num_comments": 27,
+      "url": "https://ristforever.com/rist/06693d7b-590a-4636-9198-a9e103369c70",
+      "created_utc": 1773878808
+    }
+  ]
+}
