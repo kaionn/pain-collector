@@ -1,17 +1,18 @@
-name: Weekly Trend Analysis
+name: Monthly Report
 
 on:
   schedule:
-    - cron: "0 20 * * 6" # 毎週土曜 UTC 20:00 = 日曜 JST 5:00
-  workflow_dispatch: # 手動実行も可能
+    - cron: "0 21 1 * *" # 毎月1日 UTC 21:00 = JST 6:00
+  workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
+  issues: read
+  pages: write
   models: read
 
 jobs:
-  analyze:
+  report:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,42 +24,42 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run weekly analysis
+      - name: Generate monthly report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -c "
-          from datetime import datetime, timezone, timedelta;
-          from src.weekly_trends import run;
-          today = datetime.now(timezone(timedelta(hours=9))).date();
-          run(today)
-          "
+        run: python -m src.main --monthly
 
-      - name: Issue cleanup
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --cleanup
-
-      - name: Pick idea
+      - name: Cross analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --pick-idea
+        run: python -m src.main --cross-analysis
 
-      - name: Weekly deep dive (top 5)
+      - name: Generate dashboard
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: python -m src.main --dashboard
+
+      - name: Portfolio snapshot
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: python -m src.main --portfolio
+
+      - name: Validate top ideas
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --deep-dive-weekly
+        run: python -m src.main --validate
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add weekly/ picks/ deep_dive/
+          git add monthly/ docs/ portfolio/
           if git diff --cached --quiet; then
             echo "No new reports to commit"
           else
-            git commit -m "$(date -u +%Y-%m-%d) の週次トレンドレポートを追加"
+            git commit -m "$(date -u +%Y-%m) の月次レポートを追加"
             git push
           fi

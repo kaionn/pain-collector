@@ -152,3 +152,26 @@ def learn_rules() -> dict:
     print(f"[learn_rules] 保存先: {rules_path}")
 
     return rules
+
+
+def report_learn_results(rules: dict) -> str:
+    """learn_rules() の結果をサマリーレポートとして返す."""
+    exclude = rules.get("exclude_patterns", [])
+    priority = rules.get("priority_patterns", [])
+    updated = rules.get("updated_at", "不明")
+
+    lines = [
+        "# フィードバック学習レポート\n",
+        f"更新日時: {updated}\n",
+        f"## 除外パターン ({len(exclude)} 件)\n",
+    ]
+    for p in exclude:
+        lines.append(f"- {p}")
+    lines.append("")
+
+    lines.append(f"## 優先パターン ({len(priority)} 件)\n")
+    for p in priority:
+        lines.append(f"- {p}")
+    lines.append("")
+
+    return "\n".join(lines)

@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive
+from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle
 
 JST = timezone(timedelta(hours=9))
 
@@ -129,15 +129,18 @@ def process_day(
     hatena_posts: list[dict],
     zenn_posts: list[dict],
     hn_posts: list[dict] | None = None,
+    note_posts: list[dict] | None = None,
 ) -> None:
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
     print(f"=== Pain Collector: {date_str} ===\n")
 
     hn_posts = hn_posts or []
-    all_posts = reddit_posts + hatena_posts + zenn_posts + hn_posts
+    note_posts = note_posts or []
+    all_posts = reddit_posts + hatena_posts + zenn_posts + hn_posts + note_posts
     print(
         f"投稿数: Reddit {len(reddit_posts)} 件 + はてブ {len(hatena_posts)} 件"
-        f" + Zenn {len(zenn_posts)} 件 + HN {len(hn_posts)} 件 = {len(all_posts)} 件\n"
+        f" + Zenn {len(zenn_posts)} 件 + HN {len(hn_posts)} 件"
+        f" + note {len(note_posts)} 件 = {len(all_posts)} 件\n"
     )
 
     # 生データを JSON で保存
@@ -152,6 +155,7 @@ def process_day(
                 "hatena": hatena_posts,
                 "zenn": zenn_posts,
                 "hackernews": hn_posts,
+                "note": note_posts,
             },
             f,
             ensure_ascii=False,
@@ -225,6 +229,51 @@ def main() -> None:
         action="store_true",
         help="高ポテンシャルなペインのディープダイブレポートを生成する",
     )
+    parser.add_argument(
+        "--deep-dive-weekly",
+        action="store_true",
+        help="週次ディープダイブ（上位5件）を生成する",
+    )
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        help="stale Issue の整理と自動クローズを実行する",
+    )
+    parser.add_argument(
+        "--score-issues",
+        action="store_true",
+        help="未スコアの Issue にスコアを付与する",
+    )
+    parser.add_argument(
+        "--pick-idea",
+        action="store_true",
+        help="スコア上位の Issue から MVP 候補を選定する",
+    )
+    parser.add_argument(
+        "--monthly",
+        action="store_true",
+        help="月次レポートを生成する",
+    )
+    parser.add_argument(
+        "--cross-analysis",
+        action="store_true",
+        help="カテゴリ横断分析を実行する",
+    )
+    parser.add_argument(
+        "--dashboard",
+        action="store_true",
+        help="GitHub Pages ダッシュボードを生成する",
+    )
+    parser.add_argument(
+        "--portfolio",
+        action="store_true",
+        help="ポートフォリオスナップショットを生成する",
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="スコア上位アイデアの自動仮説検証を実行する",
+    )
     args = parser.parse_args()
 
     today = datetime.now(JST).date()
@@ -241,6 +290,63 @@ def main() -> None:
         weekly_trends.run(today)
         return
 
+    if args.cleanup:
+        issue_lifecycle.cleanup()
+        return
+
+    if args.score_issues:
+        from . import scoring
+        scoring.score_open_issues()
+        return
+
+    if args.pick_idea:
+        from . import pick_idea
+        pick_idea.run()
+        return
+
+    if args.monthly:
+        from . import monthly_report
+        monthly_report.run(today)
+        return
+
+    if args.cross_analysis:
+        from . import cross_analysis
+        cross_analysis.run(today)
+        return
+
+    if args.dashboard:
+        from . import generate_dashboard
+        generate_dashboard.run()
+        return
+
+    if args.portfolio:
+        from . import portfolio
+        portfolio.run()
+        return
+
+    if args.validate:
+        from . import validate_idea
+        validate_idea.run()
+        return
+
+    if args.deep_dive_weekly:
+        # 週次ディープダイブ: 上位5件
+        raw_path = os.path.join(BASE_DIR, "raw", f"{today.isoformat()}.json")
+        if not os.path.exists(raw_path):
+            print("本日の raw データがありません。先に日次収集を実行してください。")
+            return
+        with open(raw_path, encoding="utf-8") as f:
+            raw_data = json.load(f)
+        all_posts = (
+            raw_data.get("reddit", []) + raw_data.get("hatena", [])
+            + raw_data.get("zenn", []) + raw_data.get("hackernews", [])
+            + raw_data.get("note", [])
+        )
+        pains = extract_pains.extract(all_posts)
+        pains = market_check.enrich_pains(pains, top_n=5)
+        deep_dive.run(pains, today.isoformat(), top_n=5)
+        return
+
     if args.deep_dive:
         # 直近の日次レポートの raw データからディープダイブ対象を探す
         raw_path = os.path.join(BASE_DIR, "raw", f"{today.isoformat()}.json")
@@ -252,6 +358,7 @@ def main() -> None:
         all_posts = (
             raw_data.get("reddit", []) + raw_data.get("hatena", [])
             + raw_data.get("zenn", []) + raw_data.get("hackernews", [])
+            + raw_data.get("note", [])
         )
         pains = extract_pains.extract(all_posts)
         pains = market_check.enrich_pains(pains, top_n=5)
@@ -272,9 +379,12 @@ def main() -> None:
         print("\n--- Hacker News 収集 ---")
         hn_posts = collect_hn.collect()
 
+        print("\n--- note 収集 ---")
+        note_posts = collect_note.collect()
+
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
-            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts)
+            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
             print("\n" + "=" * 60 + "\n")
     else:
         # 通常: 収集 → 抽出 → 保存
@@ -290,7 +400,10 @@ def main() -> None:
         print("\n--- Hacker News 収集 ---")
         hn_posts = collect_hn.collect()
 
-        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts)
+        print("\n--- note 収集 ---")
+        note_posts = collect_note.collect()
+
+        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
 
 
 if __name__ == "__main__":

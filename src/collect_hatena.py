@@ -5,6 +5,9 @@ import feedparser
 CATEGORIES = [
     {"path": "it", "label": "テクノロジー"},
     {"path": "life", "label": "暮らし"},
+    {"path": "social", "label": "社会"},
+    {"path": "economics", "label": "経済"},
+    {"path": "knowledge", "label": "学び"},
 ]
 
 

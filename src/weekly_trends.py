@@ -61,10 +61,11 @@ def load_daily_pains(target_date: date, days: int = 7) -> list[dict]:
             with open(raw_path, encoding="utf-8") as f:
                 data = json.load(f)
 
-            # raw には reddit/hatena/zenn/hackernews の生データが入っている
+            # raw には reddit/hatena/zenn/hackernews/note の生データが入っている
             posts = (
                 data.get("reddit", []) + data.get("hatena", [])
                 + data.get("zenn", []) + data.get("hackernews", [])
+                + data.get("note", [])
             )
             all_pains.extend(posts)
         except (json.JSONDecodeError, OSError) as e:

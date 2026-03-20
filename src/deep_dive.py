@@ -83,7 +83,7 @@ def should_deep_dive(pain: dict) -> bool:
     """
     signal = pain.get("market_signal", "")
     severity = pain.get("severity", 0)
-    return signal in ("whitespace", "underserved") and severity >= 4
+    return signal in ("whitespace", "underserved") and severity >= 3
 
 
 def _make_slug(text: str) -> str:
@@ -152,16 +152,17 @@ def _call_llm(system_prompt: str, user_prompt: str) -> str:
     return result.stdout.strip()
 
 
-def run(pains: list[dict], date_str: str) -> None:
+def run(pains: list[dict], date_str: str, top_n: int = 1) -> None:
     """高ポテンシャルなペインのディープダイブレポートを生成して保存する.
 
     should_deep_dive() でフィルタリングし、severity × wtp_score で
-    スコアリングして上位 1 件のみレポートを生成する。
+    スコアリングして上位 top_n 件のレポートを生成する。
     生成したレポートは deep_dive/{date_str}-{slug}.md に保存する。
 
     Args:
         pains: market_check.enrich_pains() で処理済みのペインリスト。
         date_str: レポートの日付文字列（例: "2026-03-18"）。
+        top_n: 生成するレポートの最大件数（日次=1、週次=5）。
     """
     wtp_score: dict[str, int] = {"high": 4, "medium": 3, "low": 2, "free": 1}
 
@@ -169,15 +170,22 @@ def run(pains: list[dict], date_str: str) -> None:
     candidates = [p for p in pains if should_deep_dive(p)]
 
     if not candidates:
-        print("[DeepDive] 対象となるペインがありません（market_signal=whitespace/underserved かつ severity>=4 の条件を満たすペインなし）")
+        print("[DeepDive] 対象となるペインがありません（market_signal=whitespace/underserved かつ severity>=3 の条件を満たすペインなし）")
         return
 
-    # スコアリング: severity × wtp_score で降順ソートして上位 1 件を取得
+    # スコアリング: severity × wtp_score で降順ソートして上位 top_n 件を取得
     candidates.sort(
         key=lambda p: p.get("severity", 0) * wtp_score.get(p.get("willingness_to_pay", "free"), 1),
         reverse=True,
     )
-    target = candidates[0]
+    targets = candidates[:top_n]
+
+    for target in targets:
+        _generate_report(target, date_str)
+
+
+def _generate_report(target: dict, date_str: str) -> None:
+    """1 件のペインに対してディープダイブレポートを生成する."""
 
     pain_text = target.get("pain", "")
     category = target.get("category", "その他")

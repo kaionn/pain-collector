@@ -21,7 +21,8 @@ WTP_LABELS = {
     "free": "💰free",
 }
 
-DUPLICATE_THRESHOLD = 0.5
+DUPLICATE_THRESHOLD_HIGH = 0.7  # 確実に重複
+DUPLICATE_THRESHOLD_LOW = 0.4   # グレーゾーン（LLM で二次判定）
 
 
 def _fetch_open_issues() -> list[dict]:
@@ -46,8 +47,45 @@ def _fetch_open_issues() -> list[dict]:
     return []
 
 
+def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
+    """LLM でグレーゾーンの重複を二次判定する."""
+    import os
+
+    prompt = (
+        "以下の2つのペインが実質的に同じ課題を指しているか判定してください。\n"
+        "同じ課題なら YES、異なる課題なら NO とだけ答えてください。\n\n"
+        f"ペイン A: {pain_text}\n"
+        f"ペイン B: {existing_title}\n"
+    )
+
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if token:
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(
+                base_url="https://models.github.ai/inference",
+                api_key=token,
+            )
+            response = client.chat.completions.create(
+                model="openai/gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                max_tokens=10,
+            )
+            answer = (response.choices[0].message.content or "").strip().upper()
+            return answer.startswith("YES")
+        except Exception as e:
+            print(f"[GitHub] LLM 二次判定失敗: {e}")
+    return False
+
+
 def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
-    """既存 Issue の中から重複を検出する. 類似度が閾値以上なら既存 Issue を返す."""
+    """既存 Issue の中から重複を検出する（2 段階判定）.
+
+    1. TF-IDF cosine similarity >= 0.7 → 確実に重複
+    2. 0.4 <= similarity < 0.7 → LLM で二次判定
+    """
     if not existing_issues:
         return None
 
@@ -59,8 +97,15 @@ def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
         sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
 
         max_idx = sims.argmax()
-        if sims[max_idx] >= DUPLICATE_THRESHOLD:
+        max_sim = sims[max_idx]
+
+        if max_sim >= DUPLICATE_THRESHOLD_HIGH:
             return existing_issues[max_idx]
+
+        if max_sim >= DUPLICATE_THRESHOLD_LOW:
+            print(f"[GitHub] グレーゾーン (sim={max_sim:.2f}) → LLM 二次判定")
+            if _llm_judge_duplicate(pain_text, titles[max_idx]):
+                return existing_issues[max_idx]
     except ValueError:
         pass
 
@@ -226,6 +271,13 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
 
             # Project に自動追加 (GraphQL API)
             _add_to_project(issue_url, issue_number)
+
+            # スコアリング
+            try:
+                from . import scoring
+                scoring.score_and_update_issue(pain, issue_number)
+            except Exception as e:
+                print(f"[GitHub] スコアリング失敗（続行）: {e}")
 
             return {"number": issue_number, "title": title}
         else:
