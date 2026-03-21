@@ -11,8 +11,9 @@ from collections import Counter
 from datetime import date, timedelta
 
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from .tokenizer import create_tfidf_vectorizer
 
 from . import extract_pains
 
@@ -106,7 +107,7 @@ def calculate_novelty(new_pain: str, historical_pains: list[str]) -> float:
     if not historical_pains:
         return 1.0
     corpus = historical_pains + [new_pain]
-    tfidf = TfidfVectorizer().fit_transform(corpus)
+    tfidf = create_tfidf_vectorizer().fit_transform(corpus)
     similarities = cosine_similarity(tfidf[-1:], tfidf[:-1])
     return 1.0 - float(similarities.max())
 

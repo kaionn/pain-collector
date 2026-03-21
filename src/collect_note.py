@@ -2,6 +2,8 @@
 
 import feedparser
 
+from src.pain_keywords_ja import contains_pain_keyword
+
 NOTE_RSS_URLS = [
     {"url": "https://note.com/topic/technology/rss", "label": "テクノロジー"},
     {"url": "https://note.com/topic/lifestyle/rss", "label": "ライフスタイル"},
@@ -20,21 +22,28 @@ def collect() -> list[dict]:
             print(f"[note] {source['label']} の取得に失敗: {e}")
             continue
 
+        raw_count = 0
         entries = []
         for entry in feed.entries[:20]:
+            raw_count += 1
+            title = entry.get("title", "")
+            summary = entry.get("summary", "")[:500]
+            text = f"{title} {summary}"
+            if not contains_pain_keyword(text):
+                continue
             entries.append(
                 {
                     "source": "note",
                     "category": source["label"],
-                    "title": entry.get("title", ""),
+                    "title": title,
                     "url": entry.get("link", ""),
-                    "summary": entry.get("summary", "")[:500],
+                    "summary": summary,
                     "author": entry.get("author", ""),
                 }
             )
 
         all_entries.extend(entries)
-        print(f"[note] {source['label']}: {len(entries)} 件のエントリを取得")
+        print(f"[note] {source['label']}: {len(entries)}/{raw_count} 件がペインフィルタ通過")
 
     print(f"[note] 合計: {len(all_entries)} 件")
     return all_entries

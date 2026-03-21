@@ -3,8 +3,9 @@
 import json
 import subprocess
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from src.tokenizer import create_tfidf_vectorizer
 
 PRODUCT_TYPE_LABELS = {
     "モバイルアプリ": "📱モバイルアプリ",
@@ -93,7 +94,7 @@ def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
     corpus = titles + [pain_text]
 
     try:
-        tfidf = TfidfVectorizer().fit_transform(corpus)
+        tfidf = create_tfidf_vectorizer().fit_transform(corpus)
         sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
 
         max_idx = sims.argmax()

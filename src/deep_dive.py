@@ -188,6 +188,15 @@ def _generate_report(target: dict, date_str: str) -> None:
     """1 件のペインに対してディープダイブレポートを生成する."""
 
     pain_text = target.get("pain", "")
+
+    # 同じペインのレポートが既に存在するかチェック
+    slug = _make_slug(pain_text)
+    output_dir = os.path.join(BASE_DIR, "deep_dive")
+    if os.path.isdir(output_dir):
+        for fname in os.listdir(output_dir):
+            if fname.endswith(f"{slug}.md"):
+                print(f"[DeepDive] スキップ（既存レポートあり）: {fname}")
+                return
     category = target.get("category", "その他")
     severity = target.get("severity", 0)
     wtp = target.get("willingness_to_pay", "free")
@@ -254,8 +263,6 @@ def _generate_report(target: dict, date_str: str) -> None:
 {llm_content}
 """
 
-    # ファイル保存
-    slug = _make_slug(pain_text)
     output_dir = os.path.join(BASE_DIR, "deep_dive")
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{date_str}-{slug}.md")

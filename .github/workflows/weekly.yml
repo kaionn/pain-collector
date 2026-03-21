@@ -34,6 +34,12 @@ jobs:
           run(today)
           "
 
+      - name: Score unscored issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: python -m src.main --score-issues
+
       - name: Issue cleanup
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}

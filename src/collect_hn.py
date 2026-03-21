@@ -5,6 +5,8 @@ import time
 
 import requests
 
+from src.http_utils import create_retry_session
+
 HN_API_BASE = "https://hacker-news.firebaseio.com/v0"
 
 PAIN_KEYWORDS = re.compile(
@@ -13,6 +15,9 @@ PAIN_KEYWORDS = re.compile(
     r"impossible|inconvenient|waste of time)\b",
     re.IGNORECASE,
 )
+
+
+_session = create_retry_session()
 
 
 def _strip_html(text: str) -> str:
@@ -24,7 +29,7 @@ def _fetch_top_story_ids(max_stories: int) -> list[int]:
     """トップストーリーの ID リストを取得する."""
     url = f"{HN_API_BASE}/topstories.json"
     try:
-        resp = requests.get(url, timeout=15)
+        resp = _session.get(url, timeout=15)
         resp.raise_for_status()
         ids: list[int] = resp.json()
         return ids[:max_stories]
@@ -37,7 +42,7 @@ def _fetch_item(item_id: int) -> dict | None:
     """個別ストーリーの詳細を取得する."""
     url = f"{HN_API_BASE}/item/{item_id}.json"
     try:
-        resp = requests.get(url, timeout=15)
+        resp = _session.get(url, timeout=15)
         resp.raise_for_status()
         return resp.json()
     except (requests.RequestException, ValueError):

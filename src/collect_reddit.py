@@ -5,6 +5,8 @@ import time
 
 import requests
 
+from src.http_utils import create_retry_session
+
 SUBREDDITS = [
     "apps",
     "productivity",
@@ -35,11 +37,14 @@ USER_AGENT = "pain-collector/1.0 (GitHub Actions)"
 MAX_POSTS_PER_SUB = 50
 
 
+_session = create_retry_session()
+
+
 def _fetch_reddit(url: str, label: str) -> list[dict]:
     """Reddit の公開 JSON エンドポイントからデータを取得する."""
     headers = {"User-Agent": USER_AGENT}
     try:
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = _session.get(url, headers=headers, timeout=15)
         resp.raise_for_status()
         return resp.json().get("data", {}).get("children", [])
     except (requests.RequestException, ValueError) as e:

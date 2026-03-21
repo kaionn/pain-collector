@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import subprocess
 from datetime import datetime, timezone, timedelta
 
@@ -22,6 +23,26 @@ PICK_PROMPT = """\
 
 Markdown 形式で出力してください。見出しは ## を使ってください。
 """
+
+
+def _load_past_picks() -> set[int]:
+    """過去の picks/ レポートから選定済みの Issue 番号を抽出する."""
+    picks_dir = os.path.join(BASE_DIR, "picks")
+    picked = set()
+    if not os.path.isdir(picks_dir):
+        return picked
+    for fname in os.listdir(picks_dir):
+        if not fname.endswith(".md"):
+            continue
+        try:
+            with open(os.path.join(picks_dir, fname), encoding="utf-8") as f:
+                for line in f:
+                    # "### #123" や "#123" 形式の Issue 番号を抽出
+                    for match in re.findall(r"#(\d+)", line):
+                        picked.add(int(match))
+        except OSError:
+            continue
+    return picked
 
 
 def _fetch_scored_issues() -> list[dict]:
@@ -95,12 +116,20 @@ def run() -> None:
     score_order = {"🏆score-S": 0, "🥇score-A": 1, "🥈score-B": 2}
     issues.sort(key=lambda x: score_order.get(x.get("score_label", ""), 3))
 
-    # 上位10件をLLMに渡す
+    # 過去の選定済み Issue を除外
+    past_picks = _load_past_picks()
+    issues = [i for i in issues if i["number"] not in past_picks]
+
+    if not issues:
+        print("[PickIdea] 未選定のスコア付き Issue がありません")
+        return
+
+    # 上位10件をLLMに渡す（body 全文を含めて判断精度を向上）
     top = issues[:10]
     issue_texts = []
     for issue in top:
         title = issue["title"]
-        body = issue.get("body", "")[:500]
+        body = issue.get("body", "")
         label = issue.get("score_label", "")
         issue_texts.append(f"### #{issue['number']} {title}\nスコア: {label}\n{body}\n")
 

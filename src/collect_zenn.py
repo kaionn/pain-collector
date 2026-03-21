@@ -2,6 +2,8 @@
 
 import feedparser
 
+from src.pain_keywords_ja import contains_pain_keyword
+
 FEED_URL = "https://zenn.dev/feed"
 
 
@@ -13,17 +15,24 @@ def collect() -> list[dict]:
         print(f"[Zenn] フィードの取得に失敗: {e}")
         return []
 
+    raw_count = 0
     entries = []
     for entry in feed.entries:
+        raw_count += 1
+        title = entry.get("title", "")
+        summary = entry.get("summary", "")[:500]
+        text = f"{title} {summary}"
+        if not contains_pain_keyword(text):
+            continue
         entries.append(
             {
                 "source": "zenn",
-                "title": entry.get("title", ""),
+                "title": title,
                 "url": entry.get("link", ""),
-                "summary": entry.get("summary", "")[:500],
+                "summary": summary,
                 "author": entry.get("author", ""),
             }
         )
 
-    print(f"[Zenn] {len(entries)} 件のエントリを取得")
+    print(f"[Zenn] {len(entries)}/{raw_count} 件がペインフィルタ通過")
     return entries

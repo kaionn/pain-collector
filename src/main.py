@@ -365,44 +365,46 @@ def main() -> None:
         deep_dive.run(pains, today.isoformat())
         return
 
-    if args.backfill > 0:
-        # バックフィル: データを 1 回だけ収集し、日付ごとにレポート生成
-        print("--- Reddit 収集（バックフィル） ---")
-        reddit_posts = collect_reddit.collect(backfill=True)
+    def _collect_all(backfill: bool = False) -> tuple:
+        """全ソースからデータを収集し、サマリーを表示する."""
+        sources = {}
+
+        print("--- Reddit 収集" + "（バックフィル）" * backfill + " ---")
+        sources["Reddit"] = collect_reddit.collect(backfill=backfill)
 
         print("\n--- はてブ 収集 ---")
-        hatena_posts = collect_hatena.collect()
+        sources["はてブ"] = collect_hatena.collect()
 
         print("\n--- Zenn 収集 ---")
-        zenn_posts = collect_zenn.collect()
+        sources["Zenn"] = collect_zenn.collect()
 
         print("\n--- Hacker News 収集 ---")
-        hn_posts = collect_hn.collect()
+        sources["HN"] = collect_hn.collect()
 
         print("\n--- note 収集 ---")
-        note_posts = collect_note.collect()
+        sources["note"] = collect_note.collect()
 
+        # 収集サマリー
+        total = sum(len(v) for v in sources.values())
+        print(f"\n--- 収集サマリー ---")
+        for name, posts in sources.items():
+            status = "✅" if posts else "⚠️"
+            print(f"  {status} {name}: {len(posts)} 件")
+        print(f"  合計: {total} 件\n")
+
+        return (
+            sources["Reddit"], sources["はてブ"], sources["Zenn"],
+            sources["HN"], sources["note"],
+        )
+
+    if args.backfill > 0:
+        reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts = _collect_all(backfill=True)
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
             process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
             print("\n" + "=" * 60 + "\n")
     else:
-        # 通常: 収集 → 抽出 → 保存
-        print("--- Reddit 収集 ---")
-        reddit_posts = collect_reddit.collect()
-
-        print("\n--- はてブ 収集 ---")
-        hatena_posts = collect_hatena.collect()
-
-        print("\n--- Zenn 収集 ---")
-        zenn_posts = collect_zenn.collect()
-
-        print("\n--- Hacker News 収集 ---")
-        hn_posts = collect_hn.collect()
-
-        print("\n--- note 収集 ---")
-        note_posts = collect_note.collect()
-
+        reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts = _collect_all()
         process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
 
 
