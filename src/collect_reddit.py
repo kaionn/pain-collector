@@ -18,6 +18,11 @@ SUBREDDITS = [
     "mildlyinfuriating",
     "japanlife",
     "japanfinance",
+    "personalfinance",
+    "Entrepreneur",
+    "careerguidance",
+    "ADHD",
+    "digitalnomad",
 ]
 
 PAIN_KEYWORDS = re.compile(

@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle
+from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle
 
 JST = timezone(timedelta(hours=9))
 
@@ -125,42 +125,26 @@ def generate_report(pains: list[dict], date_str: str) -> str:
 
 def process_day(
     date_str: str,
-    reddit_posts: list[dict],
-    hatena_posts: list[dict],
-    zenn_posts: list[dict],
-    hn_posts: list[dict] | None = None,
-    note_posts: list[dict] | None = None,
+    sources: dict[str, list[dict]],
 ) -> None:
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
     print(f"=== Pain Collector: {date_str} ===\n")
 
-    hn_posts = hn_posts or []
-    note_posts = note_posts or []
-    all_posts = reddit_posts + hatena_posts + zenn_posts + hn_posts + note_posts
-    print(
-        f"投稿数: Reddit {len(reddit_posts)} 件 + はてブ {len(hatena_posts)} 件"
-        f" + Zenn {len(zenn_posts)} 件 + HN {len(hn_posts)} 件"
-        f" + note {len(note_posts)} 件 = {len(all_posts)} 件\n"
-    )
+    all_posts: list[dict] = []
+    summary_parts: list[str] = []
+    for name, posts in sources.items():
+        all_posts.extend(posts)
+        summary_parts.append(f"{name} {len(posts)} 件")
+    print(f"投稿数: {' + '.join(summary_parts)} = {len(all_posts)} 件\n")
 
     # 生データを JSON で保存
     raw_dir = os.path.join(BASE_DIR, "raw")
     os.makedirs(raw_dir, exist_ok=True)
     raw_path = os.path.join(raw_dir, f"{date_str}.json")
+    raw_data = {"date": date_str}
+    raw_data.update(sources)
     with open(raw_path, "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "date": date_str,
-                "reddit": reddit_posts,
-                "hatena": hatena_posts,
-                "zenn": zenn_posts,
-                "hackernews": hn_posts,
-                "note": note_posts,
-            },
-            f,
-            ensure_ascii=False,
-            indent=2,
-        )
+        json.dump(raw_data, f, ensure_ascii=False, indent=2)
     print(f"生データを保存: {raw_path}")
 
     if not all_posts:
@@ -329,83 +313,97 @@ def main() -> None:
         validate_idea.run()
         return
 
-    if args.deep_dive_weekly:
-        # 週次ディープダイブ: 上位5件
-        raw_path = os.path.join(BASE_DIR, "raw", f"{today.isoformat()}.json")
+    def _load_all_posts_from_raw(date_str: str) -> list[dict] | None:
+        """raw JSON から全ソースの投稿を結合して返す."""
+        raw_path = os.path.join(BASE_DIR, "raw", f"{date_str}.json")
         if not os.path.exists(raw_path):
             print("本日の raw データがありません。先に日次収集を実行してください。")
-            return
+            return None
         with open(raw_path, encoding="utf-8") as f:
             raw_data = json.load(f)
-        all_posts = (
-            raw_data.get("reddit", []) + raw_data.get("hatena", [])
-            + raw_data.get("zenn", []) + raw_data.get("hackernews", [])
-            + raw_data.get("note", [])
-        )
+        all_posts: list[dict] = []
+        for key, value in raw_data.items():
+            if key != "date" and isinstance(value, list):
+                all_posts.extend(value)
+        return all_posts
+
+    if args.deep_dive_weekly:
+        all_posts = _load_all_posts_from_raw(today.isoformat())
+        if all_posts is None:
+            return
         pains = extract_pains.extract(all_posts)
         pains = market_check.enrich_pains(pains, top_n=5)
         deep_dive.run(pains, today.isoformat(), top_n=5)
         return
 
     if args.deep_dive:
-        # 直近の日次レポートの raw データからディープダイブ対象を探す
-        raw_path = os.path.join(BASE_DIR, "raw", f"{today.isoformat()}.json")
-        if not os.path.exists(raw_path):
-            print("本日の raw データがありません。先に日次収集を実行してください。")
+        all_posts = _load_all_posts_from_raw(today.isoformat())
+        if all_posts is None:
             return
-        with open(raw_path, encoding="utf-8") as f:
-            raw_data = json.load(f)
-        all_posts = (
-            raw_data.get("reddit", []) + raw_data.get("hatena", [])
-            + raw_data.get("zenn", []) + raw_data.get("hackernews", [])
-            + raw_data.get("note", [])
-        )
         pains = extract_pains.extract(all_posts)
         pains = market_check.enrich_pains(pains, top_n=5)
         deep_dive.run(pains, today.isoformat())
         return
 
-    def _collect_all(backfill: bool = False) -> tuple:
+    def _collect_all(backfill: bool = False) -> dict[str, list[dict]]:
         """全ソースからデータを収集し、サマリーを表示する."""
-        sources = {}
+        sources: dict[str, list[dict]] = {}
 
-        print("--- Reddit 収集" + "（バックフィル）" * backfill + " ---")
-        sources["Reddit"] = collect_reddit.collect(backfill=backfill)
+        collectors = [
+            ("Reddit", lambda: collect_reddit.collect(backfill=backfill)),
+            ("はてブ", collect_hatena.collect),
+            ("Zenn", collect_zenn.collect),
+            ("HN", collect_hn.collect),
+            ("note", collect_note.collect),
+            ("Dev.to", collect_devto.collect),
+            ("StackOverflow", collect_stackoverflow.collect),
+            ("Bluesky", collect_bluesky.collect),
+            ("AppStore", collect_appstore.collect),
+            ("GooglePlay", collect_googleplay.collect),
+            ("知恵袋", collect_chiebukuro.collect),
+            ("ガルちゃん", collect_girlschannel.collect),
+        ]
 
-        print("\n--- はてブ 収集 ---")
-        sources["はてブ"] = collect_hatena.collect()
+        # raw JSON のキー名マッピング
+        raw_keys = {
+            "Reddit": "reddit", "はてブ": "hatena", "Zenn": "zenn",
+            "HN": "hackernews", "note": "note", "Dev.to": "devto",
+            "StackOverflow": "stackoverflow", "Bluesky": "bluesky",
+            "AppStore": "appstore", "GooglePlay": "googleplay",
+            "知恵袋": "chiebukuro", "ガルちゃん": "girlschannel",
+        }
 
-        print("\n--- Zenn 収集 ---")
-        sources["Zenn"] = collect_zenn.collect()
-
-        print("\n--- Hacker News 収集 ---")
-        sources["HN"] = collect_hn.collect()
-
-        print("\n--- note 収集 ---")
-        sources["note"] = collect_note.collect()
+        for name, collector_fn in collectors:
+            suffix = "（バックフィル）" if backfill and name == "Reddit" else ""
+            print(f"--- {name} 収集{suffix} ---")
+            try:
+                sources[raw_keys[name]] = collector_fn()
+            except Exception as e:
+                print(f"  ⚠️ {name} でエラー: {e}")
+                sources[raw_keys[name]] = []
+            print()
 
         # 収集サマリー
         total = sum(len(v) for v in sources.values())
-        print(f"\n--- 収集サマリー ---")
-        for name, posts in sources.items():
+        print(f"--- 収集サマリー ---")
+        for name, collector_fn in collectors:
+            key = raw_keys[name]
+            posts = sources[key]
             status = "✅" if posts else "⚠️"
             print(f"  {status} {name}: {len(posts)} 件")
         print(f"  合計: {total} 件\n")
 
-        return (
-            sources["Reddit"], sources["はてブ"], sources["Zenn"],
-            sources["HN"], sources["note"],
-        )
+        return sources
 
     if args.backfill > 0:
-        reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts = _collect_all(backfill=True)
+        sources = _collect_all(backfill=True)
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
-            process_day(target.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
+            process_day(target.isoformat(), sources)
             print("\n" + "=" * 60 + "\n")
     else:
-        reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts = _collect_all()
-        process_day(today.isoformat(), reddit_posts, hatena_posts, zenn_posts, hn_posts, note_posts)
+        sources = _collect_all()
+        process_day(today.isoformat(), sources)
 
 
 if __name__ == "__main__":
