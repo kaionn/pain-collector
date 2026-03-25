@@ -196,6 +196,47 @@ def process_day(
     logger.info("--- ディープダイブ ---")
     deep_dive.run(pains, date_str)
 
+    # 日次サマリー生成
+    _write_daily_summary(date_str, sources, pains)
+
+
+def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: list[dict]) -> None:
+    """日次サマリーを生成し、GitHub Actions Job Summary に出力する."""
+    source_lines = ", ".join(f"{name} {len(posts)}件" for name, posts in sources.items())
+    total_posts = sum(len(v) for v in sources.values())
+
+    # スコアランク集計
+    score_s = sum(1 for p in pains if p.get("total_score", 0) >= 48)
+    score_a = sum(1 for p in pains if 36 <= p.get("total_score", 0) < 48)
+
+    # 市場シグナル集計
+    whitespace = sum(1 for p in pains if p.get("market_signal") == "whitespace")
+    underserved = sum(1 for p in pains if p.get("market_signal") == "underserved")
+
+    summary = (
+        f"## 📊 Pain Collector Daily Summary ({date_str})\n\n"
+        f"| 項目 | 値 |\n"
+        f"|------|----|\n"
+        f"| 収集投稿数 | {total_posts} 件 |\n"
+        f"| 抽出ペイン数 | {len(pains)} 件 |\n"
+        f"| スコア S/A | {score_s}/{score_a} 件 |\n"
+        f"| ホワイトスペース | {whitespace} 件 |\n"
+        f"| 低満足度市場 | {underserved} 件 |\n\n"
+        f"収集内訳: {source_lines}\n"
+    )
+
+    logger.info(f"日次サマリー:\n{summary}")
+
+    # GitHub Actions Job Summary に出力
+    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary:
+        try:
+            with open(step_summary, "a", encoding="utf-8") as f:
+                f.write(summary + "\n")
+            logger.info("GitHub Actions Job Summary に出力")
+        except Exception as e:
+            logger.warning(f"Job Summary 出力失敗: {e}")
+
 
 def _setup_logging() -> None:
     """ロガーの初期化（コンソール + ファイル）."""
