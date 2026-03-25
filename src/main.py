@@ -238,6 +238,46 @@ def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: l
             logger.warning(f"Job Summary 出力失敗: {e}")
 
 
+SOURCE_HEALTH_PATH = os.path.join(BASE_DIR, "data", "source_health.json")
+
+
+def _load_source_health() -> dict:
+    """ソースの健全性データを読み込む."""
+    if not os.path.exists(SOURCE_HEALTH_PATH):
+        return {}
+    try:
+        with open(SOURCE_HEALTH_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _update_source_health(sources: dict[str, list[dict]], today_str: str) -> None:
+    """収集結果からソースの健全性データを更新する."""
+    health = _load_source_health()
+
+    for source_key, posts in sources.items():
+        entry = health.get(source_key, {"last_success": None, "consecutive_failures": 0})
+
+        if posts:
+            entry["last_success"] = today_str
+            entry["consecutive_failures"] = 0
+        else:
+            entry["consecutive_failures"] = entry.get("consecutive_failures", 0) + 1
+
+        health[source_key] = entry
+
+    os.makedirs(os.path.dirname(SOURCE_HEALTH_PATH), exist_ok=True)
+    with open(SOURCE_HEALTH_PATH, "w", encoding="utf-8") as f:
+        json.dump(health, f, ensure_ascii=False, indent=2)
+
+    # 連続失敗の警告
+    for source_key, entry in health.items():
+        failures = entry.get("consecutive_failures", 0)
+        if failures >= 3:
+            logger.warning(f"⚠️ {source_key} が {failures} 日連続で失敗中（最終成功: {entry.get('last_success', '不明')}）")
+
+
 def _setup_logging() -> None:
     """ロガーの初期化（コンソール + ファイル）."""
     logs_dir = os.path.join(BASE_DIR, "logs")
@@ -472,6 +512,9 @@ def main() -> None:
             status = "OK" if posts else "EMPTY"
             logger.info(f"  [{status}] {name}: {len(posts)} 件")
         logger.info(f"  合計: {total} 件")
+
+        # ソースの健全性を更新
+        _update_source_health(sources, today.isoformat())
 
         return sources
 
