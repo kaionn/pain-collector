@@ -10,8 +10,75 @@ from src.http_utils import create_retry_session
 
 ITUNES_SEARCH_URL = "https://itunes.apple.com/search"
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASELINES_PATH = os.path.join(BASE_DIR, "data", "market_baselines.json")
+
+# フォールバック閾値（蓄積データ不足時）
+DEFAULT_RATING_THRESHOLD = 3.5
+DEFAULT_REVIEWS_THRESHOLD = 1000
+MIN_SAMPLES_FOR_BASELINE = 10
 
 _session = create_retry_session()
+
+
+def _load_baselines() -> dict:
+    """カテゴリ別の市場ベースラインデータを読み込む."""
+    if not os.path.exists(BASELINES_PATH):
+        return {}
+    try:
+        with open(BASELINES_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_baselines(baselines: dict) -> None:
+    """カテゴリ別の市場ベースラインデータを保存する."""
+    os.makedirs(os.path.dirname(BASELINES_PATH), exist_ok=True)
+    with open(BASELINES_PATH, "w", encoding="utf-8") as f:
+        json.dump(baselines, f, ensure_ascii=False, indent=2)
+
+
+def _update_baseline(category: str, apps: list[dict]) -> None:
+    """検索結果からカテゴリ別ベースラインを更新する."""
+    if not category or not apps:
+        return
+
+    baselines = _load_baselines()
+    entry = baselines.get(category, {"ratings": [], "review_counts": []})
+
+    for app in apps:
+        if app.get("rating", 0) > 0:
+            entry["ratings"].append(app["rating"])
+        if app.get("reviews", 0) > 0:
+            entry["review_counts"].append(app["reviews"])
+
+    # 最新 100 件まで保持
+    entry["ratings"] = entry["ratings"][-100:]
+    entry["review_counts"] = entry["review_counts"][-100:]
+
+    baselines[category] = entry
+    _save_baselines(baselines)
+
+
+def _get_category_thresholds(category: str) -> tuple[float, int]:
+    """カテゴリ別の閾値を返す。データ不足時はデフォルト値にフォールバック."""
+    baselines = _load_baselines()
+    entry = baselines.get(category, {})
+    ratings = entry.get("ratings", [])
+    review_counts = entry.get("review_counts", [])
+
+    if len(ratings) < MIN_SAMPLES_FOR_BASELINE:
+        return DEFAULT_RATING_THRESHOLD, DEFAULT_REVIEWS_THRESHOLD
+
+    avg_rating = sum(ratings) / len(ratings)
+    avg_reviews = sum(review_counts) / len(review_counts) if review_counts else DEFAULT_REVIEWS_THRESHOLD
+
+    # カテゴリ平均 - 0.5 を underserved 閾値とする
+    rating_threshold = avg_rating - 0.5
+    reviews_threshold = int(avg_reviews * 0.5)
+
+    return rating_threshold, reviews_threshold
 
 
 def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
@@ -115,15 +182,21 @@ def enrich_pain_with_market_data(pain: dict) -> dict:
         pain["market_signal"] = "whitespace"
         return pain
 
+    # ベースラインを更新
+    _update_baseline(category, apps)
+
     avg_rating = sum(a["rating"] for a in apps) / len(apps)
     total_reviews = sum(a["reviews"] for a in apps)
 
+    # カテゴリ別閾値で判定
+    rating_threshold, reviews_threshold = _get_category_thresholds(category)
+
     if total_reviews == 0:
         signal = "whitespace"
-    elif avg_rating < 3.5:
-        signal = "underserved"  # 市場はあるが満足度が低い
-    elif total_reviews < 1000:
-        signal = "emerging"  # 新しい市場
+    elif avg_rating < rating_threshold:
+        signal = "underserved"  # カテゴリ平均以下 → 満足度が低い
+    elif total_reviews < reviews_threshold:
+        signal = "emerging"  # レビュー数がカテゴリ平均の半分以下 → 新興市場
     else:
         signal = "competitive"  # 競合が強い
 
