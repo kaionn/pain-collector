@@ -1,9 +1,12 @@
 """Stack Overflow から未解決のペイン系質問を収集する."""
 
+import logging
 import re
 import zlib
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.stackexchange.com/2.3"
 
@@ -41,7 +44,7 @@ def _fetch_questions(tag: str) -> list[dict]:
         data = resp.json()
         return data.get("items", [])
     except Exception as e:
-        print(f"[StackOverflow] tag={tag} の取得に失敗: {e}")
+        logger.warning(f"tag={tag} の取得に失敗: {e}")
         return []
 
 
@@ -82,5 +85,5 @@ def collect() -> list[dict]:
                 "answer_count": answer_count,
             })
 
-    print(f"[StackOverflow] {len(all_posts)} 件のペイン質問を取得")
+    logger.info(f"{len(all_posts)} 件のペイン質問を取得")
     return all_posts

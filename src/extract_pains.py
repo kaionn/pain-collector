@@ -5,9 +5,12 @@
 """
 
 import json
+import logging
 import os
 import subprocess
 from collections.abc import Callable
+
+logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 20
 
@@ -116,7 +119,7 @@ def _build_system_prompt() -> str:
 def extract(posts: list[dict]) -> list[dict]:
     """投稿リストからペインを抽出する."""
     if not posts:
-        print("[LLM] 投稿が0件のためスキップ")
+        logger.info("投稿が0件のためスキップ")
         return []
 
     token = os.environ.get("GITHUB_TOKEN", "")
@@ -186,16 +189,16 @@ def _extract_in_batches(
         all_pains.extend(pains)
 
     if retry_stats["total_retries"] > 0:
-        print(
+        logger.info(
             f"[{label}] リトライ統計: {retry_stats['total_retries']}回リトライ, "
             f"{retry_stats['recovered']}件復旧"
         )
 
     if failed_posts:
         _save_failed_posts(failed_posts)
-        print(f"[{label}] {len(failed_posts)}件の投稿が最終的に失敗")
+        logger.warning(f"[{label}] {len(failed_posts)}件の投稿が最終的に失敗")
 
-    print(f"[{label}] 合計: {len(all_pains)} 件のペインを抽出")
+    logger.info(f"[{label}] 合計: {len(all_pains)} 件のペインを抽出")
     return all_pains
 
 
@@ -213,10 +216,10 @@ def _extract_batch_with_retry(
     try:
         content = call_fn(batch_text)
         pains = _parse_json_response(content)
-        print(f"[{label}] {batch_label}: {len(pains)} 件のペインを抽出")
+        logger.info(f"[{label}] {batch_label}: {len(pains)} 件のペインを抽出")
         return pains
     except Exception as e:
-        print(f"[{label}] {batch_label} の処理に失敗 ({len(batch)}件): {e}")
+        logger.warning(f"[{label}] {batch_label} の処理に失敗 ({len(batch)}件): {e}")
 
     # 1件以下なら分割不可 → 最終失敗
     if len(batch) <= 1:
@@ -226,7 +229,7 @@ def _extract_batch_with_retry(
     # 半分に分割してリトライ
     mid = len(batch) // 2
     retry_stats["total_retries"] += 1
-    print(f"[{label}] {batch_label} を {mid}件 + {len(batch) - mid}件 に分割してリトライ")
+    logger.info(f"[{label}] {batch_label} を {mid}件 + {len(batch) - mid}件 に分割してリトライ")
 
     pains_a = _extract_batch_with_retry(
         batch[:mid], call_fn, label, f"{batch_label}a", failed_posts, retry_stats,
@@ -265,7 +268,7 @@ def _save_failed_posts(posts: list[dict]) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(existing, f, ensure_ascii=False, indent=2)
 
-    print(f"[LLM] 失敗投稿を保存: {path} ({len(posts)}件追加)")
+    logger.info(f"失敗投稿を保存: {path} ({len(posts)}件追加)")
 
 
 def _call_github_models(token: str) -> Callable[[str], str]:

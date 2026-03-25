@@ -1,11 +1,14 @@
 """ガールズちゃんねるからペイン系のトピックを収集する."""
 
+import logging
 import time
 
 from bs4 import BeautifulSoup
 
 from src.http_utils import create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
+
+logger = logging.getLogger(__name__)
 
 TOP_URL = "https://girlschannel.net/"
 
@@ -28,7 +31,7 @@ def _fetch_topics(page_name: str, url: str) -> list[dict]:
         resp = _session.get(url, headers=HEADERS, timeout=15)
         resp.raise_for_status()
     except Exception as e:
-        print(f"[ガルちゃん] {page_name} の取得に失敗: {e}")
+        logger.warning(f"{page_name} の取得に失敗: {e}")
         return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -75,7 +78,7 @@ def collect() -> list[dict]:
             filtered.append(t)
 
         all_posts.extend(filtered)
-        print(f"[ガルちゃん] {page_name}: {len(filtered)}/{len(topics)} 件がペインフィルタ通過")
+        logger.info(f"{page_name}: {len(filtered)}/{len(topics)} 件がペインフィルタ通過")
 
         if i < len(PAGES) - 1:
             time.sleep(1)

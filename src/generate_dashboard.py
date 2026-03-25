@@ -1,9 +1,12 @@
 """GitHub Pages ダッシュボード: Chart.js CDN の静的 HTML を生成する."""
 
 import json
+import logging
 import os
 import subprocess
 from collections import Counter
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -59,7 +62,7 @@ def _collect_dashboard_data() -> dict:
         data["scores"] = dict(score_counter.most_common())
 
     except Exception as e:
-        print(f"[Dashboard] データ収集失敗: {e}")
+        logger.warning(f"データ収集失敗: {e}")
 
     return data
 
@@ -164,4 +167,4 @@ def run() -> None:
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f"[Dashboard] 生成完了: {html_path}")
+    logger.info(f"生成完了: {html_path}")

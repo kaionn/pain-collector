@@ -1,11 +1,14 @@
 """Reddit から不満・ペイン系の投稿を収集する."""
 
+import logging
 import re
 import time
 
 import requests
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 SUBREDDITS = [
     "apps",
@@ -53,7 +56,7 @@ def _fetch_reddit(url: str, label: str) -> list[dict]:
         resp.raise_for_status()
         return resp.json().get("data", {}).get("children", [])
     except (requests.RequestException, ValueError) as e:
-        print(f"[Reddit] {label} の取得に失敗: {e}")
+        logger.warning(f"{label} の取得に失敗: {e}")
         return []
 
 
@@ -117,11 +120,11 @@ def collect(backfill: bool = False) -> list[dict]:
                 unique.append(p)
 
         all_posts.extend(unique)
-        print(f"[Reddit] r/{sub}: {len(unique)} 件のペイン投稿を{label}")
+        logger.info(f"r/{sub}: {len(unique)} 件のペイン投稿を{label}")
 
         # 最後のサブレディット以外はレート制限回避で待機
         if i < len(SUBREDDITS) - 1:
             time.sleep(2)
 
-    print(f"[Reddit] 合計: {len(all_posts)} 件")
+    logger.info(f"合計: {len(all_posts)} 件")
     return all_posts

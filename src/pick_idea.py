@@ -1,10 +1,13 @@
 """スコア上位の Todo Issue から MVP 候補を選定し picks/ に保存する."""
 
 import json
+import logging
 import os
 import re
 import subprocess
 from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JST = timezone(timedelta(hours=9))
@@ -109,7 +112,7 @@ def run() -> None:
     issues = _fetch_scored_issues()
 
     if not issues:
-        print("[PickIdea] スコア付き Issue がありません")
+        logger.info("スコア付き Issue がありません")
         return
 
     # スコア順にソート（S > A > B）
@@ -121,7 +124,7 @@ def run() -> None:
     issues = [i for i in issues if i["number"] not in past_picks]
 
     if not issues:
-        print("[PickIdea] 未選定のスコア付き Issue がありません")
+        logger.info("未選定のスコア付き Issue がありません")
         return
 
     # 上位10件をLLMに渡す（body 全文を含めて判断精度を向上）
@@ -136,12 +139,12 @@ def run() -> None:
     combined = "\n".join(issue_texts)
     prompt = f"{PICK_PROMPT}\n\n--- 候補一覧 ---\n\n{combined}"
 
-    print(f"[PickIdea] {len(top)} 件の候補を分析中...")
+    logger.info(f"{len(top)} 件の候補を分析中...")
 
     try:
         content = _call_llm(prompt)
     except Exception as e:
-        print(f"[PickIdea] LLM 呼び出し失敗: {e}")
+        logger.error(f"LLM 呼び出し失敗: {e}")
         return
 
     today = datetime.now(JST).date().isoformat()
@@ -157,4 +160,4 @@ def run() -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"[PickIdea] レポートを保存: {output_path}")
+    logger.info(f"レポートを保存: {output_path}")

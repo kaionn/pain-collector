@@ -1,8 +1,11 @@
 """App Store の RSS フィードから低評価レビューを収集する."""
 
 import json
+import logging
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 # Apple の公開 RSS JSON エンドポイント
 # https://rss.applemarketingtools.com/ 経由でレビューを取得
@@ -29,7 +32,7 @@ def _fetch_reviews(app_id: str, country: str = "jp") -> list[dict]:
         # 最初のエントリはアプリ情報なのでスキップ
         return entries[1:] if len(entries) > 1 else []
     except Exception as e:
-        print(f"[AppStore] app_id={app_id} の取得に失敗: {e}")
+        logger.warning(f"app_id={app_id} の取得に失敗: {e}")
         return []
 
 
@@ -62,5 +65,5 @@ def collect() -> list[dict]:
                 "score": rating,
             })
 
-    print(f"[AppStore] {len(all_reviews)} 件の低評価レビューを取得")
+    logger.info(f"{len(all_reviews)} 件の低評価レビューを取得")
     return all_reviews

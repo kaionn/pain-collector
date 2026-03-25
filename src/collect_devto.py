@@ -1,8 +1,11 @@
 """Dev.to からペイン系の記事を収集する."""
 
+import logging
 import re
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 API_BASE = "https://dev.to/api/articles"
 
@@ -26,7 +29,7 @@ def _fetch_articles(tag: str, per_page: int = 30) -> list[dict]:
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
-        print(f"[Dev.to] tag={tag} の取得に失敗: {e}")
+        logger.warning(f"tag={tag} の取得に失敗: {e}")
         return []
 
 
@@ -59,5 +62,5 @@ def collect() -> list[dict]:
                 "tags": article.get("tag_list", []),
             })
 
-    print(f"[Dev.to] {len(all_posts)} 件のペイン記事を取得")
+    logger.info(f"{len(all_posts)} 件のペイン記事を取得")
     return all_posts

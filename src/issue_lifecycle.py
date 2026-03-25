@@ -1,8 +1,11 @@
 """Issue ライフサイクル管理: stale ラベル付与と自動クローズ."""
 
 import json
+import logging
 import subprocess
 from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 
 STALE_DAYS = 30
@@ -46,9 +49,9 @@ def _add_label(issue_number: int, label: str) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[Lifecycle] #{issue_number} に '{label}' ラベルを追加")
+        logger.info(f"#{issue_number} に '{label}' ラベルを追加")
     except Exception as e:
-        print(f"[Lifecycle] #{issue_number} ラベル追加失敗: {e}")
+        logger.warning(f"#{issue_number} ラベル追加失敗: {e}")
 
 
 def _close_issue(issue_number: int, reason: str) -> None:
@@ -63,9 +66,9 @@ def _close_issue(issue_number: int, reason: str) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[Lifecycle] #{issue_number} をクローズ ({reason})")
+        logger.info(f"#{issue_number} をクローズ ({reason})")
     except Exception as e:
-        print(f"[Lifecycle] #{issue_number} クローズ失敗: {e}")
+        logger.warning(f"#{issue_number} クローズ失敗: {e}")
 
 
 def cleanup() -> None:
@@ -78,7 +81,7 @@ def cleanup() -> None:
     """
     issues = _fetch_open_issues()
     if not issues:
-        print("[Lifecycle] 対象 Issue なし")
+        logger.info("対象 Issue なし")
         return
 
     now = datetime.now(timezone.utc)
@@ -110,4 +113,4 @@ def cleanup() -> None:
             _add_label(number, "stale")
             stale_count += 1
 
-    print(f"[Lifecycle] 完了: stale={stale_count}, close={close_count}, bad={bad_count}")
+    logger.info(f"完了: stale={stale_count}, close={close_count}, bad={bad_count}")

@@ -1,8 +1,12 @@
 """はてなブックマークのホットエントリからペイン的な投稿を収集する."""
 
+import logging
+
 import feedparser
 
 from src.pain_keywords_ja import contains_pain_keyword
+
+logger = logging.getLogger(__name__)
 
 CATEGORIES = [
     {"path": "it", "label": "テクノロジー"},
@@ -23,7 +27,7 @@ def collect() -> list[dict]:
         try:
             feed = feedparser.parse(url)
         except Exception as e:
-            print(f"[はてブ] {cat['label']} の取得に失敗: {e}")
+            logger.warning(f"{cat['label']} の取得に失敗: {e}")
             continue
 
         min_bookmarks = cat.get("min_bookmarks", 0)
@@ -51,11 +55,9 @@ def collect() -> list[dict]:
             )
 
         all_entries.extend(entries)
-        print(
-            f"[はてブ] {cat['label']}: {len(entries)}/{raw_count} 件がペインフィルタ通過"
-        )
+        logger.info(f"{cat['label']}: {len(entries)}/{raw_count} 件がペインフィルタ通過")
 
-    print(f"[はてブ] 合計: {len(all_entries)} 件")
+    logger.info(f"合計: {len(all_entries)} 件")
     return all_entries
 
 

@@ -1,9 +1,12 @@
 """Issue 作成時に LLM でスコアリングし、Project V2 カスタムフィールドに保存する."""
 
 import json
+import logging
 import math
 import os
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 # スコアリング基準（60 点満点）
 # 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x1
@@ -139,7 +142,7 @@ def score_pain(pain: dict) -> dict | None:
         scores["total_score"] = calculate_total_score(scores)
         return scores
     except Exception as e:
-        print(f"[Scoring] スコアリング失敗: {e}")
+        logger.warning(f"スコアリング失敗: {e}")
         return None
 
 
@@ -172,9 +175,9 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[Scoring] #{issue_number} にスコア {total}/60 を追加")
+        logger.info(f"#{issue_number} にスコア {total}/60 を追加")
     except Exception as e:
-        print(f"[Scoring] #{issue_number} コメント失敗: {e}")
+        logger.warning(f"#{issue_number} コメント失敗: {e}")
 
     # スコアラベルを追加
     if total >= 48:
@@ -213,11 +216,11 @@ def score_open_issues() -> None:
             timeout=30,
         )
         if result.returncode != 0:
-            print("[Scoring] Issue 取得失敗")
+            logger.warning("Issue 取得失敗")
             return
         issues = json.loads(result.stdout)
     except Exception as e:
-        print(f"[Scoring] Issue 取得失敗: {e}")
+        logger.warning(f"Issue 取得失敗: {e}")
         return
 
     score_labels = {"🏆score-S", "🥇score-A", "🥈score-B", "🥉score-C"}
@@ -238,4 +241,4 @@ def score_open_issues() -> None:
         }
         score_and_update_issue(pain, issue["number"])
 
-    print("[Scoring] 完了")
+    logger.info("スコアリング完了")

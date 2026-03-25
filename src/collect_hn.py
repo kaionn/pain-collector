@@ -1,11 +1,14 @@
 """Hacker News から不満・ペイン系の投稿を収集する."""
 
+import logging
 import re
 import time
 
 import requests
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 HN_API_BASE = "https://hacker-news.firebaseio.com/v0"
 
@@ -34,7 +37,7 @@ def _fetch_top_story_ids(max_stories: int) -> list[int]:
         ids: list[int] = resp.json()
         return ids[:max_stories]
     except (requests.RequestException, ValueError) as e:
-        print(f"[HN] トップストーリー ID の取得に失敗: {e}")
+        logger.warning(f"トップストーリー ID の取得に失敗: {e}")
         return []
 
 
@@ -98,5 +101,5 @@ def collect(max_stories: int = 200) -> list[dict]:
         if i < len(story_ids) - 1:
             time.sleep(0.1)
 
-    print(f"[HN] {max_stories} 件中 {len(pain_posts)} 件のペイン投稿を取得")
+    logger.info(f"{max_stories} 件中 {len(pain_posts)} 件のペイン投稿を取得")
     return pain_posts

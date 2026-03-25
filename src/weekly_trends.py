@@ -6,10 +6,13 @@
 
 import glob
 import json
+import logging
 import os
 import subprocess
 from collections import Counter
 from datetime import date, timedelta
+
+logger = logging.getLogger(__name__)
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -71,7 +74,7 @@ def load_daily_pains(target_date: date, days: int = 7) -> list[dict]:
             )
             all_pains.extend(posts)
         except (json.JSONDecodeError, OSError) as e:
-            print(f"[週次] {d.isoformat()} の読み込みに失敗: {e}")
+            logger.warning(f"{d.isoformat()} の読み込みに失敗: {e}")
 
     return all_pains
 
@@ -274,7 +277,7 @@ def analyze_trends(target_date: date) -> list[dict]:
     pains = load_extracted_pains(target_date, days=7)
 
     if len(pains) < 3:
-        print(f"[週次] ペインが {len(pains)} 件のみ、分析スキップ")
+        logger.info(f"ペインが {len(pains)} 件のみ、分析スキップ")
         return []
 
     # ペインテキストを LLM に投げてトレンド分析
@@ -295,10 +298,10 @@ def analyze_trends(target_date: date) -> list[dict]:
     try:
         content = call_fn(prompt_text)
         trends = extract_pains._parse_json_response(content)
-        print(f"[週次] {label} で {len(trends)} 件のトレンドを抽出")
+        logger.info(f"{label} で {len(trends)} 件のトレンドを抽出")
         return trends
     except Exception as e:
-        print(f"[週次] トレンド分析に失敗: {e}")
+        logger.warning(f"トレンド分析に失敗: {e}")
         return []
 
 
@@ -414,7 +417,7 @@ def analyze_cross_language(pains: list[dict]) -> list[dict]:
     ja_pains = [p for p in pains if p.get("language", "ja") == "ja"]
 
     if not en_pains or not ja_pains:
-        print(f"[横断分析] 英語 {len(en_pains)} 件 / 日本語 {len(ja_pains)} 件 → スキップ")
+        logger.info(f"英語 {len(en_pains)} 件 / 日本語 {len(ja_pains)} 件 → スキップ")
         return []
 
     pain_lines = []
@@ -436,10 +439,10 @@ def analyze_cross_language(pains: list[dict]) -> list[dict]:
     try:
         content = call_fn(prompt_text)
         results = extract_pains._parse_json_response(content)
-        print(f"[横断分析] {label} で {len(results)} 件の横断テーマを抽出")
+        logger.info(f"{label} で {len(results)} 件の横断テーマを抽出")
         return results
     except Exception as e:
-        print(f"[横断分析] 分析に失敗: {e}")
+        logger.warning(f"横断分析に失敗: {e}")
         return []
 
 
@@ -482,10 +485,10 @@ def generate_cross_language_section(cross_results: list[dict]) -> str:
 
 def run(target_date: date) -> None:
     """週次トレンド分析を実行し、レポートを保存する."""
-    print(f"=== Weekly Trend Analysis: {target_date.isoformat()} ===\n")
+    logger.info(f"=== Weekly Trend Analysis: {target_date.isoformat()} ===")
 
     pains = load_extracted_pains(target_date, days=7)
-    print(f"過去7日分のペイン: {len(pains)} 件\n")
+    logger.info(f"過去7日分のペイン: {len(pains)} 件")
 
     trends = analyze_trends(target_date)
 
@@ -514,8 +517,8 @@ def run(target_date: date) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n週次レポートを保存: {output_path}")
+    logger.info(f"週次レポートを保存: {output_path}")
 
     if trends:
-        print(f"トップトレンド: {trends[0].get('trend_theme', '')} "
-              f"(スコア: {trends[0].get('market_opportunity_score', 0)}/10)")
+        logger.info(f"トップトレンド: {trends[0].get('trend_theme', '')} "
+                    f"(スコア: {trends[0].get('market_opportunity_score', 0)}/10)")

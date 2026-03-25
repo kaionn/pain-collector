@@ -1,9 +1,12 @@
 """GitHub Issues でペインを個別 Issue として作成する（重複チェック付き）."""
 
 import json
+import logging
 import subprocess
 
 from sklearn.metrics.pairwise import cosine_similarity
+
+logger = logging.getLogger(__name__)
 
 from src.tokenizer import create_tfidf_vectorizer
 
@@ -77,7 +80,7 @@ def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
             answer = (response.choices[0].message.content or "").strip().upper()
             return answer.startswith("YES")
         except Exception as e:
-            print(f"[GitHub] LLM 二次判定失敗: {e}")
+            logger.warning(f"LLM 二次判定失敗: {e}")
     return False
 
 
@@ -104,7 +107,7 @@ def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
             return existing_issues[max_idx]
 
         if max_sim >= DUPLICATE_THRESHOLD_LOW:
-            print(f"[GitHub] グレーゾーン (sim={max_sim:.2f}) → LLM 二次判定")
+            logger.info(f"グレーゾーン (sim={max_sim:.2f}) → LLM 二次判定")
             if _llm_judge_duplicate(pain_text, titles[max_idx]):
                 return existing_issues[max_idx]
     except ValueError:
@@ -119,7 +122,7 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
         return
 
     existing_issues = _fetch_open_issues()
-    print(f"[GitHub] 既存 open Issue: {len(existing_issues)} 件")
+    logger.info(f"既存 open Issue: {len(existing_issues)} 件")
 
     sorted_pains = sorted(pains, key=lambda x: x.get("severity", 0), reverse=True)
     top = sorted_pains[:top_n]
@@ -129,7 +132,7 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
         duplicate = _find_duplicate(pain_text, existing_issues)
 
         if duplicate:
-            print(f"[GitHub] 重複検出 → #{duplicate['number']} {duplicate['title'][:50]}")
+            logger.info(f"重複検出 → #{duplicate['number']} {duplicate['title'][:50]}")
             _comment_duplicate(duplicate["number"], pain, date_str)
         else:
             issue = _create_issue(pain, date_str)
@@ -154,9 +157,9 @@ def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[GitHub] #{issue_number} にコメント追加")
+        logger.info(f"#{issue_number} にコメント追加")
     except Exception as e:
-        print(f"[GitHub] コメント追加失敗: {e}")
+        logger.warning(f"コメント追加失敗: {e}")
 
 
 def _create_issue(pain: dict, date_str: str) -> dict | None:
@@ -283,7 +286,7 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
 
         if result.returncode == 0:
             issue_url = result.stdout.strip()
-            print(f"[GitHub] Issue 作成: {issue_url}")
+            logger.info(f"Issue 作成: {issue_url}")
 
             # Issue 番号を抽出
             issue_number = int(issue_url.rstrip("/").split("/")[-1])
@@ -296,13 +299,13 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
                 from . import scoring
                 scoring.score_and_update_issue(pain, issue_number)
             except Exception as e:
-                print(f"[GitHub] スコアリング失敗（続行）: {e}")
+                logger.warning(f"スコアリング失敗（続行）: {e}")
 
             return {"number": issue_number, "title": title}
         else:
-            print(f"[GitHub] Issue 作成失敗: {result.stderr[:200]}")
+            logger.error(f"Issue 作成失敗: {result.stderr[:200]}")
     except Exception as e:
-        print(f"[GitHub] Issue 作成失敗: {e}")
+        logger.error(f"Issue 作成失敗: {e}")
 
     return None
 
@@ -326,13 +329,13 @@ def _add_to_project(issue_url: str, issue_number: int) -> None:
         timeout=30,
     )
     if node_result.returncode != 0:
-        print(f"[GitHub] Issue node ID 取得失敗: {node_result.stderr[:200]}")
+        logger.warning(f"Issue node ID 取得失敗: {node_result.stderr[:200]}")
         return
 
     try:
         node_id = json.loads(node_result.stdout)["data"]["resource"]["id"]
     except (json.JSONDecodeError, KeyError, TypeError) as e:
-        print(f"[GitHub] Issue node ID パース失敗: {e}")
+        logger.warning(f"Issue node ID パース失敗: {e}")
         return
 
     # Project に追加
@@ -346,6 +349,6 @@ def _add_to_project(issue_url: str, issue_number: int) -> None:
         timeout=30,
     )
     if add_result.returncode == 0:
-        print(f"[GitHub] Project に追加: #{issue_number}")
+        logger.info(f"Project に追加: #{issue_number}")
     else:
-        print(f"[GitHub] Project 追加失敗: {add_result.stderr[:200]}")
+        logger.warning(f"Project 追加失敗: {add_result.stderr[:200]}")

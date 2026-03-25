@@ -1,12 +1,15 @@
 """競合チェック: App Store で既存ソリューションを検索する."""
 
 import json
+import logging
 import os
 import subprocess
 
 import requests
 
 from src.http_utils import create_retry_session
+
+logger = logging.getLogger(__name__)
 
 ITUNES_SEARCH_URL = "https://itunes.apple.com/search"
 
@@ -119,7 +122,7 @@ def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
         keywords = [line.strip() for line in content.splitlines() if line.strip()]
         return keywords[:3] if keywords else [app_idea[:50]]
     except Exception as e:
-        print(f"[AppStore] キーワード抽出失敗、フォールバック: {e}")
+        logger.warning(f"キーワード抽出失敗、フォールバック: {e}")
 
     return [app_idea[:50]]
 
@@ -140,7 +143,7 @@ def check_app_store(keyword: str, country: str = "us", limit: int = 5) -> list[d
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as e:
-        print(f"[AppStore] 検索失敗 ({keyword}, {country}): {e}")
+        logger.warning(f"検索失敗 ({keyword}, {country}): {e}")
         return []
 
     apps = []
@@ -164,7 +167,7 @@ def enrich_pain_with_market_data(pain: dict) -> dict:
 
     category = pain.get("category", "")
     keywords = _extract_search_keywords(idea, category)
-    print(f"[AppStore] 検索キーワード: {keywords}")
+    logger.info(f"検索キーワード: {keywords}")
 
     # 全キーワードで US + JP 両方を検索してマージ
     seen_names: set[str] = set()
@@ -289,10 +292,10 @@ def extract_competitor_pains(apps: list[dict]) -> list[dict]:
 
         from src.extract_pains import _parse_json_response
         pains = _parse_json_response(content)
-        print(f"[AppStore] 競合レビューから {len(pains)} 件のペインを逆抽出")
+        logger.info(f"競合レビューから {len(pains)} 件のペインを逆抽出")
         return pains
     except Exception as e:
-        print(f"[AppStore] 競合レビュー分析失敗: {e}")
+        logger.warning(f"競合レビュー分析失敗: {e}")
         return []
 
 

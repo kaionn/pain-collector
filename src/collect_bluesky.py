@@ -1,10 +1,13 @@
 """Bluesky からペイン系の投稿を収集する."""
 
+import logging
 import re
 import time
 
 from src.http_utils import create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
+
+logger = logging.getLogger(__name__)
 
 # 認証不要の公開 API（Jetstream 経由の検索は不可のため、公開フィード API を使用）
 API_BASE = "https://public.api.bsky.app/xrpc"
@@ -37,7 +40,7 @@ def _search_posts(query: str, limit: int = 25) -> list[dict]:
         resp.raise_for_status()
         return resp.json().get("posts", [])
     except Exception as e:
-        print(f"[Bluesky] 検索 '{query}' に失敗: {e}")
+        logger.warning(f"検索 '{query}' に失敗: {e}")
         return []
 
 
@@ -84,5 +87,5 @@ def collect() -> list[dict]:
         if i < len(SEARCH_QUERIES) - 1:
             time.sleep(0.5)
 
-    print(f"[Bluesky] {len(all_posts)} 件のペイン投稿を取得")
+    logger.info(f"{len(all_posts)} 件のペイン投稿を取得")
     return all_posts

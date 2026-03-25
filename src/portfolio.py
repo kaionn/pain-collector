@@ -1,9 +1,12 @@
 """ポートフォリオ管理: Project V2 のステータスフローを追跡しスナップショットを保存する."""
 
 import json
+import logging
 import os
 import subprocess
 from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JST = timezone(timedelta(hours=9))
@@ -46,7 +49,7 @@ def _fetch_issues_by_status() -> dict[str, list[dict]]:
                 status_map["Idea"].append(issue)
 
     except Exception as e:
-        print(f"[Portfolio] Issue 取得失敗: {e}")
+        logger.warning(f"Issue 取得失敗: {e}")
 
     return status_map
 
@@ -109,4 +112,4 @@ def run() -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"[Portfolio] スナップショットを保存: {output_path}")
+    logger.info(f"スナップショットを保存: {output_path}")

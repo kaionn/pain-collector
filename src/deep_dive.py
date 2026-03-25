@@ -7,11 +7,14 @@ Markdown で生成して deep_dive/ ディレクトリに保存する。
 API コストを抑えるため、1日あたり最大 1 件のみ処理する。
 """
 
+import logging
 import os
 import re
 import subprocess
 
 from sklearn.metrics.pairwise import cosine_similarity
+
+logger = logging.getLogger(__name__)
 
 from .tokenizer import create_tfidf_vectorizer
 
@@ -93,7 +96,7 @@ def should_deep_dive(pain: dict, weekly: bool = False) -> bool:
     if weekly:
         ok = severity >= 3 and total_score >= SCORE_RANK_A
         if ok:
-            print(f"[DeepDive] 選定: severity={severity}, score={total_score}, signal={signal}")
+            logger.info(f"選定: severity={severity}, score={total_score}, signal={signal}")
         return ok
 
     ok = (
@@ -102,7 +105,7 @@ def should_deep_dive(pain: dict, weekly: bool = False) -> bool:
         and total_score >= SCORE_RANK_B
     )
     if ok:
-        print(f"[DeepDive] 選定: severity={severity}, score={total_score}, signal={signal}")
+        logger.info(f"選定: severity={severity}, score={total_score}, signal={signal}")
     return ok
 
 
@@ -132,7 +135,7 @@ def _is_duplicate_theme(pain_text: str, existing_titles: list[str], threshold: f
         sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
         max_sim = float(sims.max())
         if max_sim >= threshold:
-            print(f"[DeepDive] 類似度 {max_sim:.2f} >= {threshold}")
+            logger.info(f"類似度 {max_sim:.2f} >= {threshold}")
             return True
     except ValueError:
         pass
@@ -208,7 +211,7 @@ def run(pains: list[dict], date_str: str, top_n: int = 1) -> None:
     candidates = [p for p in pains if should_deep_dive(p, weekly=weekly)]
 
     if not candidates:
-        print("[DeepDive] 対象となるペインがありません（スコアランク・深刻度・市場シグナルの条件を満たすペインなし）")
+        logger.info("対象となるペインがありません（スコアランク・深刻度・市場シグナルの条件を満たすペインなし）")
         return
 
     # スコアリング: severity × wtp_score で降順ソートして上位 top_n 件を取得
@@ -233,7 +236,7 @@ def _generate_report(target: dict, date_str: str) -> None:
     if os.path.isdir(output_dir):
         for fname in os.listdir(output_dir):
             if fname.endswith(f"{slug}.md"):
-                print(f"[DeepDive] スキップ（既存レポートあり）: {fname}")
+                logger.info(f"スキップ（既存レポートあり）: {fname}")
                 return
 
         # TF-IDF で既存レポートのタイトルとの類似度チェック
@@ -247,7 +250,7 @@ def _generate_report(target: dict, date_str: str) -> None:
                     existing_titles.append(theme)
 
         if existing_titles and _is_duplicate_theme(pain_text, existing_titles):
-            print(f"[DeepDive] スキップ（類似テーマの既存レポートあり）: {pain_text[:40]}")
+            logger.info(f"スキップ（類似テーマの既存レポートあり）: {pain_text[:40]}")
             return
     category = target.get("category", "その他")
     severity = target.get("severity", 0)
@@ -258,8 +261,8 @@ def _generate_report(target: dict, date_str: str) -> None:
     existing = target.get("existing_solutions") or "なし"
     market_apps = target.get("market_apps", [])
 
-    print(f"[DeepDive] 対象ペイン: {pain_text}")
-    print(f"[DeepDive] 深刻度: {severity}/5 / 市場シグナル: {signal}")
+    logger.info(f"対象ペイン: {pain_text}")
+    logger.info(f"深刻度: {severity}/5 / 市場シグナル: {signal}")
 
     # 競合アプリ情報をテキスト化
     market_apps_text = ""
@@ -295,11 +298,11 @@ def _generate_report(target: dict, date_str: str) -> None:
 上記のペインに対して、詳細なディープダイブレポートを作成してください。
 """
 
-    print("[DeepDive] LLM でレポート生成中...")
+    logger.info("LLM でレポート生成中...")
     try:
         llm_content = _call_llm(DEEP_DIVE_PROMPT, user_prompt)
     except Exception as e:
-        print(f"[DeepDive] LLM 呼び出しに失敗しました: {e}")
+        logger.error(f"LLM 呼び出しに失敗しました: {e}")
         return
 
     # ヘッダー + LLM 生成コンテンツを結合
@@ -332,4 +335,4 @@ def _generate_report(target: dict, date_str: str) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"[DeepDive] レポートを保存しました: {output_path}")
+    logger.info(f"レポートを保存しました: {output_path}")

@@ -1,8 +1,12 @@
 """Zenn のトレンド記事からペイン的な投稿を収集する."""
 
+import logging
+
 import feedparser
 
 from src.pain_keywords_ja import contains_pain_keyword
+
+logger = logging.getLogger(__name__)
 
 FEED_URL = "https://zenn.dev/feed"
 
@@ -12,7 +16,7 @@ def collect() -> list[dict]:
     try:
         feed = feedparser.parse(FEED_URL)
     except Exception as e:
-        print(f"[Zenn] フィードの取得に失敗: {e}")
+        logger.warning(f"フィードの取得に失敗: {e}")
         return []
 
     raw_count = 0
@@ -34,5 +38,5 @@ def collect() -> list[dict]:
             }
         )
 
-    print(f"[Zenn] {len(entries)}/{raw_count} 件がペインフィルタ通過")
+    logger.info(f"{len(entries)}/{raw_count} 件がペインフィルタ通過")
     return entries

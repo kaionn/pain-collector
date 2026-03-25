@@ -5,9 +5,12 @@
 """
 
 import json
+import logging
 import os
 import subprocess
 from datetime import datetime, timezone, timedelta, date
+
+logger = logging.getLogger(__name__)
 
 PATTERN_TTL_DAYS = 90
 
@@ -47,7 +50,7 @@ def collect_feedback() -> dict:
                         "number": issue.get("number"),
                     })
         except Exception as e:
-            print(f"[Feedback] {rating} の取得に失敗: {e}")
+            logger.warning(f"{rating} の取得に失敗: {e}")
 
     return feedback
 
@@ -100,7 +103,7 @@ def generate_feedback_report() -> str:
 def run() -> None:
     """フィードバック集計を実行して表示する."""
     report = generate_feedback_report()
-    print(report)
+    logger.info(report)
 
 
 def _generalize_patterns_with_llm(titles: list[str], pattern_type: str) -> list[str]:
@@ -157,7 +160,7 @@ def _generalize_patterns_with_llm(titles: list[str], pattern_type: str) -> list[
         from src.extract_pains import _parse_json_response
         return _parse_json_response(content)
     except Exception as e:
-        print(f"[learn_rules] LLM パターン汎化に失敗、フォールバック: {e}")
+        logger.warning(f"LLM パターン汎化に失敗、フォールバック: {e}")
         return titles
 
 
@@ -218,13 +221,13 @@ def learn_rules() -> dict:
     # 期限切れパターンの報告
     expired = _find_expired_patterns(exclude_patterns + priority_patterns)
     if expired:
-        print(f"[learn_rules] ⚠️ 期限切れパターン ({len(expired)} 件):")
+        logger.warning(f"期限切れパターン ({len(expired)} 件):")
         for p in expired:
-            print(f"  - {p['pattern']} (作成: {p['created_at']})")
+            logger.warning(f"  - {p['pattern']} (作成: {p['created_at']})")
 
-    print(f"[learn_rules] 除外パターン: {len(exclude_patterns)} 件")
-    print(f"[learn_rules] 優先パターン: {len(priority_patterns)} 件")
-    print(f"[learn_rules] 保存先: {rules_path}")
+    logger.info(f"除外パターン: {len(exclude_patterns)} 件")
+    logger.info(f"優先パターン: {len(priority_patterns)} 件")
+    logger.info(f"保存先: {rules_path}")
 
     return rules
 

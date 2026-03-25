@@ -1,9 +1,12 @@
 """自動仮説検証: スコア上位アイデアに対して市場データを自動収集し Issue コメントに追加する."""
 
 import json
+import logging
 import os
 import subprocess
 from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 JST = timezone(timedelta(hours=9))
 
@@ -101,12 +104,12 @@ def validate_issue(issue: dict) -> None:
         f"{body}\n"
     )
 
-    print(f"[Validate] #{number} を検証中...")
+    logger.info(f"#{number} を検証中...")
 
     try:
         content = _call_llm(prompt)
     except Exception as e:
-        print(f"[Validate] #{number} LLM 呼び出し失敗: {e}")
+        logger.error(f"#{number} LLM 呼び出し失敗: {e}")
         return
 
     today = datetime.now(JST).date().isoformat()
@@ -126,9 +129,9 @@ def validate_issue(issue: dict) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[Validate] #{number} に検証結果を追加")
+        logger.info(f"#{number} に検証結果を追加")
     except Exception as e:
-        print(f"[Validate] #{number} コメント失敗: {e}")
+        logger.warning(f"#{number} コメント失敗: {e}")
 
 
 def run(top_n: int = 3) -> None:
@@ -136,12 +139,12 @@ def run(top_n: int = 3) -> None:
     ideas = _fetch_top_ideas(top_n)
 
     if not ideas:
-        print("[Validate] 検証対象のアイデアがありません")
+        logger.info("検証対象のアイデアがありません")
         return
 
-    print(f"[Validate] {len(ideas)} 件のアイデアを検証...")
+    logger.info(f"{len(ideas)} 件のアイデアを検証...")
 
     for idea in ideas:
         validate_issue(idea)
 
-    print("[Validate] 完了")
+    logger.info("仮説検証完了")

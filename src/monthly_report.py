@@ -1,9 +1,12 @@
 """月次レポート: カテゴリ別推移、市場シグナル分布、Top 10 ペインを生成する."""
 
 import json
+import logging
 import os
 from collections import Counter
 from datetime import date, timedelta
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -196,4 +199,4 @@ def run(target_date: date) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"[Monthly] レポートを保存: {output_path}")
+    logger.info(f"レポートを保存: {output_path}")

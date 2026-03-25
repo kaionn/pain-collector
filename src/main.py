@@ -5,10 +5,13 @@ SNS からペインを収集 → LLM で構造化 → Markdown で保存する.
 
 import argparse
 import json
+import logging
 import os
 from datetime import datetime, timezone, timedelta
 
 from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle
+
+logger = logging.getLogger(__name__)
 
 JST = timezone(timedelta(hours=9))
 
@@ -139,14 +142,14 @@ def process_day(
     sources: dict[str, list[dict]],
 ) -> None:
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
-    print(f"=== Pain Collector: {date_str} ===\n")
+    logger.info(f"=== Pain Collector: {date_str} ===")
 
     all_posts: list[dict] = []
     summary_parts: list[str] = []
     for name, posts in sources.items():
         all_posts.extend(posts)
         summary_parts.append(f"{name} {len(posts)} 件")
-    print(f"投稿数: {' + '.join(summary_parts)} = {len(all_posts)} 件\n")
+    logger.info(f"投稿数: {' + '.join(summary_parts)} = {len(all_posts)} 件")
 
     # 生データを JSON で保存
     raw_dir = os.path.join(BASE_DIR, "raw")
@@ -156,22 +159,22 @@ def process_day(
     raw_data.update(sources)
     with open(raw_path, "w", encoding="utf-8") as f:
         json.dump(raw_data, f, ensure_ascii=False, indent=2)
-    print(f"生データを保存: {raw_path}")
+    logger.info(f"生データを保存: {raw_path}")
 
     if not all_posts:
-        print("投稿が0件のため終了")
+        logger.info("投稿が0件のため終了")
         return
 
     # LLM でペイン抽出
-    print("--- ペイン抽出 ---")
+    logger.info("--- ペイン抽出 ---")
     pains = extract_pains.extract(all_posts)
 
     if not pains:
-        print("ペインが0件のため終了")
+        logger.info("ペインが0件のため終了")
         return
 
     # App Store で競合チェック（上位5件のみ）
-    print("--- 競合チェック ---")
+    logger.info("--- 競合チェック ---")
     pains = market_check.enrich_pains(pains, top_n=5)
 
     # レポート生成・保存
@@ -183,19 +186,45 @@ def process_day(
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\nレポートを保存: {output_path}")
-    print(f"ペイン件数: {len(pains)} 件")
+    logger.info(f"レポートを保存: {output_path}")
+    logger.info(f"ペイン件数: {len(pains)} 件")
 
     # LINE Notify で TOP3 を通知
     notify.send_top_pains(pains, date_str)
 
     # 高ポテンシャルなペインのディープダイブレポートを自動生成
-    print("--- ディープダイブ ---")
+    logger.info("--- ディープダイブ ---")
     deep_dive.run(pains, date_str)
+
+
+def _setup_logging() -> None:
+    """ロガーの初期化（コンソール + ファイル）."""
+    logs_dir = os.path.join(BASE_DIR, "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+
+    date_str = datetime.now(JST).date().isoformat()
+    log_path = os.path.join(logs_dir, f"{date_str}.log")
+
+    fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    formatter = logging.Formatter(fmt)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+
+    file_handler = logging.FileHandler(log_path, encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(file_handler)
 
 
 def main() -> None:
     """メイン処理."""
+    _setup_logging()
     parser = argparse.ArgumentParser(description="Pain Collector")
     parser.add_argument(
         "--backfill",
@@ -328,7 +357,7 @@ def main() -> None:
         """raw JSON から全ソースの投稿を結合して返す."""
         raw_path = os.path.join(BASE_DIR, "raw", f"{date_str}.json")
         if not os.path.exists(raw_path):
-            print("本日の raw データがありません。先に日次収集を実行してください。")
+            logger.warning("本日の raw データがありません。先に日次収集を実行してください。")
             return None
         with open(raw_path, encoding="utf-8") as f:
             raw_data = json.load(f)
@@ -386,23 +415,22 @@ def main() -> None:
 
         for name, collector_fn in collectors:
             suffix = "（バックフィル）" if backfill and name == "Reddit" else ""
-            print(f"--- {name} 収集{suffix} ---")
+            logger.info(f"--- {name} 収集{suffix} ---")
             try:
                 sources[raw_keys[name]] = collector_fn()
             except Exception as e:
-                print(f"  ⚠️ {name} でエラー: {e}")
+                logger.warning(f"{name} でエラー: {e}")
                 sources[raw_keys[name]] = []
-            print()
 
         # 収集サマリー
         total = sum(len(v) for v in sources.values())
-        print(f"--- 収集サマリー ---")
+        logger.info("--- 収集サマリー ---")
         for name, collector_fn in collectors:
             key = raw_keys[name]
             posts = sources[key]
-            status = "✅" if posts else "⚠️"
-            print(f"  {status} {name}: {len(posts)} 件")
-        print(f"  合計: {total} 件\n")
+            status = "OK" if posts else "EMPTY"
+            logger.info(f"  [{status}] {name}: {len(posts)} 件")
+        logger.info(f"  合計: {total} 件")
 
         return sources
 
@@ -411,7 +439,7 @@ def main() -> None:
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
             process_day(target.isoformat(), sources)
-            print("\n" + "=" * 60 + "\n")
+            logger.info("=" * 60)
     else:
         sources = _collect_all()
         process_day(today.isoformat(), sources)

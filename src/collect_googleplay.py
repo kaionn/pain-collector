@@ -1,6 +1,10 @@
 """Google Play Store の低評価レビューからペインを収集する."""
 
+import logging
+
 from google_play_scraper import Sort, reviews
+
+logger = logging.getLogger(__name__)
 
 # 人気アプリの パッケージ名
 TARGET_APPS = [
@@ -70,7 +74,7 @@ def collect() -> list[dict]:
                 })
 
         except Exception as e:
-            print(f"[GooglePlay] {app_info['name']} の取得に失敗: {e}")
+            logger.warning(f"{app_info['name']} の取得に失敗: {e}")
 
-    print(f"[GooglePlay] {len(all_reviews)} 件の低評価レビューを取得")
+    logger.info(f"{len(all_reviews)} 件の低評価レビューを取得")
     return all_reviews
