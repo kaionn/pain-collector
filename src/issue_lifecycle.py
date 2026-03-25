@@ -71,6 +71,70 @@ def _close_issue(issue_number: int, reason: str) -> None:
         logger.warning(f"#{issue_number} クローズ失敗: {e}")
 
 
+_PIPELINE_LABELS: dict[str, str] = {
+    "scored": "📊validated",
+    "deep_dived": "🔬analyzed",
+    "spec_generated": "📋spec-ready",
+    "building": "🚧building",
+    "launched": "🚀launched",
+}
+
+
+def update_pipeline_status(issue_number: int, stage: str) -> None:
+    """Issue のパイプラインステータスラベルを更新する.
+
+    既存のパイプラインラベルを全て削除して、指定ステージのラベルを追加する。
+
+    Args:
+        issue_number: 更新対象の Issue 番号。
+        stage: パイプラインステージ名。有効な値:
+               "scored", "deep_dived", "spec_generated", "building", "launched"
+    """
+    new_label = _PIPELINE_LABELS.get(stage)
+    if new_label is None:
+        logger.warning(f"未知のパイプラインステージ: {stage}")
+        return
+
+    # 現在のラベルを取得
+    try:
+        result = subprocess.run(
+            [
+                "gh", "issue", "view", str(issue_number),
+                "--json", "labels",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            logger.warning(f"#{issue_number} ラベル取得失敗")
+            return
+        import json as _json
+        current_labels = {label["name"] for label in _json.loads(result.stdout).get("labels", [])}
+    except Exception as e:
+        logger.warning(f"#{issue_number} ラベル取得エラー: {e}")
+        return
+
+    # 古いパイプラインラベルを削除
+    old_pipeline_labels = set(_PIPELINE_LABELS.values()) - {new_label}
+    labels_to_remove = current_labels & old_pipeline_labels
+    for label in labels_to_remove:
+        try:
+            subprocess.run(
+                ["gh", "issue", "edit", str(issue_number), "--remove-label", label],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            logger.info(f"#{issue_number} から '{label}' ラベルを削除")
+        except Exception as e:
+            logger.warning(f"#{issue_number} ラベル削除失敗: {e}")
+
+    # 新しいパイプラインラベルを追加
+    _add_label(issue_number, new_label)
+    logger.info(f"#{issue_number} パイプラインステータスを '{stage}' ({new_label}) に更新")
+
+
 def cleanup() -> None:
     """Issue のライフサイクル管理を実行する.
 
