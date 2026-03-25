@@ -218,6 +218,16 @@ def _generate_report(target: dict, date_str: str) -> None:
         )
         market_apps_text = f"\n既存 App Store 競合:\n{app_lines}"
 
+    # 競合弱点情報
+    competitor_pains_text = ""
+    competitor_pains = target.get("competitor_pains", [])
+    if competitor_pains:
+        cp_lines = "\n".join(
+            f"  - [{cp.get('competitor_name', '')}] {cp.get('pain', '')}"
+            for cp in competitor_pains
+        )
+        competitor_pains_text = f"\n\n競合アプリの弱点（低評価レビューから抽出）:\n{cp_lines}"
+
     user_prompt = f"""\
 ## 分析対象のペイン
 
@@ -228,7 +238,7 @@ def _generate_report(target: dict, date_str: str) -> None:
 - **市場シグナル**: {signal}
 - **ターゲットユーザー**: {target_user}
 - **アプリアイデア**: {app_idea}
-- **既存ソリューション**: {existing}{market_apps_text}
+- **既存ソリューション**: {existing}{market_apps_text}{competitor_pains_text}
 
 上記のペインに対して、詳細なディープダイブレポートを作成してください。
 """

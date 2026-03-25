@@ -1,5 +1,6 @@
 """競合チェック: App Store で既存ソリューションを検索する."""
 
+import json
 import os
 import subprocess
 
@@ -129,7 +130,97 @@ def enrich_pain_with_market_data(pain: dict) -> dict:
     pain["market_apps"] = apps
     pain["market_signal"] = signal
 
+    # 競合アプリの低評価レビューからペインを逆抽出
+    if apps and signal in ("underserved", "competitive"):
+        competitor_pains = extract_competitor_pains(apps)
+        if competitor_pains:
+            pain["competitor_pains"] = competitor_pains
+
     return pain
+
+
+COMPETITOR_REVIEW_PROMPT = """\
+以下は App Store で見つかった競合アプリの低評価レビュー（★1-2）です。
+これらのレビューから「このアプリに足りないもの・改善点」をペインとして抽出してください。
+
+以下の JSON 配列形式で出力してください（コードブロック不要）:
+[
+  {
+    "pain": "不満・改善点の要約（1文）",
+    "competitor_name": "対象アプリ名",
+    "opportunity": "この不満を解決するプロダクトアイデア（1文）"
+  }
+]
+
+ルール:
+- 具体的で actionable な不満を優先する
+- 「使いにくい」のような曖昧な不満はスキップ
+- 最大 5 件まで
+"""
+
+
+def extract_competitor_pains(apps: list[dict]) -> list[dict]:
+    """競合アプリの低評価レビューからペインを逆抽出する."""
+    from src.collect_appstore import _fetch_reviews
+
+    all_review_texts = []
+    for app in apps[:3]:
+        app_url = app.get("url", "")
+        # App Store URL から app_id を抽出
+        app_id = ""
+        if "/id" in app_url:
+            app_id = app_url.split("/id")[-1].split("?")[0]
+        if not app_id:
+            continue
+
+        entries = _fetch_reviews(app_id, country="jp")
+        for entry in entries:
+            try:
+                rating = int(entry.get("im:rating", {}).get("label", "5"))
+            except (ValueError, TypeError, AttributeError):
+                continue
+            if rating > 2:
+                continue
+            body = entry.get("content", {}).get("label", "")[:500]
+            if body:
+                all_review_texts.append(f"[{app['name']}] ★{rating}: {body}")
+
+    if not all_review_texts:
+        return []
+
+    review_text = "\n---\n".join(all_review_texts[:15])
+    prompt = f"{COMPETITOR_REVIEW_PROMPT}\n\n--- レビュー ---\n{review_text}"
+
+    token = os.environ.get("GITHUB_TOKEN", "")
+    try:
+        if token:
+            from openai import OpenAI
+            client = OpenAI(
+                base_url="https://models.github.ai/inference",
+                api_key=token,
+            )
+            response = client.chat.completions.create(
+                model="openai/gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+            )
+            content = response.choices[0].message.content or "[]"
+        else:
+            result = subprocess.run(
+                ["claude", "-p", prompt, "--output-format", "text"],
+                capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode != 0:
+                return []
+            content = result.stdout.strip()
+
+        from src.extract_pains import _parse_json_response
+        pains = _parse_json_response(content)
+        print(f"[AppStore] 競合レビューから {len(pains)} 件のペインを逆抽出")
+        return pains
+    except Exception as e:
+        print(f"[AppStore] 競合レビュー分析失敗: {e}")
+        return []
 
 
 def enrich_pains(pains: list[dict], top_n: int = 5) -> list[dict]:
