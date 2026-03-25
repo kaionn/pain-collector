@@ -1,6 +1,6 @@
 """高ポテンシャルなペインに対してディープダイブレポートを自動生成する.
 
-market_signal が "whitespace" または "underserved" かつ深刻度 4 以上の
+market_signal が "whitespace" または "underserved" かつスコアランク B 以上の
 ペインを対象に、競合分析・ペルソナ・MVP 仕様・GTM 戦略を含む詳細レポートを
 Markdown で生成して deep_dive/ ディレクトリに保存する。
 
@@ -10,6 +10,10 @@ API コストを抑えるため、1日あたり最大 1 件のみ処理する。
 import os
 import re
 import subprocess
+
+from sklearn.metrics.pairwise import cosine_similarity
+
+from .tokenizer import create_tfidf_vectorizer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -71,19 +75,35 @@ Markdown のコードブロック（```）で全体を囲まないでくださ�
 """
 
 
-def should_deep_dive(pain: dict) -> bool:
-    """深刻度と市場シグナルからディープダイブ対象か判定する.
+# スコアランク閾値（60点満点）
+SCORE_RANK_B = 24  # score-B 以上
+SCORE_RANK_A = 36  # score-A 以上
 
-    Args:
-        pain: ペインデータの辞書。market_signal と severity キーを参照する。
 
-    Returns:
-        market_signal が "whitespace" または "underserved" かつ
-        severity が 4 以上の場合に True。
+def should_deep_dive(pain: dict, weekly: bool = False) -> bool:
+    """深刻度・市場シグナル・スコアランクからディープダイブ対象か判定する.
+
+    日次: severity >= 4 AND (whitespace OR underserved) AND score >= B
+    週次: severity >= 3 AND score >= A
     """
     signal = pain.get("market_signal", "")
     severity = pain.get("severity", 0)
-    return signal in ("whitespace", "underserved") and severity >= 3
+    total_score = pain.get("total_score", 0)
+
+    if weekly:
+        ok = severity >= 3 and total_score >= SCORE_RANK_A
+        if ok:
+            print(f"[DeepDive] 選定: severity={severity}, score={total_score}, signal={signal}")
+        return ok
+
+    ok = (
+        signal in ("whitespace", "underserved")
+        and severity >= 4
+        and total_score >= SCORE_RANK_B
+    )
+    if ok:
+        print(f"[DeepDive] 選定: severity={severity}, score={total_score}, signal={signal}")
+    return ok
 
 
 def _make_slug(text: str) -> str:
@@ -100,6 +120,23 @@ def _make_slug(text: str) -> str:
     slug = re.sub(r"[^\w\u3000-\u9fff\u30a0-\u30ff\u3040-\u309f]", "-", truncated)
     slug = re.sub(r"-{2,}", "-", slug)
     return slug.strip("-")
+
+
+def _is_duplicate_theme(pain_text: str, existing_titles: list[str], threshold: float = 0.5) -> bool:
+    """TF-IDF cosine similarity で既存レポートとの重複を判定する."""
+    if not existing_titles:
+        return False
+    try:
+        corpus = existing_titles + [pain_text]
+        tfidf = create_tfidf_vectorizer().fit_transform(corpus)
+        sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
+        max_sim = float(sims.max())
+        if max_sim >= threshold:
+            print(f"[DeepDive] 類似度 {max_sim:.2f} >= {threshold}")
+            return True
+    except ValueError:
+        pass
+    return False
 
 
 def _call_llm(system_prompt: str, user_prompt: str) -> str:
@@ -165,12 +202,13 @@ def run(pains: list[dict], date_str: str, top_n: int = 1) -> None:
         top_n: 生成するレポートの最大件数（日次=1、週次=5）。
     """
     wtp_score: dict[str, int] = {"high": 4, "medium": 3, "low": 2, "free": 1}
+    weekly = top_n > 1
 
     # フィルタリング
-    candidates = [p for p in pains if should_deep_dive(p)]
+    candidates = [p for p in pains if should_deep_dive(p, weekly=weekly)]
 
     if not candidates:
-        print("[DeepDive] 対象となるペインがありません（market_signal=whitespace/underserved かつ severity>=3 の条件を満たすペインなし）")
+        print("[DeepDive] 対象となるペインがありません（スコアランク・深刻度・市場シグナルの条件を満たすペインなし）")
         return
 
     # スコアリング: severity × wtp_score で降順ソートして上位 top_n 件を取得
@@ -189,7 +227,7 @@ def _generate_report(target: dict, date_str: str) -> None:
 
     pain_text = target.get("pain", "")
 
-    # 同じペインのレポートが既に存在するかチェック
+    # 同じペインのレポートが既に存在するかチェック（スラグ一致 + TF-IDF 類似度）
     slug = _make_slug(pain_text)
     output_dir = os.path.join(BASE_DIR, "deep_dive")
     if os.path.isdir(output_dir):
@@ -197,6 +235,20 @@ def _generate_report(target: dict, date_str: str) -> None:
             if fname.endswith(f"{slug}.md"):
                 print(f"[DeepDive] スキップ（既存レポートあり）: {fname}")
                 return
+
+        # TF-IDF で既存レポートのタイトルとの類似度チェック
+        existing_titles = []
+        for fname in os.listdir(output_dir):
+            if fname.endswith(".md"):
+                # ファイル名から日付プレフィックスを除去してテーマ取得
+                parts = fname.rsplit("-", 3)
+                if len(parts) >= 4:
+                    theme = parts[-1].replace(".md", "").replace("-", " ")
+                    existing_titles.append(theme)
+
+        if existing_titles and _is_duplicate_theme(pain_text, existing_titles):
+            print(f"[DeepDive] スキップ（類似テーマの既存レポートあり）: {pain_text[:40]}")
+            return
     category = target.get("category", "その他")
     severity = target.get("severity", 0)
     wtp = target.get("willingness_to_pay", "free")
