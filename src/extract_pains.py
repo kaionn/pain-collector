@@ -119,9 +119,31 @@ def extract(posts: list[dict]) -> list[dict]:
 
     token = os.environ.get("GITHUB_TOKEN", "")
     if token:
-        return _extract_in_batches(posts, _call_github_models(token), "GitHub Models")
+        pains = _extract_in_batches(posts, _call_github_models(token), "GitHub Models")
     else:
-        return _extract_in_batches(posts, _call_claude, "Claude Code")
+        pains = _extract_in_batches(posts, _call_claude, "Claude Code")
+
+    # 元投稿のエンゲージメント情報をペインに付与
+    _attach_engagement(pains, posts)
+    return pains
+
+
+def _attach_engagement(pains: list[dict], posts: list[dict]) -> None:
+    """元投稿のエンゲージメント情報を source_engagement フィールドとして付与する."""
+    url_to_post = {p["url"]: p for p in posts if "url" in p}
+
+    for pain in pains:
+        source_url = pain.get("source_url", "")
+        post = url_to_post.get(source_url)
+        if not post:
+            pain["source_engagement"] = {}
+            continue
+
+        engagement = {}
+        for key in ("score", "num_comments", "bookmarks", "view_count", "answer_count"):
+            if key in post:
+                engagement[key] = post[key]
+        pain["source_engagement"] = engagement
 
 
 def _extract_in_batches(

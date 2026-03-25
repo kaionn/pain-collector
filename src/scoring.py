@@ -1,11 +1,12 @@
 """Issue 作成時に LLM でスコアリングし、Project V2 カスタムフィールドに保存する."""
 
 import json
+import math
 import os
 import subprocess
 
-# スコアリング基準（50 点満点）
-# 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + ペイン強度 x1 + 収益可能性 x1
+# スコアリング基準（60 点満点）
+# 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x1
 SCORING_PROMPT = """\
 以下のペイン（課題）を個人開発の MVP 候補として評価してください。
 
@@ -23,11 +24,12 @@ SCORING_PROMPT = """\
 JSON のみ出力してください。
 """
 
-# 加重: 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + ペイン強度 x1 + 収益可能性 x1
+# 加重: 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x1
 WEIGHTS = {
     "technical_simplicity": 3,
     "scope": 3,
     "differentiation": 2,
+    "community_validation": 2,
     "pain_intensity": 1,
     "revenue_potential": 1,
 }
@@ -74,8 +76,35 @@ def _parse_score_response(content: str) -> dict:
     return json.loads(content)
 
 
+def normalize_engagement(engagement: dict) -> int:
+    """エンゲージメント情報を 1-5 のスコアに正規化する.
+
+    閾値ベースで変換:
+    - エンゲージメントなし → 3（中立）
+    - 0 → 1, 1-9 → 2, 10-49 → 3, 50-499 → 4, 500+ → 5
+    """
+    if not engagement:
+        return 3  # エンゲージメント情報なし → 中立
+
+    values = [v for v in engagement.values() if isinstance(v, (int, float)) and v >= 0]
+    if not values:
+        return 3
+
+    max_val = max(values)
+    if max_val >= 500:
+        return 5
+    elif max_val >= 50:
+        return 4
+    elif max_val >= 10:
+        return 3
+    elif max_val >= 1:
+        return 2
+    else:
+        return 1
+
+
 def calculate_total_score(scores: dict) -> int:
-    """加重合計スコアを計算する（50 点満点）."""
+    """加重合計スコアを計算する（60 点満点）."""
     total = 0
     for key, weight in WEIGHTS.items():
         total += scores.get(key, 0) * weight
@@ -104,6 +133,9 @@ def score_pain(pain: dict) -> dict | None:
     try:
         content = _call_llm(user_prompt)
         scores = _parse_score_response(content)
+        # エンゲージメント情報からコミュニティ検証スコアを算出
+        engagement = pain.get("source_engagement", {})
+        scores["community_validation"] = normalize_engagement(engagement)
         scores["total_score"] = calculate_total_score(scores)
         return scores
     except Exception as e:
@@ -121,15 +153,16 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
     reasoning = scores.get("reasoning", "")
 
     comment = (
-        f"## 🎯 MVP スコア: {total}/50\n\n"
+        f"## 🎯 MVP スコア: {total}/60\n\n"
         f"| 項目 | スコア | 加重 |\n"
         f"|------|--------|------|\n"
         f"| 技術的シンプルさ | {scores.get('technical_simplicity', 0)}/5 | x3 |\n"
         f"| スコープ | {scores.get('scope', 0)}/5 | x3 |\n"
         f"| 差別化 | {scores.get('differentiation', 0)}/5 | x2 |\n"
+        f"| コミュニティ検証 | {scores.get('community_validation', 0)}/5 | x2 |\n"
         f"| ペイン強度 | {scores.get('pain_intensity', 0)}/5 | x1 |\n"
         f"| 収益可能性 | {scores.get('revenue_potential', 0)}/5 | x1 |\n\n"
-        f"**根拠**: {reasoning}"
+        f"根拠: {reasoning}"
     )
 
     try:
@@ -139,16 +172,16 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
             text=True,
             timeout=30,
         )
-        print(f"[Scoring] #{issue_number} にスコア {total}/50 を追加")
+        print(f"[Scoring] #{issue_number} にスコア {total}/60 を追加")
     except Exception as e:
         print(f"[Scoring] #{issue_number} コメント失敗: {e}")
 
     # スコアラベルを追加
-    if total >= 40:
+    if total >= 48:
         label = "🏆score-S"
-    elif total >= 30:
+    elif total >= 36:
         label = "🥇score-A"
-    elif total >= 20:
+    elif total >= 24:
         label = "🥈score-B"
     else:
         label = "🥉score-C"

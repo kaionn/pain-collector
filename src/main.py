@@ -96,6 +96,17 @@ def generate_report(pains: list[dict], date_str: str) -> str:
             else:
                 lines.append("- 既存ソリューション: なし（チャンス！）")
 
+            # エンゲージメント情報
+            engagement = item.get("source_engagement", {})
+            if engagement:
+                eng_parts = []
+                eng_labels = {"score": "👍", "num_comments": "💬", "bookmarks": "🔖", "view_count": "👀", "answer_count": "✅"}
+                for key, emoji in eng_labels.items():
+                    if key in engagement:
+                        eng_parts.append(f"{emoji}{engagement[key]}")
+                if eng_parts:
+                    lines.append(f"- エンゲージメント: {' '.join(eng_parts)}")
+
             if source_url:
                 lines.append(f"- ソース: [{source_title}]({source_url})")
 

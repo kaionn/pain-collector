@@ -217,6 +217,24 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
                 )
             lines.append("")
 
+    # エンゲージメント情報
+    engagement = pain.get("source_engagement", {})
+    if engagement:
+        engagement_parts = []
+        label_map = {
+            "score": "👍 スコア",
+            "num_comments": "💬 コメント",
+            "bookmarks": "🔖 ブックマーク",
+            "view_count": "👀 閲覧",
+            "answer_count": "✅ 回答",
+        }
+        for key, label in label_map.items():
+            if key in engagement:
+                engagement_parts.append(f"{label}: {engagement[key]}")
+        if engagement_parts:
+            lines.append(f"## エンゲージメント\n")
+            lines.append(" / ".join(engagement_parts) + "\n")
+
     if source_url:
         lines.append(f"## ソース\n")
         lines.append(f"[{source_title}]({source_url})\n")
