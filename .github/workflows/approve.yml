@@ -64,7 +64,7 @@ jobs:
 
       - name: Update status to building
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue edit "$ISSUE_NUMBER" --add-label "building"
@@ -85,6 +85,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add data/pipeline_state.json
           if ! git diff --cached --quiet; then
             git commit -m "pipeline: #$ISSUE_NUMBER のステータスを building に更新"
