@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DailyReport",
+  "type": "object",
+  "required": ["date", "pains", "source_counts", "total_posts"],
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "pains": {
+      "type": "array",
+      "items": {"$ref": "scored_pain.schema.json"}
+    },
+    "source_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer"}
+    },
+    "total_posts": {"type": "integer"}
+  }
+}

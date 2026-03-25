@@ -9,7 +9,7 @@ import logging
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle, generate_spec
+from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, collect_producthunt, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle, generate_spec
 
 logger = logging.getLogger(__name__)
 
@@ -487,6 +487,7 @@ def main() -> None:
             ("GooglePlay", collect_googleplay.collect),
             ("知恵袋", collect_chiebukuro.collect),
             ("ガルちゃん", collect_girlschannel.collect),
+            ("ProductHunt", collect_producthunt.collect),
         ]
 
         # raw JSON のキー名マッピング
@@ -496,6 +497,7 @@ def main() -> None:
             "StackOverflow": "stackoverflow", "Bluesky": "bluesky",
             "AppStore": "appstore", "GooglePlay": "googleplay",
             "知恵袋": "chiebukuro", "ガルちゃん": "girlschannel",
+            "ProductHunt": "producthunt",
         }
 
         for name, collector_fn in collectors:
