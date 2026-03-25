@@ -153,23 +153,99 @@ def _extract_in_batches(
 ) -> list[dict]:
     """バッチごとに LLM を呼び出してペインを抽出する共通ループ."""
     all_pains = []
+    failed_posts: list[dict] = []
+    retry_stats = {"total_retries": 0, "recovered": 0}
 
     for i in range(0, len(posts), BATCH_SIZE):
         batch = posts[i : i + BATCH_SIZE]
-        batch_text = _format_posts(batch)
         batch_num = i // BATCH_SIZE + 1
 
-        try:
-            content = call_fn(batch_text)
-            pains = _parse_json_response(content)
-            all_pains.extend(pains)
-            print(f"[{label}] バッチ {batch_num}: {len(pains)} 件のペインを抽出")
-        except Exception as e:
-            print(f"[{label}] バッチ {batch_num} の処理に失敗: {e}")
-            continue
+        pains = _extract_batch_with_retry(
+            batch, call_fn, label, f"バッチ {batch_num}", failed_posts, retry_stats,
+        )
+        all_pains.extend(pains)
+
+    if retry_stats["total_retries"] > 0:
+        print(
+            f"[{label}] リトライ統計: {retry_stats['total_retries']}回リトライ, "
+            f"{retry_stats['recovered']}件復旧"
+        )
+
+    if failed_posts:
+        _save_failed_posts(failed_posts)
+        print(f"[{label}] {len(failed_posts)}件の投稿が最終的に失敗")
 
     print(f"[{label}] 合計: {len(all_pains)} 件のペインを抽出")
     return all_pains
+
+
+def _extract_batch_with_retry(
+    batch: list[dict],
+    call_fn: Callable[[str], str],
+    label: str,
+    batch_label: str,
+    failed_posts: list[dict],
+    retry_stats: dict,
+) -> list[dict]:
+    """バッチを処理し、失敗時は半分に分割してリトライする."""
+    batch_text = _format_posts(batch)
+
+    try:
+        content = call_fn(batch_text)
+        pains = _parse_json_response(content)
+        print(f"[{label}] {batch_label}: {len(pains)} 件のペインを抽出")
+        return pains
+    except Exception as e:
+        print(f"[{label}] {batch_label} の処理に失敗 ({len(batch)}件): {e}")
+
+    # 1件以下なら分割不可 → 最終失敗
+    if len(batch) <= 1:
+        failed_posts.extend(batch)
+        return []
+
+    # 半分に分割してリトライ
+    mid = len(batch) // 2
+    retry_stats["total_retries"] += 1
+    print(f"[{label}] {batch_label} を {mid}件 + {len(batch) - mid}件 に分割してリトライ")
+
+    pains_a = _extract_batch_with_retry(
+        batch[:mid], call_fn, label, f"{batch_label}a", failed_posts, retry_stats,
+    )
+    pains_b = _extract_batch_with_retry(
+        batch[mid:], call_fn, label, f"{batch_label}b", failed_posts, retry_stats,
+    )
+
+    recovered = len(pains_a) + len(pains_b)
+    retry_stats["recovered"] += recovered
+    return pains_a + pains_b
+
+
+def _save_failed_posts(posts: list[dict]) -> None:
+    """最終的に失敗した投稿を保存する."""
+    from datetime import datetime, timezone, timedelta
+
+    jst = timezone(timedelta(hours=9))
+    date_str = datetime.now(jst).date().isoformat()
+
+    failed_dir = os.path.join(BASE_DIR, "raw", "failed")
+    os.makedirs(failed_dir, exist_ok=True)
+
+    path = os.path.join(failed_dir, f"{date_str}.json")
+
+    # 既存ファイルがあればマージ
+    existing = []
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            pass
+
+    existing.extend(posts)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(existing, f, ensure_ascii=False, indent=2)
+
+    print(f"[LLM] 失敗投稿を保存: {path} ({len(posts)}件追加)")
 
 
 def _call_github_models(token: str) -> Callable[[str], str]:
