@@ -9,7 +9,7 @@ import logging
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle
+from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle, generate_spec
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +195,10 @@ def process_day(
     # 高ポテンシャルなペインのディープダイブレポートを自動生成
     logger.info("--- ディープダイブ ---")
     deep_dive.run(pains, date_str)
+
+    # Deep Dive から技術 Spec を自動生成
+    logger.info("--- Spec 生成 ---")
+    generate_spec.run_for_latest(date_str)
 
     # 日次サマリー生成
     _write_daily_summary(date_str, sources, pains)
