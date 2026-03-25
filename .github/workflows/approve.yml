@@ -1,0 +1,109 @@
+name: Approve and Build MVP
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check-approve:
+    # /approve コメントかつ pain-report ラベル付き Issue のみ
+    if: |
+      github.event.comment.body == '/approve' &&
+      contains(github.event.issue.labels.*.name, 'pain-report')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate approver
+        id: validate-approver
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          COMMENTER="${{ github.event.comment.user.login }}"
+          OWNER=$(gh repo view --json owner -q '.owner.login')
+          if [ "$COMMENTER" != "$OWNER" ]; then
+            echo "::warning::Unauthorized approver: $COMMENTER"
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ リポジトリオーナーのみ承認できます。"
+            exit 1
+          fi
+
+      - name: Validate spec
+        id: validate-spec
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          SPEC_FILE=$(python3 -c "
+          import json, os
+          state_path = 'data/pipeline_state.json'
+          if os.path.exists(state_path):
+              state = json.load(open(state_path))
+              for item in state.get('picked', []):
+                  if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
+                      print(item.get('spec') or '')
+                      break
+          ")
+
+          if [ -z "$SPEC_FILE" ] || [ ! -f "$SPEC_FILE" ]; then
+            gh issue comment "$ISSUE_NUMBER" \
+              --body "❌ Spec ファイルが見つかりません。Deep Dive → Spec 生成が完了してから再度 \`/approve\` してください。"
+            exit 1
+          fi
+
+          echo "spec_file=$SPEC_FILE" >> "$GITHUB_OUTPUT"
+          echo "✅ Spec found: $SPEC_FILE"
+
+      - name: Update status to building
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --add-label "building"
+          gh issue comment "$ISSUE_NUMBER" --body "🚀 承認されました。自動実装を開始します..."
+
+          python3 -c "
+          import json, os
+          state_path = 'data/pipeline_state.json'
+          if not os.path.exists(state_path):
+              exit(0)
+          state = json.load(open(state_path))
+          for item in state.get('picked', []):
+              if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
+                  item['status'] = 'building'
+                  break
+          json.dump(state, open(state_path, 'w'), indent=2, ensure_ascii=False)
+          "
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/pipeline_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "pipeline: #$ISSUE_NUMBER のステータスを building に更新"
+            git push
+          fi
+
+      - name: Trigger build workflow
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # build.yml が存在する場合のみ dispatch する
+          if gh workflow view build.yml > /dev/null 2>&1; then
+            gh workflow run build.yml \
+              -f issue_number="$ISSUE_NUMBER" \
+              -f spec_file="${{ steps.validate-spec.outputs.spec_file }}"
+            echo "✅ build.yml を dispatch しました"
+          else
+            gh issue comment "$ISSUE_NUMBER" \
+              --body "⚠️ build.yml ワークフローが未実装のため、自動実装は手動で行ってください。Spec: \`${{ steps.validate-spec.outputs.spec_file }}\`"
+            echo "::warning::build.yml not found, skipping dispatch"
+          fi
