@@ -1,0 +1,11 @@
+{
+  "picked": [
+    {
+      "issue_number": 76,
+      "picked_at": "2026-03-25T12:00:00+09:00",
+      "spec": "specs/test-simple-counter.md",
+      "deep_dive": null,
+      "status": "awaiting_approval"
+    }
+  ]
+}
