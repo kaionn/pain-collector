@@ -7,7 +7,9 @@
 import json
 import os
 import subprocess
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
+
+PATTERN_TTL_DAYS = 90
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -165,31 +167,45 @@ def learn_rules() -> dict:
 
     # 既存のシードデータを読み込む
     rules_path = os.path.join(BASE_DIR, "feedback_rules.json")
-    existing_exclude: list[str] = []
-    existing_priority: list[str] = []
+    existing_exclude: list[dict] = []
+    existing_priority: list[dict] = []
     if os.path.exists(rules_path):
         try:
             with open(rules_path, encoding="utf-8") as f:
                 existing = json.load(f)
-            existing_exclude = existing.get("exclude_patterns", [])
-            existing_priority = existing.get("priority_patterns", [])
+            existing_exclude = _migrate_patterns(existing.get("exclude_patterns", []))
+            existing_priority = _migrate_patterns(existing.get("priority_patterns", []))
         except Exception:
             pass
 
-    # bad issues のタイトルを収集
+    # bad issues のタイトルとIssue番号を収集
     bad_titles = [issue.get("title", "") for issue in fb["bad"] if issue.get("title")]
-    # good issues のタイトルを収集
+    bad_numbers = [issue.get("number") for issue in fb["bad"] if issue.get("number")]
+    # good issues のタイトルとIssue番号を収集
     good_titles = [issue.get("title", "") for issue in fb["good"] if issue.get("title")]
+    good_numbers = [issue.get("number") for issue in fb["good"] if issue.get("number")]
 
     # LLM で汎用パターンに変換
-    new_exclude = _generalize_patterns_with_llm(bad_titles, "exclude") if bad_titles else []
-    new_priority = _generalize_patterns_with_llm(good_titles, "priority") if good_titles else []
-
-    # 既存パターンとマージ（重複排除）
-    exclude_patterns = list(dict.fromkeys(existing_exclude + new_exclude))
-    priority_patterns = list(dict.fromkeys(existing_priority + new_priority))
+    new_exclude_strs = _generalize_patterns_with_llm(bad_titles, "exclude") if bad_titles else []
+    new_priority_strs = _generalize_patterns_with_llm(good_titles, "priority") if good_titles else []
 
     jst = timezone(timedelta(hours=9))
+    today_str = datetime.now(jst).date().isoformat()
+
+    # 新しいパターンにメタデータを付与
+    new_exclude = [
+        {"pattern": p, "created_at": today_str, "source_issues": bad_numbers}
+        for p in new_exclude_strs
+    ]
+    new_priority = [
+        {"pattern": p, "created_at": today_str, "source_issues": good_numbers}
+        for p in new_priority_strs
+    ]
+
+    # 既存パターンとマージ（重複排除）
+    exclude_patterns = _merge_patterns(existing_exclude, new_exclude)
+    priority_patterns = _merge_patterns(existing_priority, new_priority)
+
     rules = {
         "exclude_patterns": exclude_patterns,
         "priority_patterns": priority_patterns,
@@ -199,11 +215,81 @@ def learn_rules() -> dict:
     with open(rules_path, "w", encoding="utf-8") as f:
         json.dump(rules, f, ensure_ascii=False, indent=2)
 
+    # 期限切れパターンの報告
+    expired = _find_expired_patterns(exclude_patterns + priority_patterns)
+    if expired:
+        print(f"[learn_rules] ⚠️ 期限切れパターン ({len(expired)} 件):")
+        for p in expired:
+            print(f"  - {p['pattern']} (作成: {p['created_at']})")
+
     print(f"[learn_rules] 除外パターン: {len(exclude_patterns)} 件")
     print(f"[learn_rules] 優先パターン: {len(priority_patterns)} 件")
     print(f"[learn_rules] 保存先: {rules_path}")
 
     return rules
+
+
+def _migrate_patterns(patterns: list) -> list[dict]:
+    """旧形式（文字列リスト）を新形式（オブジェクトリスト）にマイグレーションする."""
+    migrated = []
+    for p in patterns:
+        if isinstance(p, str):
+            migrated.append({"pattern": p, "created_at": "2026-03-01", "source_issues": []})
+        elif isinstance(p, dict):
+            migrated.append(p)
+    return migrated
+
+
+def _merge_patterns(existing: list[dict], new: list[dict]) -> list[dict]:
+    """既存パターンと新パターンをマージする（パターン文字列で重複排除）."""
+    seen = set()
+    merged = []
+    for p in existing + new:
+        key = p["pattern"]
+        if key not in seen:
+            seen.add(key)
+            merged.append(p)
+    return merged
+
+
+def _find_expired_patterns(patterns: list[dict]) -> list[dict]:
+    """有効期限（90日）を超えたパターンを返す."""
+    today = date.today()
+    expired = []
+    for p in patterns:
+        created_str = p.get("created_at", "")
+        if not created_str:
+            continue
+        try:
+            created = date.fromisoformat(created_str)
+            if (today - created).days > PATTERN_TTL_DAYS:
+                expired.append(p)
+        except ValueError:
+            continue
+    return expired
+
+
+def get_active_patterns(patterns: list) -> list[str]:
+    """有効期限内のパターン文字列のみを返す（extract_pains.py から呼ばれる）."""
+    today = date.today()
+    active = []
+    for p in patterns:
+        if isinstance(p, str):
+            active.append(p)
+            continue
+        if not isinstance(p, dict):
+            continue
+        created_str = p.get("created_at", "")
+        if not created_str:
+            active.append(p["pattern"])
+            continue
+        try:
+            created = date.fromisoformat(created_str)
+            if (today - created).days <= PATTERN_TTL_DAYS:
+                active.append(p["pattern"])
+        except ValueError:
+            active.append(p["pattern"])
+    return active
 
 
 def report_learn_results(rules: dict) -> str:
@@ -218,12 +304,27 @@ def report_learn_results(rules: dict) -> str:
         f"## 除外パターン ({len(exclude)} 件)\n",
     ]
     for p in exclude:
-        lines.append(f"- {p}")
+        pattern = p["pattern"] if isinstance(p, dict) else p
+        created = p.get("created_at", "?") if isinstance(p, dict) else "?"
+        lines.append(f"- {pattern} (作成: {created})")
     lines.append("")
 
     lines.append(f"## 優先パターン ({len(priority)} 件)\n")
     for p in priority:
-        lines.append(f"- {p}")
+        pattern = p["pattern"] if isinstance(p, dict) else p
+        created = p.get("created_at", "?") if isinstance(p, dict) else "?"
+        lines.append(f"- {pattern} (作成: {created})")
     lines.append("")
+
+    # 期限切れ警告
+    expired = _find_expired_patterns(
+        [p for p in exclude + priority if isinstance(p, dict)]
+    )
+    if expired:
+        lines.append(f"## ⚠️ 期限切れパターン ({len(expired)} 件)\n")
+        lines.append("以下のパターンは 90 日を超えています。更新または削除を検討してください:\n")
+        for p in expired:
+            lines.append(f"- {p['pattern']} (作成: {p['created_at']})")
+        lines.append("")
 
     return "\n".join(lines)

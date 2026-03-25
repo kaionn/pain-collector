@@ -97,8 +97,10 @@ def _build_system_prompt() -> str:
     except Exception:
         return prompt
 
-    exclude_patterns: list[str] = rules.get("exclude_patterns", [])
-    priority_patterns: list[str] = rules.get("priority_patterns", [])
+    from src.feedback import get_active_patterns
+
+    exclude_patterns = get_active_patterns(rules.get("exclude_patterns", []))
+    priority_patterns = get_active_patterns(rules.get("priority_patterns", []))
 
     if exclude_patterns:
         prompt += "\n\n以下のパターンはフィードバックにより「ノイズ」と判定されたため、特に除外してください:\n"
