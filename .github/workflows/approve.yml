@@ -91,19 +91,40 @@ jobs:
             git push
           fi
 
-      - name: Trigger build workflow
+      - name: Trigger mvp-factory build
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          # build.yml が存在する場合のみ dispatch する
-          if gh workflow view build.yml > /dev/null 2>&1; then
-            gh workflow run build.yml \
-              -f issue_number="$ISSUE_NUMBER" \
-              -f spec_file="${{ steps.validate-spec.outputs.spec_file }}"
-            echo "✅ build.yml を dispatch しました"
-          else
-            gh issue comment "$ISSUE_NUMBER" \
-              --body "⚠️ build.yml ワークフローが未実装のため、自動実装は手動で行ってください。Spec: \`${{ steps.validate-spec.outputs.spec_file }}\`"
-            echo "::warning::build.yml not found, skipping dispatch"
+          # Spec ファイルの内容を base64 エンコードして渡す
+          SPEC_CONTENT=$(base64 < "${{ steps.validate-spec.outputs.spec_file }}")
+
+          # Deep Dive があれば同様に渡す
+          DEEP_DIVE_CONTENT=""
+          DEEP_DIVE_PATH=$(python3 -c "
+          import json, os
+          state_path = 'data/pipeline_state.json'
+          if os.path.exists(state_path):
+              state = json.load(open(state_path))
+              for item in state.get('picked', []):
+                  if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
+                      print(item.get('deep_dive') or '')
+                      break
+          ")
+          if [ -n "$DEEP_DIVE_PATH" ] && [ -f "$DEEP_DIVE_PATH" ]; then
+            DEEP_DIVE_CONTENT=$(base64 < "$DEEP_DIVE_PATH")
           fi
+
+          # Issue タイトルからプロダクト名を生成（ケバブケース）
+          PRODUCT_NAME=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title' | \
+            sed 's/[^a-zA-Z0-9 ]//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | head -c 40)
+
+          gh workflow run build.yml \
+            --repo kaionn/mvp-factory \
+            -f issue_number="$ISSUE_NUMBER" \
+            -f source_repo="${{ github.repository }}" \
+            -f spec_content="$SPEC_CONTENT" \
+            -f deep_dive_content="$DEEP_DIVE_CONTENT" \
+            -f product_name="$PRODUCT_NAME"
+
+          echo "✅ mvp-factory の build.yml を dispatch しました（product: $PRODUCT_NAME）"
