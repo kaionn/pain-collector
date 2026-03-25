@@ -13,12 +13,13 @@ ITUNES_SEARCH_URL = "https://itunes.apple.com/search"
 _session = create_retry_session()
 
 
-def _extract_search_keywords(app_idea: str, category: str = "") -> str:
-    """app_idea から App Store 検索に適した英語キーワードを抽出する."""
+def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
+    """app_idea から App Store 検索に適した英語キーワードを 3 セット抽出する."""
     token = os.environ.get("GITHUB_TOKEN", "")
     prompt = (
-        "以下のアプリアイデアから、App Store で検索するための英語キーワードを2-3語で抽出してください。\n"
-        "キーワードのみを出力してください（説明不要）。\n\n"
+        "以下のアプリアイデアから、App Store で検索するための英語キーワードセットを3つ生成してください。\n"
+        "各キーワードセットは2-3語で、異なる言い回し・同義語を使ってください。\n"
+        "1行に1キーワードセット、計3行のみを出力してください（説明不要）。\n\n"
         f"アイデア: {app_idea}\n"
         f"カテゴリ: {category}\n"
     )
@@ -34,20 +35,25 @@ def _extract_search_keywords(app_idea: str, category: str = "") -> str:
                 model="openai/gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0,
-                max_tokens=20,
+                max_tokens=60,
             )
-            return (response.choices[0].message.content or "").strip()
+            content = (response.choices[0].message.content or "").strip()
         else:
             result = subprocess.run(
                 ["claude", "-p", prompt, "--output-format", "text"],
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode == 0:
-                return result.stdout.strip()
+                content = result.stdout.strip()
+            else:
+                return [app_idea[:50]]
+
+        keywords = [line.strip() for line in content.splitlines() if line.strip()]
+        return keywords[:3] if keywords else [app_idea[:50]]
     except Exception as e:
         print(f"[AppStore] キーワード抽出失敗、フォールバック: {e}")
 
-    return app_idea[:50]
+    return [app_idea[:50]]
 
 
 def check_app_store(keyword: str, country: str = "us", limit: int = 5) -> list[dict]:
@@ -89,20 +95,18 @@ def enrich_pain_with_market_data(pain: dict) -> dict:
         return pain
 
     category = pain.get("category", "")
-    keyword = _extract_search_keywords(idea, category)
-    print(f"[AppStore] 検索キーワード: {keyword}")
+    keywords = _extract_search_keywords(idea, category)
+    print(f"[AppStore] 検索キーワード: {keywords}")
 
-    # US + JP 両方を検索してマージ
-    apps_us = check_app_store(keyword, country="us", limit=3)
-    apps_jp = check_app_store(keyword, country="jp", limit=3)
-
-    # 重複排除してマージ（名前ベース）
-    seen_names = set()
-    apps = []
-    for app in apps_us + apps_jp:
-        if app["name"] not in seen_names:
-            seen_names.add(app["name"])
-            apps.append(app)
+    # 全キーワードで US + JP 両方を検索してマージ
+    seen_names: set[str] = set()
+    apps: list[dict] = []
+    for kw in keywords:
+        for country in ("us", "jp"):
+            for app in check_app_store(kw, country=country, limit=3):
+                if app["name"] not in seen_names:
+                    seen_names.add(app["name"])
+                    apps.append(app)
     apps = apps[:5]
 
     if not apps:
