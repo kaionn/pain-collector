@@ -13,6 +13,7 @@ permissions:
 jobs:
   collect:
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.actor == 'kaionn'
     steps:
       - uses: actions/checkout@v4
 
