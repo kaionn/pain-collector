@@ -128,9 +128,23 @@ jobs:
             DEEP_DIVE_CONTENT=$(base64 < "$DEEP_DIVE_PATH")
           fi
 
-          # Issue タイトルからプロダクト名を生成（ケバブケース）
-          PRODUCT_NAME=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title' | \
-            sed 's/[^a-zA-Z0-9 ]//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | head -c 40)
+          # Issue タイトルからプロダクト名を生成（LLM で英語ケバブケースに変換）
+          TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title')
+          PRODUCT_NAME=$(python3 -c "
+          import subprocess, re
+          title = '''$TITLE'''
+          # LLM でタイトルを英語ケバブケースに変換
+          result = subprocess.run(
+              ['gh', 'models', 'run', 'openai/gpt-4o-mini', '--',
+               f'Convert this to a short English kebab-case product name (max 30 chars, only lowercase letters and hyphens, no explanation): {title}'],
+              capture_output=True, text=True, timeout=30
+          )
+          name = result.stdout.strip().lower().replace(' ', '-')
+          name = re.sub(r'[^a-z0-9-]', '', name).strip('-')[:30]
+          if not name or name == '-':
+              name = f'mvp-{$ISSUE_NUMBER}'
+          print(name)
+          ")
 
           gh workflow run build.yml \
             --repo kaionn/mvp-factory \
