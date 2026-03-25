@@ -130,8 +130,24 @@ def extract(posts: list[dict]) -> list[dict]:
     return pains
 
 
+_SOURCE_LANGUAGE = {
+    "reddit": "en",
+    "hackernews": "en",
+    "devto": "en",
+    "stackoverflow": "en",
+    "hatena": "ja",
+    "zenn": "ja",
+    "note": "ja",
+    "chiebukuro": "ja",
+    "girlschannel": "ja",
+    "bluesky": "ja",
+    "appstore": "ja",
+    "googleplay": "ja",
+}
+
+
 def _attach_engagement(pains: list[dict], posts: list[dict]) -> None:
-    """元投稿のエンゲージメント情報を source_engagement フィールドとして付与する."""
+    """元投稿のエンゲージメント情報と言語を付与する."""
     url_to_post = {p["url"]: p for p in posts if "url" in p}
 
     for pain in pains:
@@ -139,6 +155,7 @@ def _attach_engagement(pains: list[dict], posts: list[dict]) -> None:
         post = url_to_post.get(source_url)
         if not post:
             pain["source_engagement"] = {}
+            pain["language"] = "ja"
             continue
 
         engagement = {}
@@ -146,6 +163,7 @@ def _attach_engagement(pains: list[dict], posts: list[dict]) -> None:
             if key in post:
                 engagement[key] = post[key]
         pain["source_engagement"] = engagement
+        pain["language"] = _SOURCE_LANGUAGE.get(post.get("source", ""), "ja")
 
 
 def _extract_in_batches(

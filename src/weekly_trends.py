@@ -7,6 +7,7 @@
 import glob
 import json
 import os
+import subprocess
 from collections import Counter
 from datetime import date, timedelta
 
@@ -301,7 +302,7 @@ def analyze_trends(target_date: date) -> list[dict]:
         return []
 
 
-def generate_weekly_report(trends: list[dict], pains: list[dict], target_date: date) -> str:
+def generate_weekly_report(trends: list[dict], pains: list[dict], target_date: date, cross_lang_results: list[dict] | None = None) -> str:
     """週次レポートの Markdown を生成する."""
     week_num = target_date.isocalendar()[1]
     year = target_date.year
@@ -368,6 +369,114 @@ def generate_weekly_report(trends: list[dict], pains: list[dict], target_date: d
         if cluster_section:
             lines.append(cluster_section)
 
+    # 言語横断分析セクション
+    if cross_lang_results:
+        cross_section = generate_cross_language_section(cross_lang_results)
+        if cross_section:
+            lines.append(cross_section)
+
+    return "\n".join(lines)
+
+
+CROSS_LANG_PROMPT = """\
+以下は日本語と英語の両方で収集されたペインリストです。
+各ペインの言語タグ [ja] / [en] に注目して分析してください。
+
+タスク:
+1. 日本語ペインをそれぞれ英語に1文で要約する
+2. 英語ペインと日本語ペイン（英語要約）を比較し、同じ課題を指しているペアを特定する
+3. 以下のカテゴリに分類する:
+   - "global_trend": 日英両方で出現しているペイン（グローバルトレンド）
+   - "localize_chance": 英語圏で出現 → 日本語圏で未出現（ローカライズチャンス）
+   - "japan_only": 日本語圏のみで出現
+
+JSON 配列で出力してください（コードブロック不要）:
+[
+  {
+    "type": "global_trend | localize_chance | japan_only",
+    "theme": "テーマ名（日本語）",
+    "en_pains": ["英語圏の関連ペイン"],
+    "ja_pains": ["日本語圏の関連ペイン"],
+    "opportunity_note": "なぜこれがチャンスなのか（1文）"
+  }
+]
+
+ルール:
+- global_trend と localize_chance を優先して出力する
+- japan_only は特に注目に値するもののみ
+- 最大 10 件まで
+"""
+
+
+def analyze_cross_language(pains: list[dict]) -> list[dict]:
+    """日英ペインの言語横断分析を実行する."""
+    en_pains = [p for p in pains if p.get("language") == "en"]
+    ja_pains = [p for p in pains if p.get("language", "ja") == "ja"]
+
+    if not en_pains or not ja_pains:
+        print(f"[横断分析] 英語 {len(en_pains)} 件 / 日本語 {len(ja_pains)} 件 → スキップ")
+        return []
+
+    pain_lines = []
+    for p in en_pains[:30]:
+        pain_lines.append(f"[en] {p['pain']}")
+    for p in ja_pains[:30]:
+        pain_lines.append(f"[ja] {p['pain']}")
+
+    prompt_text = f"{CROSS_LANG_PROMPT}\n\n--- ペインリスト ---\n" + "\n".join(pain_lines)
+
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if token:
+        call_fn = extract_pains._call_github_models(token)
+        label = "GitHub Models"
+    else:
+        call_fn = extract_pains._call_claude
+        label = "Claude Code"
+
+    try:
+        content = call_fn(prompt_text)
+        results = extract_pains._parse_json_response(content)
+        print(f"[横断分析] {label} で {len(results)} 件の横断テーマを抽出")
+        return results
+    except Exception as e:
+        print(f"[横断分析] 分析に失敗: {e}")
+        return []
+
+
+def generate_cross_language_section(cross_results: list[dict]) -> str:
+    """言語横断分析のレポートセクションを生成する."""
+    if not cross_results:
+        return ""
+
+    lines = ["\n## 🌍 言語横断分析\n"]
+
+    global_trends = [r for r in cross_results if r.get("type") == "global_trend"]
+    localize_chances = [r for r in cross_results if r.get("type") == "localize_chance"]
+    japan_only = [r for r in cross_results if r.get("type") == "japan_only"]
+
+    if global_trends:
+        lines.append("### グローバルトレンド（日英両方で出現）\n")
+        for r in global_trends:
+            lines.append(f"- {r.get('theme', '')}")
+            lines.append(f"  - {r.get('opportunity_note', '')}")
+        lines.append("")
+
+    if localize_chances:
+        lines.append("### 🎯 ローカライズチャンス（英語圏のみ → 日本未参入）\n")
+        for r in localize_chances:
+            lines.append(f"- {r.get('theme', '')}")
+            en = r.get("en_pains", [])
+            if en:
+                lines.append(f"  - 英語圏: {en[0]}")
+            lines.append(f"  - {r.get('opportunity_note', '')}")
+        lines.append("")
+
+    if japan_only:
+        lines.append("### 🇯🇵 日本語圏のみ\n")
+        for r in japan_only:
+            lines.append(f"- {r.get('theme', '')}")
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -379,7 +488,21 @@ def run(target_date: date) -> None:
     print(f"過去7日分のペイン: {len(pains)} 件\n")
 
     trends = analyze_trends(target_date)
-    report = generate_weekly_report(trends, pains, target_date)
+
+    # 言語横断分析（ペインに言語情報を付与）
+    for p in pains:
+        p.setdefault("language", "ja")  # デフォルト
+    # daily/*.md からは言語情報が取れないため、ソースに基づいて推定
+    # ペインテキストが ASCII 主体なら en と推定
+    for p in pains:
+        text = p.get("pain", "")
+        ascii_ratio = sum(1 for c in text if ord(c) < 128) / max(len(text), 1)
+        if ascii_ratio > 0.8:
+            p["language"] = "en"
+
+    cross_lang_results = analyze_cross_language(pains)
+
+    report = generate_weekly_report(trends, pains, target_date, cross_lang_results)
 
     # 保存
     week_num = target_date.isocalendar()[1]
