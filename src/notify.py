@@ -301,6 +301,13 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
             except Exception as e:
                 logger.warning(f"スコアリング失敗（続行）: {e}")
 
+            # Discord 通知
+            try:
+                from . import discord_notify
+                discord_notify.notify_issue_created(pain, issue_number, issue_url)
+            except Exception as e:
+                logger.warning(f"Discord 通知失敗（続行）: {e}")
+
             return {"number": issue_number, "title": title}
         else:
             logger.error(f"Issue 作成失敗: {result.stderr[:200]}")

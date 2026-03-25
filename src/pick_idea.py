@@ -467,3 +467,11 @@ def run() -> None:
 
     # 各 Issue に通知コメント投稿
     _notify_picked_issues(picked, today)
+
+    # Discord 通知
+    try:
+        from . import discord_notify
+        repo_url = "https://github.com/kaionn/pain-collector"
+        discord_notify.notify_mvp_picked(picked, today, repo_url)
+    except Exception as e:
+        logger.warning(f"Discord 通知失敗（続行）: {e}")
