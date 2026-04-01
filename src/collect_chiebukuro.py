@@ -6,7 +6,7 @@ import time
 
 from bs4 import BeautifulSoup
 
-from src.http_utils import create_retry_session
+from src.http_utils import DEFAULT_HEADERS, create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
@@ -24,17 +24,13 @@ CATEGORIES = {
     "地域・旅行": "https://chiebukuro.yahoo.co.jp/category/2078297918/question/list",
 }
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-}
-
 _session = create_retry_session()
 
 
 def _fetch_questions(category: str, url: str) -> list[dict]:
     """カテゴリページから質問一覧を取得する."""
     try:
-        resp = _session.get(url, headers=HEADERS, timeout=15)
+        resp = _session.get(url, headers=DEFAULT_HEADERS, timeout=15)
         resp.raise_for_status()
     except Exception as e:
         logger.warning(f"{category} の取得に失敗: {e}")

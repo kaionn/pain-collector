@@ -6,10 +6,18 @@ import time
 
 from bs4 import BeautifulSoup
 
-from src.http_utils import create_retry_session
+from src.http_utils import DEFAULT_HEADERS, create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
+
+# サイトがランキング番号・レス数・日時・タグを <a> 内に連結するため分離が必要
+# 例: "1義父からの生理予定日確認に違和感1292026年04月01日 19:01話題"
+_CLEAN_PATTERN = re.compile(
+    r"^\d{1,3}"  # 先頭のランキング番号
+    r"(.+?)"  # タイトル本体（非貪欲）
+    r"\d*\d{4}年\d{2}月\d{2}日.*$"  # レス数+日時+タグ
+)
 
 # カテゴリ別ランキング URL
 CATEGORIES = {
@@ -23,17 +31,13 @@ CATEGORIES = {
     "美容": "https://komachi.yomiuri.co.jp/topics/genre/beauty/ranking/",
 }
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-}
-
 _session = create_retry_session()
 
 
 def _fetch_topics(category: str, url: str) -> list[dict]:
     """カテゴリページからトピック一覧を取得する."""
     try:
-        resp = _session.get(url, headers=HEADERS, timeout=15)
+        resp = _session.get(url, headers=DEFAULT_HEADERS, timeout=15)
         resp.raise_for_status()
     except Exception as e:
         logger.warning(f"{category} の取得に失敗: {e}")
@@ -42,14 +46,6 @@ def _fetch_topics(category: str, url: str) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     topics: list[dict] = []
 
-    # ランキング番号・レス数・日時・タグを除去するパターン
-    # 例: "1義父からの生理予定日確認に違和感1292026年04月01日 19:01話題"
-    clean_pattern = re.compile(
-        r"^\d{1,3}"  # 先頭のランキング番号
-        r"(.+?)"  # タイトル本体（非貪欲）
-        r"\d*\d{4}年\d{2}月\d{2}日.*$"  # レス数+日時+タグ
-    )
-
     for a_tag in soup.select("a[href*='/topics/id/']"):
         raw_text = a_tag.get_text(strip=True)
         href = a_tag.get("href", "")
@@ -57,8 +53,7 @@ def _fetch_topics(category: str, url: str) -> list[dict]:
         if not raw_text or len(raw_text) < 5:
             continue
 
-        # タイトルをクリーンアップ
-        m = clean_pattern.match(raw_text)
+        m = _CLEAN_PATTERN.match(raw_text)
         title = m.group(1).strip() if m else raw_text
 
         if not href.startswith("http"):
