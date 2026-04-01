@@ -146,6 +146,7 @@ _SOURCE_LANGUAGE = {
     "bluesky": "ja",
     "appstore": "ja",
     "googleplay": "ja",
+    "komachi": "ja",
 }
 
 

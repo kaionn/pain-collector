@@ -18,6 +18,10 @@ CATEGORIES = {
     "お金・保険": "https://chiebukuro.yahoo.co.jp/category/2078297811/question/list",
     "仕事・職業": "https://chiebukuro.yahoo.co.jp/category/2078297854/question/list",
     "健康・病気": "https://chiebukuro.yahoo.co.jp/category/2078297616/question/list",
+    # 生活系強化
+    "暮らしと生活ガイド": "https://chiebukuro.yahoo.co.jp/category/2078297937/question/list",
+    "恋愛・人間関係": "https://chiebukuro.yahoo.co.jp/category/2079526977/question/list",
+    "地域・旅行": "https://chiebukuro.yahoo.co.jp/category/2078297918/question/list",
 }
 
 HEADERS = {

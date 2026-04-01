@@ -26,6 +26,14 @@ SUBREDDITS = [
     "careerguidance",
     "ADHD",
     "digitalnomad",
+    # 生活系
+    "Cooking",
+    "MealPrepSunday",
+    "CleaningTips",
+    "Parenting",
+    "povertyfinance",
+    "relationship_advice",
+    "HomeImprovement",
 ]
 
 PAIN_KEYWORDS = re.compile(
