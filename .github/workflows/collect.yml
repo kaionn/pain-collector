@@ -16,6 +16,8 @@ jobs:
     if: github.event_name == 'schedule' || github.actor == 'kaionn'
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
