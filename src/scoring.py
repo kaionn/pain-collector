@@ -9,7 +9,7 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 # スコアリング基準（60 点満点）
-# 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x1
+# 技術的シンプルさ x2 + スコープ x2 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x3
 SCORING_PROMPT = """\
 以下のペイン（課題）を個人開発の MVP 候補として評価してください。
 
@@ -20,21 +20,21 @@ SCORING_PROMPT = """\
   "scope": 1-5（スコープが明確で小さいか。5=機能を絞りやすい）,
   "differentiation": 1-5（差別化できるか。5=競合が少なく独自性がある）,
   "pain_intensity": 1-5（ペインが強いか。5=深刻で頻繁に発生する）,
-  "revenue_potential": 1-5（収益化できるか。5=課金意欲が高い）,
+  "revenue_potential": 1-5（収益化できるか。5=「お金を払ってでも解決したい」と明言、具体的な金額に言及。4=課金意欲が高い。3=有料なら検討する。2=無料なら使う。1=課金意欲なし）,
   "reasoning": "スコアの根拠を1-2文で"
 }
 
 JSON のみ出力してください。
 """
 
-# 加重: 技術的シンプルさ x3 + スコープ x3 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x1
+# 加重: 技術的シンプルさ x2 + スコープ x2 + 差別化 x2 + コミュニティ検証 x2 + ペイン強度 x1 + 収益可能性 x3
 WEIGHTS = {
-    "technical_simplicity": 3,
-    "scope": 3,
+    "technical_simplicity": 2,
+    "scope": 2,
     "differentiation": 2,
     "community_validation": 2,
     "pain_intensity": 1,
-    "revenue_potential": 1,
+    "revenue_potential": 3,
 }
 
 
@@ -159,12 +159,12 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
         f"## 🎯 MVP スコア: {total}/60\n\n"
         f"| 項目 | スコア | 加重 |\n"
         f"|------|--------|------|\n"
-        f"| 技術的シンプルさ | {scores.get('technical_simplicity', 0)}/5 | x3 |\n"
-        f"| スコープ | {scores.get('scope', 0)}/5 | x3 |\n"
+        f"| 技術的シンプルさ | {scores.get('technical_simplicity', 0)}/5 | x2 |\n"
+        f"| スコープ | {scores.get('scope', 0)}/5 | x2 |\n"
         f"| 差別化 | {scores.get('differentiation', 0)}/5 | x2 |\n"
         f"| コミュニティ検証 | {scores.get('community_validation', 0)}/5 | x2 |\n"
         f"| ペイン強度 | {scores.get('pain_intensity', 0)}/5 | x1 |\n"
-        f"| 収益可能性 | {scores.get('revenue_potential', 0)}/5 | x1 |\n\n"
+        f"| 収益可能性 | {scores.get('revenue_potential', 0)}/5 | x3 |\n\n"
         f"根拠: {reasoning}"
     )
 

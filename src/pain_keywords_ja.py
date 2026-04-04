@@ -12,7 +12,22 @@ PAIN_KEYWORDS_JA = re.compile(
     re.IGNORECASE,
 )
 
+MONETIZATION_KEYWORDS_JA = re.compile(
+    r"(お金を払ってでも|課金したい|有料でもいい|有料でも使う|"
+    r"月額.{0,10}払う|サブスク.{0,10}欲しい|買い切り.{0,10}欲しい|"
+    r"いくらでも出す|高くても.{0,10}使いたい|"
+    r"お金かかってもいい|金出してでも|"
+    r"worth paying|shut up and take my money|"
+    r"would pay|gladly pay|take my money)",
+    re.IGNORECASE,
+)
+
 
 def contains_pain_keyword(text: str) -> bool:
     """テキストに日本語ペインキーワードが含まれるか判定する."""
     return bool(PAIN_KEYWORDS_JA.search(text))
+
+
+def contains_monetization_signal(text: str) -> bool:
+    """テキストに課金意欲を示すキーワードが含まれるか判定する."""
+    return bool(MONETIZATION_KEYWORDS_JA.search(text))

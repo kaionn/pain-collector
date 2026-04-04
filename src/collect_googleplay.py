@@ -17,6 +17,22 @@ TARGET_APPS = [
     {"package": "com.kouzoh.mercari", "name": "Mercari"},
     # ヘルス
     {"package": "com.myfitnesspal.android", "name": "MyFitnessPal"},
+    # 料理
+    {"package": "com.kurashiru", "name": "クラシル"},
+    {"package": "com.cookpad.android.activities", "name": "クックパッド"},
+    # 健康・ダイエット
+    {"package": "jp.co.asken.android", "name": "あすけん"},
+    # 家計
+    {"package": "jp.co.moneyforward.android", "name": "マネーフォワード ME"},
+    {"package": "net.zaim.android", "name": "Zaim"},
+    # 子育て
+    {"package": "jp.ne.connehito.mamariq", "name": "ママリ"},
+    {"package": "us.mitene", "name": "みてね"},
+    # 予約・決済
+    {"package": "jp.co.recruit.hotpepper.gourmet", "name": "ホットペッパーグルメ"},
+    {"package": "jp.ne.paypay.android.app", "name": "PayPay"},
+    # 移動・通勤
+    {"package": "jp.co.yahoo.android.apps.transit", "name": "Yahoo!乗換案内"},
 ]
 
 MAX_REVIEWS_PER_APP = 30

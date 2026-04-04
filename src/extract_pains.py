@@ -58,6 +58,12 @@ willingness_to_pay の判断基準:
 - medium: 数千円/月でも払う（業務効率化、専門ツール）
 - high: 数万円/月でも払う（企業向け、業務に不可欠）
 
+収益シグナルの重視:
+- 「お金を払ってでも解決したい」「課金してもいい」等の表現がある投稿は severity を高めに設定し willingness_to_pay を "high" にすること
+- アプリレビュー（低評価）は既にお金を払ったユーザーの声であり revenue_potential が高いペインと判断すること
+- 繰り返し発生する日常ペイン（daily frequency）はサブスク型収益に向いているため優先すること
+- [MONETIZATION_SIGNAL] タグが付いた投稿は課金意欲が明示されているため willingness_to_pay を "high" に設定すること
+
 ルール:
 - ペインが見つからない投稿はスキップする
 - 1つの投稿から複数のペインを抽出してもよい
@@ -147,6 +153,7 @@ _SOURCE_LANGUAGE = {
     "appstore": "ja",
     "googleplay": "ja",
     "komachi": "ja",
+    "mamastar": "ja",
 }
 
 
@@ -334,6 +341,8 @@ def _parse_json_response(content: str) -> list[dict]:
 
 def _format_posts(posts: list[dict]) -> str:
     """投稿リストをテキスト形式にフォーマットする."""
+    from src.pain_keywords_ja import contains_monetization_signal
+
     lines = []
     for p in posts:
         source = p.get("source", "unknown")
@@ -351,11 +360,17 @@ def _format_posts(posts: list[dict]) -> str:
             engagement_parts.append(f"bookmarks={p['bookmarks']}")
         engagement = ", ".join(engagement_parts) if engagement_parts else "N/A"
 
+        # 課金意欲シグナル検出
+        monetization_tag = ""
+        full_text = f"{title} {body}"
+        if contains_monetization_signal(full_text):
+            monetization_tag = "\n[MONETIZATION_SIGNAL] この投稿には課金意欲を示す表現が含まれています。willingness_to_pay を high に設定してください。"
+
         lines.append(
             f"---\n[{source}] {title}\n"
             f"URL: {url}\n"
             f"Engagement: {engagement}\n"
-            f"{body}\n"
+            f"{body}{monetization_tag}\n"
         )
 
     return "\n".join(lines)

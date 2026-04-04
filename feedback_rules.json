@@ -13,7 +13,9 @@
     {"pattern": "日常的に繰り返し発生する具体的な不便・不満", "created_at": "2026-03-01", "source_issues": []},
     {"pattern": "既存ツールやアプリへの具体的な改善要望", "created_at": "2026-03-01", "source_issues": []},
     {"pattern": "業務効率化や時間短縮に関するペイン", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "個人開発者が1-2週間で MVP を作れるスケールのペイン", "created_at": "2026-03-01", "source_issues": []}
+    {"pattern": "個人開発者が1-2週間で MVP を作れるスケールのペイン", "created_at": "2026-03-01", "source_issues": []},
+    {"pattern": "課金意欲・購入意欲を明示的に表現しているペイン", "created_at": "2026-04-04", "source_issues": []},
+    {"pattern": "既存有料サービスへの不満（既にお金を払っているユーザーのペイン）", "created_at": "2026-04-04", "source_issues": []}
   ],
-  "updated_at": "2026-03-25T10:00:00+09:00"
+  "updated_at": "2026-04-04T10:00:00+09:00"
 }

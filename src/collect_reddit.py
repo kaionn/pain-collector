@@ -34,6 +34,15 @@ SUBREDDITS = [
     "povertyfinance",
     "relationship_advice",
     "HomeImprovement",
+    # 生活系（追加）
+    "BabyBumps",
+    "beyondthebump",
+    "EatCheapAndHealthy",
+    "Fitness",
+    "loseit",
+    "SkincareAddiction",
+    "FIRE",
+    "Frugal",
 ]
 
 PAIN_KEYWORDS = re.compile(

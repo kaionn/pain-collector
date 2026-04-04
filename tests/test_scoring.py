@@ -73,7 +73,7 @@ class TestCalculateTotalScore:
 
     def test_all_fives_returns_60(self):
         """全項目 5 点の場合は 60 点満点."""
-        # WEIGHTS の合計: 3+3+2+2+1+1 = 12, 12 * 5 = 60
+        # WEIGHTS の合計: 2+2+2+2+1+3 = 12, 12 * 5 = 60
         scores = {k: 5 for k in WEIGHTS}
         assert calculate_total_score(scores) == 60
 
@@ -87,12 +87,12 @@ class TestCalculateTotalScore:
             "pain_intensity": 0,
             "revenue_potential": 0,
         }
-        assert calculate_total_score(scores) == 3  # technical_simplicity weight=3
+        assert calculate_total_score(scores) == 2  # technical_simplicity weight=2
 
     def test_scope_weight(self):
         scores = {k: 0 for k in WEIGHTS}
         scores["scope"] = 1
-        assert calculate_total_score(scores) == 3  # scope weight=3
+        assert calculate_total_score(scores) == 2  # scope weight=2
 
     def test_differentiation_weight(self):
         scores = {k: 0 for k in WEIGHTS}
@@ -112,7 +112,27 @@ class TestCalculateTotalScore:
     def test_revenue_potential_weight(self):
         scores = {k: 0 for k in WEIGHTS}
         scores["revenue_potential"] = 1
-        assert calculate_total_score(scores) == 1  # revenue_potential weight=1
+        assert calculate_total_score(scores) == 3  # revenue_potential weight=3
+
+    def test_revenue_focused_pain_scores_higher(self):
+        """収益性が高いペインが技術的シンプルさが高いペインより上位になることを確認."""
+        revenue_focused = {
+            "technical_simplicity": 3,
+            "scope": 3,
+            "differentiation": 3,
+            "community_validation": 3,
+            "pain_intensity": 3,
+            "revenue_potential": 5,
+        }
+        tech_focused = {
+            "technical_simplicity": 5,
+            "scope": 3,
+            "differentiation": 3,
+            "community_validation": 3,
+            "pain_intensity": 3,
+            "revenue_potential": 3,
+        }
+        assert calculate_total_score(revenue_focused) > calculate_total_score(tech_focused)
 
     def test_missing_key_treated_as_zero(self):
         """存在しないキーは 0 として扱われる."""
@@ -120,8 +140,8 @@ class TestCalculateTotalScore:
 
     def test_partial_scores(self):
         scores = {"technical_simplicity": 3, "scope": 2}
-        # 3*3 + 2*3 = 9 + 6 = 15
-        assert calculate_total_score(scores) == 15
+        # 3*2 + 2*2 = 6 + 4 = 10
+        assert calculate_total_score(scores) == 10
 
     def test_boundary_score_24(self):
         """スコア 24 のケース（B ランク境界）."""
