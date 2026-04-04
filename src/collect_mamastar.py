@@ -34,7 +34,7 @@ def _fetch_topics(category: str, url: str) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     topics: list[dict] = []
 
-    for a_tag in soup.select("a[href*='/bbs/comment/']"):
+    for a_tag in soup.select("a[href*='/bbs/topic/']"):
         title = a_tag.get_text(strip=True)
         href = a_tag.get("href", "")
 

@@ -58,7 +58,10 @@ SEARCH_QUERY = (
     "OR sick of OR tired of OR why can't"
 )
 
-USER_AGENT = "pain-collector/1.0 (GitHub Actions)"
+USER_AGENT = "Mozilla/5.0 (compatible; pain-collector/1.0; +https://github.com/kaionn/pain-collector)"
+
+# old.reddit.com は JSON エンドポイントのブロックが緩い
+REDDIT_BASE = "https://old.reddit.com"
 MAX_POSTS_PER_SUB = 50
 
 
@@ -94,7 +97,7 @@ def _parse_post(child: dict) -> dict:
 
 def _fetch_hot(subreddit: str) -> list[dict]:
     """サブレディットのホット投稿を取得し、ペインキーワードでフィルタする."""
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit={MAX_POSTS_PER_SUB}"
+    url = f"{REDDIT_BASE}/r/{subreddit}/hot.json?limit={MAX_POSTS_PER_SUB}"
     children = _fetch_reddit(url, f"r/{subreddit}")
 
     posts = []
@@ -109,7 +112,7 @@ def _fetch_hot(subreddit: str) -> list[dict]:
 def _search(subreddit: str, time_filter: str = "week") -> list[dict]:
     """サブレディットをキーワード検索する（バックフィル用）."""
     url = (
-        f"https://www.reddit.com/r/{subreddit}/search.json"
+        f"{REDDIT_BASE}/r/{subreddit}/search.json"
         f"?q={SEARCH_QUERY}&restrict_sr=1&sort=relevance&t={time_filter}&limit={MAX_POSTS_PER_SUB}"
     )
     children = _fetch_reddit(url, f"r/{subreddit} (検索)")

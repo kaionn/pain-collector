@@ -137,6 +137,38 @@ def generate_report(pains: list[dict], date_str: str) -> str:
     return "\n".join(lines)
 
 
+# ソースごとの LLM 投入上限（raw 保存は全件、LLM に渡す件数を制限してバランスを取る）
+SOURCE_POST_LIMITS: dict[str, int] = {
+    "googleplay": 100,
+    "appstore": 80,
+    "stackoverflow": 30,
+    "reddit": 150,
+    "hackernews": 50,
+}
+DEFAULT_POST_LIMIT = 100
+
+
+def _apply_post_limits(sources: dict[str, list[dict]]) -> list[dict]:
+    """ソースごとの上限を適用して LLM に渡す投稿リストを作成する."""
+    import random
+
+    all_posts: list[dict] = []
+    summary_parts: list[str] = []
+
+    for name, posts in sources.items():
+        limit = SOURCE_POST_LIMITS.get(name, DEFAULT_POST_LIMIT)
+        if len(posts) > limit:
+            selected = random.sample(posts, limit)
+            logger.info(f"  {name}: {len(posts)} → {limit} 件にサンプリング")
+        else:
+            selected = posts
+        all_posts.extend(selected)
+        summary_parts.append(f"{name} {len(selected)}/{len(posts)}")
+
+    logger.info(f"LLM 投入: {' + '.join(summary_parts)} = {len(all_posts)} 件")
+    return all_posts
+
+
 def process_day(
     date_str: str,
     sources: dict[str, list[dict]],
@@ -144,14 +176,7 @@ def process_day(
     """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
     logger.info(f"=== Pain Collector: {date_str} ===")
 
-    all_posts: list[dict] = []
-    summary_parts: list[str] = []
-    for name, posts in sources.items():
-        all_posts.extend(posts)
-        summary_parts.append(f"{name} {len(posts)} 件")
-    logger.info(f"投稿数: {' + '.join(summary_parts)} = {len(all_posts)} 件")
-
-    # 生データを JSON で保存
+    # 生データを JSON で全件保存
     raw_dir = os.path.join(BASE_DIR, "raw")
     os.makedirs(raw_dir, exist_ok=True)
     raw_path = os.path.join(raw_dir, f"{date_str}.json")
@@ -160,6 +185,9 @@ def process_day(
     with open(raw_path, "w", encoding="utf-8") as f:
         json.dump(raw_data, f, ensure_ascii=False, indent=2)
     logger.info(f"生データを保存: {raw_path}")
+
+    # ソースごとの上限を適用して LLM に渡す投稿を選定
+    all_posts = _apply_post_limits(sources)
 
     if not all_posts:
         logger.info("投稿が0件のため終了")
