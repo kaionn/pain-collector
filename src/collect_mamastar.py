@@ -1,12 +1,24 @@
 """ママスタからペイン系のトピックを収集する."""
 
 import logging
+import re
 import time
 
 from bs4 import BeautifulSoup
 
 from src.http_utils import DEFAULT_HEADERS, create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
+
+# ママスタは生活相談サイトのため、一般的なペインキーワードに加え
+# 相談・愚痴系の表現でもフィルタを通過させる
+_LIFESTYLE_KEYWORDS = re.compile(
+    r"(どうしたら|どうすれば|教えて|助けて|相談|愚痴|モヤモヤ|もやもや|"
+    r"許せない|ゆるせない|嫌になる|やってられない|わからない|"
+    r"つかれた|疲れた|泣きたい|泣ける|腹が立つ|腹立つ|ムカつく|むかつく|"
+    r"どうしよう|やばい|ヤバい|後悔|離婚|転職|退職|"
+    r"お金がない|給料|節約|貯金できない|赤字)",
+    re.IGNORECASE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +81,8 @@ def collect() -> list[dict]:
                 continue
             seen_urls.add(t["url"])
 
-            if not contains_pain_keyword(t["title"]):
+            title = t["title"]
+            if not contains_pain_keyword(title) and not _LIFESTYLE_KEYWORDS.search(title):
                 continue
             filtered.append(t)
 
