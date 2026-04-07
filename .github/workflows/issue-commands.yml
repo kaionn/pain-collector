@@ -7,21 +7,28 @@ on:
 permissions:
   contents: write
   issues: write
+  models: read
 
 jobs:
   dispatch:
-    # /pick /spec /status /reject のいずれか かつ pain-report ラベル付き Issue のみ
+    # /pick /spec /status /reject /help いずれかで開始 + pain-report ラベル付き Issue のみ
     if: |
       contains(github.event.issue.labels.*.name, 'pain-report') &&
       (
-        github.event.comment.body == '/pick' ||
-        github.event.comment.body == '/spec' ||
-        github.event.comment.body == '/status' ||
-        github.event.comment.body == '/reject'
+        startsWith(github.event.comment.body, '/pick') ||
+        startsWith(github.event.comment.body, '/spec') ||
+        startsWith(github.event.comment.body, '/status') ||
+        startsWith(github.event.comment.body, '/reject') ||
+        startsWith(github.event.comment.body, '/help')
       )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 最新の main を確実に取得（リモート HEAD が進んでいてもズレない）
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Validate actor
         env:
@@ -42,62 +49,78 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Parse command
-        id: parse
+      - name: Sync latest pipeline_state.json from GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BODY="${{ github.event.comment.body }}"
-          ACTION="${BODY#/}"
-          echo "action=$ACTION" >> "$GITHUB_OUTPUT"
+          # issue-commands は同時実行されると last-write-wins になりがち。
+          # 直前にリモートの最新を取り直して race を最小化する。
+          mkdir -p data
+          gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+            --jq '.content' 2>/dev/null | base64 -d > data/pipeline_state.json || \
+            echo '{"picked": []}' > data/pipeline_state.json
 
       - name: Execute command
+        id: exec
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           python -m src.issue_commands \
-            --action "${{ steps.parse.outputs.action }}" \
-            --issue "${{ github.event.issue.number }}"
+            --issue "$ISSUE_NUMBER" \
+            --body "$COMMENT_BODY"
 
-      - name: Commit pipeline_state.json
-        if: steps.parse.outputs.action != 'status'
+      - name: Commit pipeline_state.json and specs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! git diff --quiet data/ specs/ 2>/dev/null; then
-            EXISTING_SHA=$(gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" --jq '.sha' 2>/dev/null || echo "")
-            UPDATED_CONTENT=$(base64 -w 0 < data/pipeline_state.json)
-            ACTION="${{ steps.parse.outputs.action }}"
-            ISSUE="${{ github.event.issue.number }}"
+          # state_dirty フラグが立っている場合のみコミット
+          if [ ! -f data/.state_dirty ]; then
+            echo "state 変更なし。スキップ"
+            exit 0
+          fi
+          rm -f data/.state_dirty
 
-            if [ -n "$EXISTING_SHA" ]; then
-              gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+          ISSUE="${{ github.event.issue.number }}"
+          BODY="${{ github.event.comment.body }}"
+          ACTION=$(echo "$BODY" | head -1 | awk '{print $1}' | sed 's|^/||')
+
+          # pipeline_state.json
+          EXISTING_SHA=$(gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" --jq '.sha' 2>/dev/null || echo "")
+          UPDATED_CONTENT=$(base64 -w 0 < data/pipeline_state.json)
+          if [ -n "$EXISTING_SHA" ]; then
+            gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+              -X PUT \
+              -f message="pipeline: /$ACTION #$ISSUE" \
+              -f content="$UPDATED_CONTENT" \
+              -f sha="$EXISTING_SHA" > /dev/null
+          else
+            gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+              -X PUT \
+              -f message="pipeline: /$ACTION #$ISSUE" \
+              -f content="$UPDATED_CONTENT" > /dev/null
+          fi
+          echo "✅ pipeline_state.json コミット完了"
+
+          # Spec ファイル
+          SPEC_FILE="specs/issue-${ISSUE}-spec.md"
+          if [ -f "$SPEC_FILE" ]; then
+            SPEC_SHA=$(gh api "repos/${{ github.repository }}/contents/$SPEC_FILE" --jq '.sha' 2>/dev/null || echo "")
+            SPEC_CONTENT=$(base64 -w 0 < "$SPEC_FILE")
+            if [ -n "$SPEC_SHA" ]; then
+              gh api "repos/${{ github.repository }}/contents/$SPEC_FILE" \
                 -X PUT \
-                -f message="pipeline: /$ACTION #$ISSUE" \
-                -f content="$UPDATED_CONTENT" \
-                -f sha="$EXISTING_SHA" > /dev/null
+                -f message="spec: /$ACTION #$ISSUE" \
+                -f content="$SPEC_CONTENT" \
+                -f sha="$SPEC_SHA" > /dev/null
             else
-              gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+              gh api "repos/${{ github.repository }}/contents/$SPEC_FILE" \
                 -X PUT \
-                -f message="pipeline: /$ACTION #$ISSUE" \
-                -f content="$UPDATED_CONTENT" > /dev/null
+                -f message="spec: /$ACTION #$ISSUE" \
+                -f content="$SPEC_CONTENT" > /dev/null
             fi
-
-            # Spec ファイルがあれば一緒にコミット
-            for spec in specs/issue-${ISSUE}-spec.md; do
-              if [ -f "$spec" ]; then
-                SPEC_SHA=$(gh api "repos/${{ github.repository }}/contents/$spec" --jq '.sha' 2>/dev/null || echo "")
-                SPEC_CONTENT=$(base64 -w 0 < "$spec")
-                if [ -n "$SPEC_SHA" ]; then
-                  gh api "repos/${{ github.repository }}/contents/$spec" \
-                    -X PUT \
-                    -f message="spec: /$ACTION #$ISSUE" \
-                    -f content="$SPEC_CONTENT" \
-                    -f sha="$SPEC_SHA" > /dev/null
-                else
-                  gh api "repos/${{ github.repository }}/contents/$spec" \
-                    -X PUT \
-                    -f message="spec: /$ACTION #$ISSUE" \
-                    -f content="$SPEC_CONTENT" > /dev/null
-                fi
-              fi
-            done
+            echo "✅ $SPEC_FILE コミット完了"
           fi

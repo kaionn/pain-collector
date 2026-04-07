@@ -422,6 +422,32 @@ gh auth login  # 未認証の場合
 
 Issue 本文が長すぎる場合もスキップされます。
 
+## 🎮 Issue コマンド
+
+`pain-report` ラベル付き Issue のコメントから、リポジトリオーナーが直接パイプラインを操作できる。
+
+| コマンド | 動作 |
+|---------|------|
+| `/pick` | MVP 候補として `picked` に追加し `📌picked` ラベル付与 |
+| `/spec` | Issue 本文（または既存 Deep Dive）から技術 Spec を生成。未 pick なら自動 pick |
+| `/spec --force` | 既存 Spec を上書き再生成 |
+| `/status` | picked / spec / deep_dive の現状と履歴を返答 |
+| `/approve` | Spec 生成後、`mvp-factory` で自動実装をトリガー |
+| `/reject` | `picked` から削除 |
+| `/help` | コマンド一覧を返答 |
+
+実装:
+- ワークフロー: `.github/workflows/issue-commands.yml` / `.github/workflows/approve.yml`
+- ロジック: `src/issue_commands.py`（共通 GitHub 操作は `src/gh_client.py`）
+- 状態管理: `data/pipeline_state.json`（events[] に時系列ログ）
+
+既存 Issue にコマンド一覧を一括投稿するには:
+
+```bash
+python scripts/post_help_to_existing_issues.py --dry-run  # 確認
+python scripts/post_help_to_existing_issues.py            # 実投稿
+```
+
 ## 今後の拡張
 
 - LINE / Discord への通知機能

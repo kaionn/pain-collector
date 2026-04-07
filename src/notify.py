@@ -252,6 +252,7 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
     lines.append("| `/status` | picked / spec / deep_dive の現状を返答 |")
     lines.append("| `/approve` | Spec 生成後、mvp-factory で自動実装を開始 |")
     lines.append("| `/reject` | picked から削除 |")
+    lines.append("| `/help` | コマンド一覧を表示 |")
 
     body = "\n".join(lines)
     title = f"[{category}] {pain_text[:80]}"

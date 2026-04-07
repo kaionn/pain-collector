@@ -17,10 +17,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Sync latest pipeline_state.json from GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # /spec 直後の /approve でも race を避けるため、リモートの最新を取り直す
+          mkdir -p data
+          gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+            --jq '.content' 2>/dev/null | base64 -d > data/pipeline_state.json || \
+            echo '{"picked": []}' > data/pipeline_state.json
 
       - name: Validate approver
         id: validate-approver
@@ -36,28 +49,37 @@ jobs:
             exit 1
           fi
 
-      - name: Validate spec
+      - name: Validate picked & spec
         id: validate-spec
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          SPEC_FILE=$(python3 -c "
+          PICKED_CHECK=$(python3 -c "
           import json, os
           state_path = 'data/pipeline_state.json'
-          if os.path.exists(state_path):
-              state = json.load(open(state_path))
-              for item in state.get('picked', []):
-                  if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
-                      print(item.get('spec') or '')
-                      break
+          if not os.path.exists(state_path):
+              print('NO_STATE')
+              raise SystemExit
+          state = json.load(open(state_path))
+          for item in state.get('picked', []):
+              if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
+                  print(item.get('spec') or 'NO_SPEC')
+                  raise SystemExit
+          print('NOT_PICKED')
           ")
 
-          if [ -z "$SPEC_FILE" ] || [ ! -f "$SPEC_FILE" ]; then
-            gh issue comment "$ISSUE_NUMBER" \
-              --body "❌ Spec ファイルが見つかりません。Deep Dive → Spec 生成が完了してから再度 \`/approve\` してください。"
+          if [ "$PICKED_CHECK" = "NO_STATE" ] || [ "$PICKED_CHECK" = "NOT_PICKED" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "❌ この Issue は picked されていません。先に \`/pick\` → \`/spec\` を実行してください。"
             exit 1
           fi
+
+          if [ "$PICKED_CHECK" = "NO_SPEC" ] || [ ! -f "$PICKED_CHECK" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "❌ Spec ファイルが見つかりません。\`/spec\` を実行してから再度 \`/approve\` してください。"
+            exit 1
+          fi
+
+          SPEC_FILE="$PICKED_CHECK"
 
           echo "spec_file=$SPEC_FILE" >> "$GITHUB_OUTPUT"
           echo "✅ Spec found: $SPEC_FILE"
