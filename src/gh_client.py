@@ -14,6 +14,54 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
+HELP_MARKER = "<!-- issue-commands-help-v1 -->"
+HELP_BLOCK = f"""{HELP_MARKER}
+<details>
+<summary>🎮 コマンド一覧（クリックで展開）</summary>
+
+オーナー専用。コメント本文の先頭に投稿:
+
+| コマンド | 動作 |
+|---------|------|
+| `/pick` | MVP 候補として picked に追加（📌picked ラベル付与） |
+| `/spec` | Issue 本文から Spec を生成（未 pick なら自動 pick） |
+| `/spec --force` | 既存 Spec を上書き再生成 |
+| `/status` | picked / spec / deep_dive の現状と履歴を返答 |
+| `/approve` | Spec 生成後、mvp-factory で自動実装を開始 |
+| `/reject` | picked から削除 |
+| `/help` | このヘルプを Issue 本文に追加・更新 |
+
+💡 `/spec` は LLM 呼び出しで 30〜90 秒かかるのだ。
+</details>"""
+
+
+def upsert_help_block(body: str) -> str:
+    """Issue 本文末尾にヘルプブロックを冪等に追加・更新する.
+
+    マーカーが既にあれば該当ブロックを置換、無ければ末尾に追加する。
+    """
+    if HELP_MARKER in body:
+        # マーカー以降を末尾まで全削除して差し替え（v1 限定の単純戦略）
+        idx = body.index(HELP_MARKER)
+        before = body[:idx].rstrip()
+        return f"{before}\n\n{HELP_BLOCK}\n"
+    sep = "\n\n" if body.strip() else ""
+    return f"{body}{sep}{HELP_BLOCK}\n"
+
+
+def update_issue_body(issue_number: int, body: str) -> bool:
+    """Issue 本文を上書きする."""
+    try:
+        subprocess.run(
+            ["gh", "issue", "edit", str(issue_number), "--body", body],
+            capture_output=True, text=True, timeout=30, check=True,
+        )
+        return True
+    except Exception as e:
+        logger.warning(f"Issue 本文更新失敗 #{issue_number}: {e}")
+        return False
+
+
 def fetch_issue(issue_number: int) -> dict:
     """Issue の JSON を取得する."""
     result = subprocess.run(

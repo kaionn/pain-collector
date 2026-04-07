@@ -40,22 +40,7 @@ LABEL_PICKED = "📌picked"
 LABEL_SPEC_READY = "📐spec-ready"
 LABEL_BUILDING = "building"
 
-HELP_TEXT = """## 🎮 Issue コマンド一覧
-
-オーナー専用。コメント本文の先頭に投稿:
-
-| コマンド | 動作 |
-|---------|------|
-| `/pick` | MVP 候補として picked に追加（📌picked ラベル付与） |
-| `/spec` | Issue 本文から Spec を生成（未 pick なら自動 pick） |
-| `/spec --force` | 既存 Spec を上書き再生成 |
-| `/status` | picked / spec / deep_dive の現状を返答 |
-| `/approve` | Spec 生成後、mvp-factory で自動実装を開始 |
-| `/reject` | picked から削除 |
-| `/help` | このヘルプを表示 |
-
-💡 `/spec` は LLM 呼び出しで 30〜90 秒かかるのだ。完了コメントを待つのだ。
-"""
+HELP_TEXT = gh_client.HELP_BLOCK
 
 
 # ---------------------------------------------------------------------------
@@ -249,8 +234,9 @@ def cmd_status(issue_number: int, args: list[str] | None = None) -> int:
     if entry is None:
         gh_client.post_comment(
             issue_number,
-            "📭 この Issue はまだ picked されてないのだ。`/pick` で追加するのだ。\n\n"
-            f"{HELP_TEXT}",
+            "📭 この Issue はまだ picked されてないのだ。\n\n"
+            "- `/pick` で追加\n"
+            "- `/help` で本文にコマンド一覧を埋め込み",
         )
         return 0
 
@@ -302,8 +288,23 @@ def cmd_reject(issue_number: int, args: list[str] | None = None) -> int:
 
 
 def cmd_help(issue_number: int, args: list[str] | None = None) -> int:
-    """コマンド一覧を返す."""
-    gh_client.post_comment(issue_number, HELP_TEXT)
+    """Issue 本文にコマンド一覧の折りたたみブロックを追加・更新する."""
+    issue = gh_client.fetch_issue(issue_number)
+    body = issue.get("body", "") or ""
+    new_body = gh_client.upsert_help_block(body)
+
+    if new_body == body:
+        gh_client.post_comment(issue_number, "ℹ️ ヘルプブロックは最新だったのだ。")
+        return 0
+
+    if not gh_client.update_issue_body(issue_number, new_body):
+        gh_client.post_comment(issue_number, "❌ Issue 本文の更新に失敗したのだ。")
+        return 1
+
+    gh_client.post_comment(
+        issue_number,
+        "✅ Issue 本文にコマンド一覧を追加したのだ。これからは本文末尾の折りたたみで確認できるのだ。",
+    )
     return 0
 
 

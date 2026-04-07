@@ -441,12 +441,14 @@ Issue 本文が長すぎる場合もスキップされます。
 - ロジック: `src/issue_commands.py`（共通 GitHub 操作は `src/gh_client.py`）
 - 状態管理: `data/pipeline_state.json`（events[] に時系列ログ）
 
-既存 Issue にコマンド一覧を一括投稿するには:
+既存 Issue 本文末尾にコマンド一覧の折りたたみブロックを一括追加するには:
 
 ```bash
 python scripts/post_help_to_existing_issues.py --dry-run  # 確認
-python scripts/post_help_to_existing_issues.py            # 実投稿
+python scripts/post_help_to_existing_issues.py            # 実適用
 ```
+
+冪等。マーカー `<!-- issue-commands-help-v1 -->` を見て二重追加を防ぐ。
 
 ## 今後の拡張
 
