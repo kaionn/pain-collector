@@ -242,7 +242,16 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
         lines.append(f"## ソース\n")
         lines.append(f"[{source_title}]({source_url})\n")
 
-    lines.append(f"---\n📅 {date_str}")
+    lines.append(f"---\n📅 {date_str}\n")
+    lines.append("## 🎮 コマンド\n")
+    lines.append("オーナー専用。コメントに以下を投稿:\n")
+    lines.append("| コマンド | 動作 |")
+    lines.append("|---------|------|")
+    lines.append("| `/pick` | MVP 候補として picked に追加 |")
+    lines.append("| `/spec` | Issue 本文から技術 Spec を生成（未 pick なら自動 pick） |")
+    lines.append("| `/status` | picked / spec / deep_dive の現状を返答 |")
+    lines.append("| `/approve` | Spec 生成後、mvp-factory で自動実装を開始 |")
+    lines.append("| `/reject` | picked から削除 |")
 
     body = "\n".join(lines)
     title = f"[{category}] {pain_text[:80]}"

@@ -135,6 +135,37 @@ def generate_spec_from_deep_dive(deep_dive_path: str) -> str | None:
     return spec_path
 
 
+def generate_spec_from_issue(issue_number: int, title: str, body: str) -> str | None:
+    """Issue のタイトル/本文から直接 Spec を生成して保存する.
+
+    Deep Dive レポートが無い Issue に対して、軽量な Spec を生成するための fallback。
+    """
+    logger.info(f"Spec 生成 (Issue #{issue_number}): {title}")
+
+    user_prompt = (
+        f"以下のペイン Issue から技術 Spec を生成してください。\n\n"
+        f"# Issue #{issue_number}: {title}\n\n{body}"
+    )
+
+    try:
+        spec_content = _call_llm(SPEC_PROMPT, user_prompt)
+    except Exception as e:
+        logger.error(f"Spec 生成失敗: {e}")
+        return None
+
+    spec_dir = os.path.join(BASE_DIR, "specs")
+    os.makedirs(spec_dir, exist_ok=True)
+    spec_path = os.path.join(spec_dir, f"issue-{issue_number}-spec.md")
+
+    report = f"# Technical Spec: {title}\n\n_Source: Issue #{issue_number}_\n\n{spec_content}"
+
+    with open(spec_path, "w", encoding="utf-8") as f:
+        f.write(report)
+
+    logger.info(f"Spec を保存: {spec_path}")
+    return spec_path
+
+
 def run_for_latest(date_str: str) -> None:
     """指定日の Deep Dive レポートから Spec を生成する."""
     deep_dive_dir = os.path.join(BASE_DIR, "deep_dive")

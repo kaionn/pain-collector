@@ -1,0 +1,103 @@
+name: Issue Commands
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  dispatch:
+    # /pick /spec /status /reject のいずれか かつ pain-report ラベル付き Issue のみ
+    if: |
+      contains(github.event.issue.labels.*.name, 'pain-report') &&
+      (
+        github.event.comment.body == '/pick' ||
+        github.event.comment.body == '/spec' ||
+        github.event.comment.body == '/status' ||
+        github.event.comment.body == '/reject'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate actor
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          COMMENTER="${{ github.event.comment.user.login }}"
+          OWNER=$(gh repo view --json owner -q '.owner.login')
+          if [ "$COMMENTER" != "$OWNER" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ リポジトリオーナーのみ実行できます。"
+            exit 1
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Parse command
+        id: parse
+        run: |
+          BODY="${{ github.event.comment.body }}"
+          ACTION="${BODY#/}"
+          echo "action=$ACTION" >> "$GITHUB_OUTPUT"
+
+      - name: Execute command
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m src.issue_commands \
+            --action "${{ steps.parse.outputs.action }}" \
+            --issue "${{ github.event.issue.number }}"
+
+      - name: Commit pipeline_state.json
+        if: steps.parse.outputs.action != 'status'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! git diff --quiet data/ specs/ 2>/dev/null; then
+            EXISTING_SHA=$(gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" --jq '.sha' 2>/dev/null || echo "")
+            UPDATED_CONTENT=$(base64 -w 0 < data/pipeline_state.json)
+            ACTION="${{ steps.parse.outputs.action }}"
+            ISSUE="${{ github.event.issue.number }}"
+
+            if [ -n "$EXISTING_SHA" ]; then
+              gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+                -X PUT \
+                -f message="pipeline: /$ACTION #$ISSUE" \
+                -f content="$UPDATED_CONTENT" \
+                -f sha="$EXISTING_SHA" > /dev/null
+            else
+              gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+                -X PUT \
+                -f message="pipeline: /$ACTION #$ISSUE" \
+                -f content="$UPDATED_CONTENT" > /dev/null
+            fi
+
+            # Spec ファイルがあれば一緒にコミット
+            for spec in specs/issue-${ISSUE}-spec.md; do
+              if [ -f "$spec" ]; then
+                SPEC_SHA=$(gh api "repos/${{ github.repository }}/contents/$spec" --jq '.sha' 2>/dev/null || echo "")
+                SPEC_CONTENT=$(base64 -w 0 < "$spec")
+                if [ -n "$SPEC_SHA" ]; then
+                  gh api "repos/${{ github.repository }}/contents/$spec" \
+                    -X PUT \
+                    -f message="spec: /$ACTION #$ISSUE" \
+                    -f content="$SPEC_CONTENT" \
+                    -f sha="$SPEC_SHA" > /dev/null
+                else
+                  gh api "repos/${{ github.repository }}/contents/$spec" \
+                    -X PUT \
+                    -f message="spec: /$ACTION #$ISSUE" \
+                    -f content="$SPEC_CONTENT" > /dev/null
+                fi
+              fi
+            done
+          fi
