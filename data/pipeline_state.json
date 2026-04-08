@@ -13,7 +13,7 @@
       "picked_at": "2026-04-09T07:34:18.237370+09:00",
       "spec": "specs/issue-97-spec.md",
       "deep_dive": null,
-      "status": "spec-ready",
+      "status": "building",
       "source": "issue-command",
       "events": [
         {
