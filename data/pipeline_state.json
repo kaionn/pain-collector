@@ -11,9 +11,9 @@
       "issue_number": 97,
       "title": "[食事・料理] 自炊のモチベーションが低下しており、コンビニ飯に飽きているが、自分で料理を作る気力がない。特に最近のコンビニ弁当が高すぎると感じている。",
       "picked_at": "2026-04-09T07:34:18.237370+09:00",
-      "spec": null,
+      "spec": "specs/issue-97-spec.md",
       "deep_dive": null,
-      "status": "picked",
+      "status": "spec-ready",
       "source": "issue-command",
       "events": [
         {
@@ -21,6 +21,14 @@
           "at": "2026-04-09T07:34:18.237388+09:00",
           "payload": {
             "by": "issue-command"
+          }
+        },
+        {
+          "action": "spec",
+          "at": "2026-04-09T07:37:18.580435+09:00",
+          "payload": {
+            "path": "specs/issue-97-spec.md",
+            "force": false
           }
         }
       ]
