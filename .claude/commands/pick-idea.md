@@ -1,16 +1,20 @@
 # パッと作れそうなアイデアを選定する
 
-GitHub Project からペインレポートを取得し、個人開発者が短期間で MVP を作れそうなアイデアを候補として提示する。
+GitHub Issue（pain-report ラベル）からペインレポートを取得し、個人開発者が短期間で MVP を作れそうなアイデアを候補として提示する。
 
 ## 手順
 
-### 1. GitHub Project からデータ取得
+### 1. GitHub Issue からデータ取得
 
-以下のコマンドで Todo ステータスのアイテムを取得する:
+以下のコマンドで pain-report ラベル付きの open Issue を取得する:
 
 ```bash
-gh project item-list 1 --owner kaionn --format json --limit 100
+gh issue list --repo kaionn/pain-collector \
+  --label pain-report --state open --limit 100 \
+  --json number,title,body,labels,url
 ```
+
+`📌picked` / `building` ラベルが付いている Issue は既に進行中なので除外する。
 
 ### 2. 選定基準
 
@@ -28,7 +32,7 @@ gh project item-list 1 --owner kaionn --format json --limit 100
 
 以下に該当するアイテムは除外する:
 
-- Status が `Done` または `In Progress` のもの
+- `📌picked` / `building` / `📐spec-ready` ラベルが付いているもの（進行中）
 - ハードウェア依存や規制が絡むもの（IoT デバイス、医療、金融規制など）
 - プラットフォーム依存が強すぎるもの（特定 OS のネイティブアプリ必須など）
 

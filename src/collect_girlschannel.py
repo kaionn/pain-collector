@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 
 TOP_URL = "https://girlschannel.net/"
 
-# 新着・ランキングページ
+# 新着・ランキングページ（生活系ペイン取得量を増やすためページ 2 まで取得）
 PAGES = {
     "新着": "https://girlschannel.net/new/",
+    "新着p2": "https://girlschannel.net/new/2/",
     "ランキング": "https://girlschannel.net/rank/",
+    "ランキングp2": "https://girlschannel.net/rank/2/",
 }
 
 _session = create_retry_session()

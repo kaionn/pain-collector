@@ -16,6 +16,10 @@ BATCH_SIZE = 20
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# 生活相談系ソース。一般のペイン抽出プロンプトでは「料理の腕に自信がない」等の
+# 抽象的な悩みが弾かれてしまうため、専用プロンプトで拾い直す。
+LIFESTYLE_SOURCES = {"komachi", "mamastar", "girlschannel", "chiebukuro"}
+
 SYSTEM_PROMPT = """\
 あなたはユーザーの日常的な不満や困りごと（ペイン）を抽出するアナリストです。
 
@@ -91,10 +95,56 @@ willingness_to_pay の判断基準:
 - JSON 配列のみを出力する。説明文やコードブロック記法は不要
 """
 
+LIFESTYLE_SYSTEM_PROMPT = """\
+あなたは家庭・育児・人間関係・お金・健康など、日常生活の困りごと（ペイン）を抽出する
+ライフスタイル系アナリストです。投稿元は発言小町・ママスタ・ガールズちゃんねる・知恵袋など
+一般生活者の相談・愚痴サイトです。
 
-def _build_system_prompt() -> str:
+以下の点を強く意識してください:
+- 投稿者の多くは非エンジニアです。テクノロジー系のペインに無理に変換しないでください。
+- 生活シーンに根ざした「ちょっとした不便」も積極的に拾ってください
+  （例: 子どもの送迎調整、夫婦の家計分担、義実家との連絡、献立決め、近所付き合い、推し活の管理）
+- 抽象的に見えても、生活シーン+対象を具体化できるなら抽出してください
+  （例: 「料理がしんどい」→「平日夜の献立決めに毎日 30 分悩んでいる」）
+- 「テクノロジー」カテゴリは避け、できる限り 子育て・育児 / 食事・料理 / お金・家計 /
+  人間関係 / 住まい・暮らし / 健康・体調 / 移動・通勤 / 仕事・キャリア / 趣味・娯楽 のいずれかに分類してください。
+- product_type は「モバイルアプリ」「Webサービス」を優先し、「CLI・開発ツール」は基本選ばないでください。
+
+出力形式・フィールドは標準プロンプトと同じです。以下の JSON 配列のみを返してください:
+
+[
+  {
+    "pain": "ペインの要約（1-2文）",
+    "category": "子育て・育児 | 食事・料理 | お金・家計 | 仕事・キャリア | 人間関係 | 健康・体調 | 住まい・暮らし | 移動・通勤 | 学習・スキル | 生き方・価値観 | 趣味・娯楽 | その他",
+    "product_type": "モバイルアプリ | Webサービス | ブラウザ拡張 | API・SaaS | その他",
+    "target_user": "ペルソナ",
+    "frequency": "daily | weekly | monthly | one-time",
+    "willingness_to_pay": "free | low | medium | high",
+    "severity": 1-5の整数,
+    "existing_solutions": "あれば記載、なければ null",
+    "app_idea": "解決アイデア（1文）",
+    "source_title": "元の投稿タイトル",
+    "source_url": "元の投稿URL"
+  }
+]
+
+ルール:
+- 個人開発者が 1〜2 週間で MVP を作れるスケール感のペインを優先
+- ニュース・時事ネタ・芸能ゴシップ・政治・事件報道はスキップ
+- 単発の愚痴で再現性がない話題はスキップ
+- 「離婚すべき？」「夫が嫌い」など対人感情のみで解決策が描けないものはスキップ
+- ただし「義実家への連絡を毎週取らされて疲れる」など仕組みで軽減できるものは拾う
+- 1 投稿から複数のペインを抽出してよい
+- JSON 配列のみを出力する
+"""
+
+
+def _build_system_prompt(variant: str = "default") -> str:
     """フィードバックルールを反映した動的システムプロンプトを構築する."""
-    prompt = SYSTEM_PROMPT
+    if variant == "lifestyle":
+        prompt = LIFESTYLE_SYSTEM_PROMPT
+    else:
+        prompt = SYSTEM_PROMPT
 
     rules_path = os.path.join(BASE_DIR, "feedback_rules.json")
     if not os.path.exists(rules_path):
@@ -123,16 +173,39 @@ def _build_system_prompt() -> str:
 
 
 def extract(posts: list[dict]) -> list[dict]:
-    """投稿リストからペインを抽出する."""
+    """投稿リストからペインを抽出する.
+
+    生活相談系ソース（komachi/mamastar/girlschannel/chiebukuro）は
+    ライフスタイル特化プロンプトで別バッチ処理し、テクノロジーへの偏りを抑える。
+    """
     if not posts:
         logger.info("投稿が0件のためスキップ")
         return []
 
     token = os.environ.get("GITHUB_TOKEN", "")
-    if token:
-        pains = _extract_in_batches(posts, _call_github_models(token), "GitHub Models")
-    else:
-        pains = _extract_in_batches(posts, _call_claude, "Claude Code")
+    use_models = bool(token)
+    base_label = "GitHub Models" if use_models else "Claude Code"
+
+    lifestyle_posts = [p for p in posts if p.get("source") in LIFESTYLE_SOURCES]
+    standard_posts = [p for p in posts if p.get("source") not in LIFESTYLE_SOURCES]
+
+    pains: list[dict] = []
+
+    if standard_posts:
+        call_fn = (
+            _call_github_models(token, variant="default")
+            if use_models
+            else _call_claude_factory(variant="default")
+        )
+        pains.extend(_extract_in_batches(standard_posts, call_fn, base_label))
+
+    if lifestyle_posts:
+        call_fn = (
+            _call_github_models(token, variant="lifestyle")
+            if use_models
+            else _call_claude_factory(variant="lifestyle")
+        )
+        pains.extend(_extract_in_batches(lifestyle_posts, call_fn, f"{base_label}/lifestyle"))
 
     # 元投稿のエンゲージメント情報をペインに付与
     _attach_engagement(pains, posts)
@@ -279,7 +352,7 @@ def _save_failed_posts(posts: list[dict]) -> None:
     logger.info(f"失敗投稿を保存: {path} ({len(posts)}件追加)")
 
 
-def _call_github_models(token: str) -> Callable[[str], str]:
+def _call_github_models(token: str, variant: str = "default") -> Callable[[str], str]:
     """GitHub Models API を呼び出すコールバックを返す."""
     from openai import OpenAI
 
@@ -287,12 +360,13 @@ def _call_github_models(token: str) -> Callable[[str], str]:
         base_url="https://models.github.ai/inference",
         api_key=token,
     )
+    system_prompt = _build_system_prompt(variant)
 
     def call(batch_text: str) -> str:
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=[
-                {"role": "system", "content": _build_system_prompt()},
+                {"role": "system", "content": system_prompt},
                 {
                     "role": "user",
                     "content": f"以下の投稿からペインを抽出してください:\n\n{batch_text}",
@@ -305,24 +379,32 @@ def _call_github_models(token: str) -> Callable[[str], str]:
     return call
 
 
+# 後方互換: weekly_trends 等は extract_pains._call_claude を関数として直接使う
 def _call_claude(batch_text: str) -> str:
-    """Claude Code CLI を呼び出してペイン抽出する."""
-    prompt = (
-        f"{_build_system_prompt()}\n\n"
-        f"以下の投稿からペインを抽出してください:\n\n{batch_text}"
-    )
+    """Claude Code CLI を呼び出す（標準プロンプト・後方互換用）."""
+    return _call_claude_factory(variant="default")(batch_text)
 
-    result = subprocess.run(
-        ["claude", "-p", prompt, "--output-format", "text"],
-        capture_output=True,
-        text=True,
-        timeout=180,
-    )
 
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr[:200])
+def _call_claude_factory(variant: str = "default") -> Callable[[str], str]:
+    """Claude Code CLI 呼び出しコールバックを返す."""
+    system_prompt = _build_system_prompt(variant)
 
-    return result.stdout.strip()
+    def call(batch_text: str) -> str:
+        prompt = (
+            f"{system_prompt}\n\n"
+            f"以下の投稿からペインを抽出してください:\n\n{batch_text}"
+        )
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--output-format", "text"],
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr[:200])
+        return result.stdout.strip()
+
+    return call
 
 
 def _parse_json_response(content: str) -> list[dict]:

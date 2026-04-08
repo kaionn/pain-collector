@@ -33,6 +33,9 @@ CATEGORIES = {
 
 _session = create_retry_session()
 
+# 1 カテゴリあたり何ページ取りに行くか（生活系ペインの取得量を増やすため）
+PAGES_PER_CATEGORY = 2
+
 
 def _fetch_topics(category: str, url: str) -> list[dict]:
     """カテゴリページからトピック一覧を取得する."""
@@ -76,7 +79,12 @@ def collect() -> list[dict]:
     all_posts: list[dict] = []
 
     for i, (category, url) in enumerate(CATEGORIES.items()):
-        topics = _fetch_topics(category, url)
+        topics: list[dict] = []
+        for page in range(1, PAGES_PER_CATEGORY + 1):
+            page_url = url if page == 1 else f"{url.rstrip('/')}/page/{page}/"
+            topics.extend(_fetch_topics(category, page_url))
+            if page < PAGES_PER_CATEGORY:
+                time.sleep(0.5)
 
         filtered = []
         for t in topics:

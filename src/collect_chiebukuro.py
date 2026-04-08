@@ -26,6 +26,8 @@ CATEGORIES = {
 
 _session = create_retry_session()
 
+PAGES_PER_CATEGORY = 2
+
 
 def _fetch_questions(category: str, url: str) -> list[dict]:
     """カテゴリページから質問一覧を取得する."""
@@ -67,7 +69,12 @@ def collect() -> list[dict]:
     all_posts: list[dict] = []
 
     for i, (category, url) in enumerate(CATEGORIES.items()):
-        questions = _fetch_questions(category, url)
+        questions: list[dict] = []
+        for page in range(1, PAGES_PER_CATEGORY + 1):
+            page_url = url if page == 1 else f"{url}?page={page}"
+            questions.extend(_fetch_questions(category, page_url))
+            if page < PAGES_PER_CATEGORY:
+                time.sleep(0.5)
 
         filtered = []
         for q in questions:
