@@ -75,7 +75,7 @@ jobs:
 
       - name: Commit pipeline_state.json and specs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           # state_dirty フラグが立っている場合のみコミット
           if [ ! -f data/.state_dirty ]; then

@@ -4,3 +4,8 @@ __pycache__/
 .env
 logs/
 =7.0.0
+.claude/memory/
+.claude/sessions/
+.claude/state/
+data/
+raw/
