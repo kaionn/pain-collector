@@ -37,9 +37,9 @@
       "issue_number": 104,
       "title": "[お金・家計] Uber Eatsでの自動更新のトラブルにより、解約後も料金が引き落とされ続けている。",
       "picked_at": "2026-04-12T11:06:19.348077+09:00",
-      "spec": null,
+      "spec": "specs/issue-104-spec.md",
       "deep_dive": null,
-      "status": "picked",
+      "status": "spec-ready",
       "source": "issue-command",
       "events": [
         {
@@ -47,6 +47,14 @@
           "at": "2026-04-12T11:06:19.348096+09:00",
           "payload": {
             "by": "issue-command"
+          }
+        },
+        {
+          "action": "spec",
+          "at": "2026-04-12T11:08:07.757451+09:00",
+          "payload": {
+            "path": "specs/issue-104-spec.md",
+            "force": false
           }
         }
       ]
