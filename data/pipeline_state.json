@@ -39,7 +39,7 @@
       "picked_at": "2026-04-12T11:06:19.348077+09:00",
       "spec": "specs/issue-104-spec.md",
       "deep_dive": null,
-      "status": "spec-ready",
+      "status": "building",
       "source": "issue-command",
       "events": [
         {
