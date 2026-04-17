@@ -51,6 +51,24 @@
           }
         }
       ]
+    },
+    {
+      "issue_number": 117,
+      "title": "[お金・家計] アプリ内課金の管理ができておらず、二重払いが発生する可能性がある。",
+      "picked_at": "2026-04-18T07:59:47.338455+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "status": "picked",
+      "source": "issue-command",
+      "events": [
+        {
+          "action": "pick",
+          "at": "2026-04-18T07:59:47.338475+09:00",
+          "payload": {
+            "by": "issue-command"
+          }
+        }
+      ]
     }
   ]
 }
