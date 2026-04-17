@@ -58,7 +58,7 @@
       "picked_at": "2026-04-18T07:59:47.338455+09:00",
       "spec": "specs/issue-117-spec.md",
       "deep_dive": null,
-      "status": "spec-ready",
+      "status": "building",
       "source": "issue-command",
       "events": [
         {
@@ -84,7 +84,8 @@
             "force": true
           }
         }
-      ]
+      ],
+      "product_name": "mvp-117"
     }
   ]
 }
