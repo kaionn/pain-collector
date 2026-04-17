@@ -140,6 +140,7 @@ def cmd_pick(issue_number: int, args: list[str] | None = None) -> int:
         "picked_at": _now(),
         "spec": None,
         "deep_dive": None,
+        "product_name": None,
         "status": "picked",
         "source": "issue-command",
         "events": [],
