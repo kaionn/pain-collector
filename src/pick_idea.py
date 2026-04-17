@@ -366,6 +366,7 @@ def _update_pipeline_state(picked: list[dict], today: str) -> None:
             "picked_at": datetime.now(JST).isoformat(),
             "spec": item.get("spec"),
             "deep_dive": item.get("deep_dive"),
+            "product_name": None,
             "status": "awaiting_approval",
         })
 

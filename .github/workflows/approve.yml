@@ -84,13 +84,50 @@ jobs:
           echo "spec_file=$SPEC_FILE" >> "$GITHUB_OUTPUT"
           echo "✅ Spec found: $SPEC_FILE"
 
-      - name: Update status to building
+      - name: Resolve product name
+        id: product-name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # 既存 state に product_name が保存されていれば再利用（冪等化）
+          EXISTING=$(python3 -c "
+          import json, os
+          state_path = 'data/pipeline_state.json'
+          if not os.path.exists(state_path):
+              print('')
+              raise SystemExit
+          state = json.load(open(state_path))
+          for item in state.get('picked', []):
+              if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
+                  print(item.get('product_name') or '')
+                  raise SystemExit
+          print('')
+          ")
+
+          if [ -n "$EXISTING" ]; then
+            echo "既存の product_name を再利用: $EXISTING"
+            PRODUCT_NAME="$EXISTING"
+          else
+            TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title')
+            PRODUCT_NAME=$(python3 -m src.generate_product_name \
+              --title "$TITLE" \
+              --issue-number "$ISSUE_NUMBER")
+            echo "新規生成した product_name: $PRODUCT_NAME"
+          fi
+
+          echo "product_name=$PRODUCT_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Update state (status=building, product_name)
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PRODUCT_NAME: ${{ steps.product-name.outputs.product_name }}
         run: |
           gh issue edit "$ISSUE_NUMBER" --add-label "building"
-          gh issue comment "$ISSUE_NUMBER" --body "🚀 承認されました。自動実装を開始します..."
+          gh issue comment "$ISSUE_NUMBER" \
+            --body "🚀 承認されました。自動実装を開始します...
+          プロダクト名: \`$PRODUCT_NAME\`（リポジトリ: kaionn/$PRODUCT_NAME）"
 
           python3 -c "
           import json, os
@@ -101,6 +138,7 @@ jobs:
           for item in state.get('picked', []):
               if item['issue_number'] == int(os.environ['ISSUE_NUMBER']):
                   item['status'] = 'building'
+                  item['product_name'] = os.environ['PRODUCT_NAME']
                   break
           json.dump(state, open(state_path, 'w'), indent=2, ensure_ascii=False)
           "
@@ -112,7 +150,7 @@ jobs:
           if [ -n "$EXISTING_SHA" ]; then
             gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
               -X PUT \
-              -f message="pipeline: #$ISSUE_NUMBER のステータスを building に更新" \
+              -f message="pipeline: #$ISSUE_NUMBER を building に更新 (product=$PRODUCT_NAME)" \
               -f content="$UPDATED_CONTENT" \
               -f sha="$EXISTING_SHA" \
               > /dev/null
@@ -120,7 +158,7 @@ jobs:
           else
             gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
               -X PUT \
-              -f message="pipeline: #$ISSUE_NUMBER のステータスを building に更新" \
+              -f message="pipeline: #$ISSUE_NUMBER を building に更新 (product=$PRODUCT_NAME)" \
               -f content="$UPDATED_CONTENT" \
               > /dev/null
             echo "✅ pipeline_state.json を作成しました"
@@ -130,6 +168,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PRODUCT_NAME: ${{ steps.product-name.outputs.product_name }}
         run: |
           # Spec ファイルの内容を base64 エンコードして渡す
           SPEC_CONTENT=$(base64 < "${{ steps.validate-spec.outputs.spec_file }}")
@@ -149,24 +188,6 @@ jobs:
           if [ -n "$DEEP_DIVE_PATH" ] && [ -f "$DEEP_DIVE_PATH" ]; then
             DEEP_DIVE_CONTENT=$(base64 < "$DEEP_DIVE_PATH")
           fi
-
-          # Issue タイトルからプロダクト名を生成（LLM で英語ケバブケースに変換）
-          TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title')
-          PRODUCT_NAME=$(python3 -c "
-          import subprocess, re
-          title = '''$TITLE'''
-          # LLM でタイトルを英語ケバブケースに変換
-          result = subprocess.run(
-              ['gh', 'models', 'run', 'openai/gpt-4o-mini', '--',
-               f'Convert this to a short English kebab-case product name (max 30 chars, only lowercase letters and hyphens, no explanation): {title}'],
-              capture_output=True, text=True, timeout=30
-          )
-          name = result.stdout.strip().lower().replace(' ', '-')
-          name = re.sub(r'[^a-z0-9-]', '', name).strip('-')[:30]
-          if not name or name == '-':
-              name = f'mvp-{$ISSUE_NUMBER}'
-          print(name)
-          ")
 
           gh workflow run build.yml \
             --repo kaionn/mvp-factory \
