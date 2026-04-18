@@ -247,11 +247,20 @@ class TestEnsureSpecExists:
 
     @patch("src.generate_spec.generate_spec_from_deep_dive", return_value="specs/new-spec.md")
     def test_generates_spec_from_deep_dive(self, mock_gen):
-        issue = {"number": 1, "spec": None, "deep_dive": "deep_dive/test.md"}
+        issue = {
+            "number": 1,
+            "title": "テストタイトル",
+            "spec": None,
+            "deep_dive": "deep_dive/test.md",
+        }
 
         result = _ensure_spec_exists(issue)
         assert result == "specs/new-spec.md"
-        mock_gen.assert_called_once_with("deep_dive/test.md")
+        mock_gen.assert_called_once_with(
+            "deep_dive/test.md",
+            issue_number=1,
+            title="テストタイトル",
+        )
 
     def test_skips_when_no_deep_dive(self):
         issue = {"number": 1, "spec": None, "deep_dive": None}

@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kaionn/pain-collector/blob/main/specs/schema.json",
+  "title": "pain-collector Spec Schema",
+  "description": "pain-collector が生成し mvp-factory が消費する Technical Spec の Front Matter スキーマ (v1)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "product_name",
+    "source_issue",
+    "title",
+    "tech_stack",
+    "data_model",
+    "api_endpoints",
+    "mvp_scope",
+    "success_metrics",
+    "deployment_target"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "product_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,38}[a-z0-9]$",
+      "description": "kebab-case のリポジトリ名識別子 (3-40 文字)"
+    },
+    "source_issue": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "tech_stack": {
+      "type": "object",
+      "required": ["frontend", "backend", "database", "infrastructure"],
+      "additionalProperties": false,
+      "properties": {
+        "frontend": { "type": "string", "minLength": 1 },
+        "backend": { "type": "string", "minLength": 1 },
+        "database": { "type": "string", "minLength": 1 },
+        "infrastructure": { "type": "string", "minLength": 1 }
+      }
+    },
+    "data_model": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["entity", "fields"],
+        "additionalProperties": false,
+        "properties": {
+          "entity": { "type": "string", "minLength": 1 },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "relations": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "api_endpoints": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["method", "path", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/.*"
+          },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "mvp_scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "success_metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kpi", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "kpi": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "deployment_target": {
+      "type": "string",
+      "enum": ["vercel", "github-pages", "cloudflare-pages"]
+    }
+  }
+}
