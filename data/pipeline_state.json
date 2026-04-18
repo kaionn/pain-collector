@@ -83,9 +83,18 @@
             "path": "specs/issue-117-spec.md",
             "force": true
           }
+        },
+        {
+          "action": "rename",
+          "at": "2026-04-18T13:34:42.148125+09:00",
+          "payload": {
+            "from": "mvp-117",
+            "to": "subscription-guard",
+            "reason": "LLM による命名失敗（gh models 拡張未インストール）のフォールバックを手動リネームで修正"
+          }
         }
       ],
-      "product_name": "mvp-117"
+      "product_name": "subscription-guard"
     }
   ]
 }
