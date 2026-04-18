@@ -199,7 +199,11 @@ def cmd_spec(issue_number: int, args: list[str] | None = None) -> int:
     # Deep Dive があればそれ経由、無ければ Issue 本文から直接生成
     deep_dive_abs = _resolve_path(entry.get("deep_dive"))
     if deep_dive_abs and os.path.exists(deep_dive_abs):
-        spec_path = generate_spec.generate_spec_from_deep_dive(deep_dive_abs)
+        spec_path = generate_spec.generate_spec_from_deep_dive(
+            deep_dive_abs,
+            issue_number=issue_number,
+            title=title,
+        )
     else:
         spec_path = generate_spec.generate_spec_from_issue(issue_number, title, body)
 

@@ -176,7 +176,11 @@ def _ensure_spec_exists(issue: dict) -> str | None:
 
     if issue.get("deep_dive"):
         logger.info(f"Issue #{issue['number']}: Deep Dive から Spec を生成中...")
-        return generate_spec.generate_spec_from_deep_dive(issue["deep_dive"])
+        return generate_spec.generate_spec_from_deep_dive(
+            issue["deep_dive"],
+            issue_number=issue.get("number"),
+            title=issue.get("title"),
+        )
 
     # Deep Dive もない場合は生成をスキップ（pains データがないため）
     logger.info(f"Issue #{issue['number']}: Deep Dive が存在しないため Spec 生成をスキップ")
