@@ -1,8 +1,7 @@
 """generate_product_name.py の純粋ロジックのユニットテスト.
 
-gh models run 呼び出し（subprocess）はモックせず、抽出・サニタイズ・
-妥当性検査の純粋関数のみ検証する。generate() 自体は _call_gh_models を
-monkeypatch して振る舞いを確認する。
+LLM 呼び出し（``_call_llm``）は monkeypatch でモックし、抽出・サニタイズ・
+妥当性検査・fallback の振る舞いを検証する。
 """
 
 from __future__ import annotations
@@ -54,7 +53,6 @@ class TestSanitize:
         assert len(gpn._sanitize(long)) == gpn.MAX_LENGTH
 
     def test_trailing_hyphen_after_truncation_is_stripped(self):
-        # 29 文字 + "-x" だと 30 文字目がハイフンになるケースの保険
         name = "abcdefghijklmnopqrstuvwxyz12-xyz"
         result = gpn._sanitize(name)
         assert not result.endswith("-")
@@ -80,42 +78,45 @@ class TestIsValid:
 
 class TestGenerate:
     def test_uses_llm_output_when_valid(self, monkeypatch):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: "subscription-cancel-tracker")
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: "subscription-cancel-tracker")
         assert gpn.generate("解約管理", issue_number=42) == "subscription-cancel-tracker"
 
     def test_fallback_when_llm_returns_none(self, monkeypatch):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: None)
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: None)
         assert gpn.generate("anything", issue_number=104) == "mvp-104"
 
     def test_fallback_when_llm_returns_banned_word(self, monkeypatch):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: "app")
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: "app")
         assert gpn.generate("anything", issue_number=97) == "mvp-97"
 
     def test_fallback_when_llm_returns_only_japanese(self, monkeypatch):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: "アプリ")
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: "アプリ")
         assert gpn.generate("anything", issue_number=50) == "mvp-50"
 
     def test_extracts_from_llm_explanation(self, monkeypatch):
         monkeypatch.setattr(
             gpn,
-            "_call_gh_models",
+            "_call_llm",
             lambda title, timeout=30: "Sure, here's a good name:\nfood-delivery-refund",
         )
         assert gpn.generate("Uber Eats 返金", issue_number=104) == "food-delivery-refund"
 
 
-class TestCallGhModels:
+class TestCallLlmFallbackCli:
+    """GITHUB_TOKEN が無い環境で claude CLI にフォールバックする経路のテスト."""
+
+    @pytest.fixture(autouse=True)
+    def clear_token(self, monkeypatch):
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
     def test_returncode_non_zero_returns_none(self, monkeypatch):
         class FakeResult:
             returncode = 1
             stdout = ""
             stderr = "auth error"
 
-        def fake_run(*args, **kwargs):
-            return FakeResult()
-
-        monkeypatch.setattr(gpn.subprocess, "run", fake_run)
-        assert gpn._call_gh_models("title") is None
+        monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
+        assert gpn._call_llm("title") is None
 
     def test_empty_stdout_returns_none(self, monkeypatch):
         class FakeResult:
@@ -124,21 +125,21 @@ class TestCallGhModels:
             stderr = ""
 
         monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
-        assert gpn._call_gh_models("title") is None
+        assert gpn._call_llm("title") is None
 
     def test_timeout_returns_none(self, monkeypatch):
         def raise_timeout(*args, **kwargs):
-            raise gpn.subprocess.TimeoutExpired(cmd="gh", timeout=30)
+            raise gpn.subprocess.TimeoutExpired(cmd="claude", timeout=30)
 
         monkeypatch.setattr(gpn.subprocess, "run", raise_timeout)
-        assert gpn._call_gh_models("title") is None
+        assert gpn._call_llm("title") is None
 
-    def test_gh_not_found_returns_none(self, monkeypatch):
+    def test_cli_not_found_returns_none(self, monkeypatch):
         def raise_fnf(*args, **kwargs):
-            raise FileNotFoundError("gh")
+            raise FileNotFoundError("claude")
 
         monkeypatch.setattr(gpn.subprocess, "run", raise_fnf)
-        assert gpn._call_gh_models("title") is None
+        assert gpn._call_llm("title") is None
 
     def test_success_returns_stdout_stripped(self, monkeypatch):
         class FakeResult:
@@ -147,19 +148,108 @@ class TestCallGhModels:
             stderr = ""
 
         monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
-        assert gpn._call_gh_models("title") == "food-delivery-refund"
+        assert gpn._call_llm("title") == "food-delivery-refund"
+
+
+class TestCallLlmGitHubModels:
+    """GITHUB_TOKEN がある環境で GitHub Models Inference API を使う経路のテスト."""
+
+    @pytest.fixture(autouse=True)
+    def set_token(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
+
+    def test_success_returns_content(self, monkeypatch):
+        class FakeMessage:
+            content = "  subscription-cancel-tracker  "
+
+        class FakeChoice:
+            message = FakeMessage()
+
+        class FakeResponse:
+            choices = [FakeChoice()]
+
+        class FakeCompletions:
+            def create(self, **kwargs):
+                return FakeResponse()
+
+        class FakeChat:
+            completions = FakeCompletions()
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = FakeChat()
+
+        import sys
+        import types
+
+        fake_openai = types.ModuleType("openai")
+        fake_openai.OpenAI = FakeClient
+        monkeypatch.setitem(sys.modules, "openai", fake_openai)
+
+        assert gpn._call_llm("解約管理") == "subscription-cancel-tracker"
+
+    def test_empty_content_returns_none(self, monkeypatch):
+        class FakeMessage:
+            content = ""
+
+        class FakeChoice:
+            message = FakeMessage()
+
+        class FakeResponse:
+            choices = [FakeChoice()]
+
+        class FakeCompletions:
+            def create(self, **kwargs):
+                return FakeResponse()
+
+        class FakeChat:
+            completions = FakeCompletions()
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = FakeChat()
+
+        import sys
+        import types
+
+        fake_openai = types.ModuleType("openai")
+        fake_openai.OpenAI = FakeClient
+        monkeypatch.setitem(sys.modules, "openai", fake_openai)
+
+        assert gpn._call_llm("title") is None
+
+    def test_api_error_returns_none(self, monkeypatch):
+        class FakeCompletions:
+            def create(self, **kwargs):
+                raise RuntimeError("API down")
+
+        class FakeChat:
+            completions = FakeCompletions()
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = FakeChat()
+
+        import sys
+        import types
+
+        fake_openai = types.ModuleType("openai")
+        fake_openai.OpenAI = FakeClient
+        monkeypatch.setitem(sys.modules, "openai", fake_openai)
+
+        assert gpn._call_llm("title") is None
 
 
 class TestCli:
     def test_main_prints_generated_name(self, monkeypatch, capsys):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: "subscription-cancel-tracker")
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: "subscription-cancel-tracker")
         rc = gpn.main(["--title", "Uber Eats 解約", "--issue-number", "104"])
         assert rc == 0
         captured = capsys.readouterr()
         assert captured.out.strip() == "subscription-cancel-tracker"
 
     def test_main_prints_fallback_on_failure(self, monkeypatch, capsys):
-        monkeypatch.setattr(gpn, "_call_gh_models", lambda title, timeout=30: None)
+        monkeypatch.setattr(gpn, "_call_llm", lambda title, timeout=30: None)
         rc = gpn.main(["--title", "something", "--issue-number", "104"])
         assert rc == 0
         captured = capsys.readouterr()
