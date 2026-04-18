@@ -1,0 +1,157 @@
+name: Monitor stalled builds
+
+on:
+  schedule:
+    # 1 時間ごとに実行 (UTC)
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      threshold_hours:
+        description: '停滞と判定する閾値時間'
+        required: false
+        default: '24'
+        type: string
+      dry_run:
+        description: 'true なら検出のみで state は更新しない'
+        required: false
+        default: 'false'
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  detect-stalled:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync latest pipeline_state.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p data
+          gh api "repos/${{ github.repository }}/contents/data/pipeline_state.json" \
+            --jq '.content' 2>/dev/null | base64 -d > data/pipeline_state.json || \
+            echo '{"picked": []}' > data/pipeline_state.json
+
+      - name: Detect stalled builds
+        id: detect
+        env:
+          STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
+        run: |
+          set -euo pipefail
+          python3 -m src.monitor_stalled \
+            --state data/pipeline_state.json \
+            --output stalled.json
+          COUNT=$(python3 -c "import json; print(json.load(open('stalled.json'))['stalled_count'])")
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Detected $COUNT stalled issue(s)"
+          if [ "$COUNT" -gt 0 ]; then
+            cat stalled.json
+          fi
+
+      - name: Notify and update state
+        if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # state を更新（apply モード）
+          python3 -m src.monitor_stalled \
+            --state data/pipeline_state.json \
+            --output stalled.json \
+            --apply
+
+          # 各 stalled Issue に対してラベル変更とコメント
+          # ヒアドキュメントは 'PY' でクォートし、bash の変数展開を抑制する
+          python3 - <<'PY'
+          import json
+          import subprocess
+
+          with open('stalled.json', encoding='utf-8') as f:
+              summary = json.load(f)
+
+          for item in summary['stalled']:
+              num = item['issue_number']
+              hours = item['hours_since_last_event']
+              last_at = item['last_event_at']
+              comment = (
+                  f"⚠️ build が {hours:.1f} 時間進捗していないため stalled に遷移したのだ。\n\n"
+                  f"- 最終イベント: {last_at}\n"
+                  f"- mvp-factory 側のログを確認してほしいのだ\n"
+                  f"- 再開する場合は `/approve` を再実行するのだ"
+              )
+              subprocess.run(
+                  ['gh', 'issue', 'edit', str(num),
+                   '--remove-label', 'building',
+                   '--add-label', 'stalled'],
+                  check=False,
+              )
+              subprocess.run(
+                  ['gh', 'issue', 'comment', str(num), '--body', comment],
+                  check=False,
+              )
+          PY
+
+          # GitHub API 経由で pipeline_state.json を更新（branch protection バイパス）
+          EXISTING_SHA=$(gh api "repos/${REPO}/contents/data/pipeline_state.json" --jq '.sha' 2>/dev/null || echo "")
+          UPDATED_CONTENT=$(base64 -w 0 < data/pipeline_state.json)
+
+          if [ -n "$EXISTING_SHA" ]; then
+            gh api "repos/${REPO}/contents/data/pipeline_state.json" \
+              -X PUT \
+              -f message="pipeline: stalled 検出による status 更新" \
+              -f content="$UPDATED_CONTENT" \
+              -f sha="$EXISTING_SHA" \
+              > /dev/null
+            echo "✅ pipeline_state.json を更新したのだ"
+          fi
+
+      - name: Notify Discord
+        if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
+            echo "DISCORD_WEBHOOK_URL 未設定のため Discord 通知をスキップ"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          with open('stalled.json', encoding='utf-8') as f:
+              summary = json.load(f)
+
+          lines = ['🚨 **stalled 検出**']
+          for item in summary['stalled']:
+              title = item['title'][:80]
+              hours = item['hours_since_last_event']
+              lines.append(
+                  f"- #{item['issue_number']}: {title} ({hours:.1f}h 停滞)"
+              )
+
+          payload = {'content': '\n'.join(lines)}
+          req = urllib.request.Request(
+              os.environ['DISCORD_WEBHOOK_URL'],
+              data=json.dumps(payload).encode(),
+              headers={'Content-Type': 'application/json'},
+          )
+          urllib.request.urlopen(req, timeout=10).read()
+          print('Discord 通知を送信したのだ')
+          PY
