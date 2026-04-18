@@ -48,16 +48,52 @@ HELP_TEXT = gh_client.HELP_BLOCK
 # ---------------------------------------------------------------------------
 
 def _load_state() -> dict:
+    """pipeline_state.json をロードする.
+
+    ファイルが存在しない、または JSON パース失敗時は空 state にフォールバックする。
+    """
     if not os.path.exists(PIPELINE_STATE_PATH):
         return {"picked": []}
-    with open(PIPELINE_STATE_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(PIPELINE_STATE_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as exc:
+        logger = logging.getLogger(__name__)
+        logger.error(
+            "pipeline_state.json のパースに失敗（空 state にフォールバック）: %s", exc
+        )
+        return {"picked": []}
 
 
 def _save_state(state: dict) -> None:
-    os.makedirs(os.path.dirname(PIPELINE_STATE_PATH), exist_ok=True)
-    with open(PIPELINE_STATE_PATH, "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2, ensure_ascii=False)
+    """pipeline_state.json を atomic に書き込む.
+
+    write-to-tmp + os.replace で、書き込み中のクラッシュや並行 read による
+    部分書き込みファイル参照を防ぐ。同一プロセスの並行書き込みでも tmp ファイル名が
+    衝突しないよう ``tempfile.mkstemp`` で unique 名を生成する。
+    """
+    import tempfile
+
+    state_dir = os.path.dirname(PIPELINE_STATE_PATH)
+    os.makedirs(state_dir, exist_ok=True)
+    base_name = os.path.basename(PIPELINE_STATE_PATH)
+
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        dir=state_dir,
+        prefix=f"{base_name}.tmp.",
+    )
+    try:
+        with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, PIPELINE_STATE_PATH)
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
     # ワークフローに「state を書き換えた」と通知
     with open(STATE_DIRTY_FLAG, "w") as f:
         f.write("1")
