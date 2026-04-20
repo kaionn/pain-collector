@@ -6,7 +6,7 @@
       "picked_at": "2026-04-09T07:34:18.237370+09:00",
       "spec": "specs/issue-97-spec.md",
       "deep_dive": null,
-      "status": "building",
+      "status": "stalled",
       "source": "issue-command",
       "events": [
         {
@@ -22,6 +22,13 @@
           "payload": {
             "path": "specs/issue-97-spec.md",
             "force": false
+          }
+        },
+        {
+          "action": "stalled",
+          "at": "2026-04-20T23:12:35.834483+00:00",
+          "payload": {
+            "reason": "building が閾値時間を超過"
           }
         }
       ]
@@ -58,7 +65,7 @@
       "picked_at": "2026-04-18T07:59:47.338455+09:00",
       "spec": "specs/issue-117-spec.md",
       "deep_dive": null,
-      "status": "building",
+      "status": "stalled",
       "source": "issue-command",
       "events": [
         {
@@ -91,6 +98,13 @@
             "from": "mvp-117",
             "to": "subscription-guard",
             "reason": "LLM による命名失敗（gh models 拡張未インストール）のフォールバックを手動リネームで修正"
+          }
+        },
+        {
+          "action": "stalled",
+          "at": "2026-04-20T23:12:35.834483+00:00",
+          "payload": {
+            "reason": "building が閾値時間を超過"
           }
         }
       ],
