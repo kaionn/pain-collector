@@ -63,7 +63,8 @@ jobs:
       - name: Notify and update state
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # contents API PUT は Branch Protection をバイパスするため PAT_TOKEN が必要
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
           REPO: ${{ github.repository }}
         run: |
