@@ -4,9 +4,19 @@
 TF-IDF による重複検出の純粋ロジックのみをテストする。
 """
 
+import json
+
 import pytest
 
-from src.notify import DUPLICATE_THRESHOLD_HIGH, DUPLICATE_THRESHOLD_LOW, _find_duplicate
+from src.notify import (
+    DUPLICATE_THRESHOLD_HIGH,
+    DUPLICATE_THRESHOLD_LOW,
+    REJECTED_LOOKBACK_DAYS,
+    _filter_rejected_issues,
+    _find_duplicate,
+    _record_dedup_metrics,
+    _record_skipped_pain,
+)
 
 
 class TestFindDuplicate:
@@ -100,3 +110,221 @@ class TestFindDuplicate:
         result = _find_duplicate(pain_text, existing)
         assert result is not None
         assert result["number"] == 5
+
+    def test_match_kind_open_propagated(self):
+        """open issue にマッチした場合、_match_kind が open として返る."""
+        existing = [
+            {"number": 1, "title": "毎日の家計管理が面倒で自動化したい", "_match_kind": "open"},
+        ]
+        result = _find_duplicate("毎日の家計管理が面倒で自動化したい", existing)
+        assert result is not None
+        assert result["number"] == 1
+        assert result.get("_match_kind") == "open"
+
+    def test_match_kind_rejected_propagated(self):
+        """rejected issue にマッチした場合、_match_kind が rejected として返る."""
+        existing = [
+            {"number": 99, "title": "全く関係ない別の話題", "_match_kind": "open"},
+            {"number": 100, "title": "毎日の家計管理が面倒で自動化したい", "_match_kind": "rejected"},
+        ]
+        result = _find_duplicate("毎日の家計管理が面倒で自動化したい", existing)
+        assert result is not None
+        assert result["number"] == 100
+        assert result.get("_match_kind") == "rejected"
+
+    def test_match_kind_default_open_when_missing(self):
+        """_match_kind が dict にない場合は補完されない（後方互換）.
+
+        既存呼び出し側は _match_kind を付けずに dict を渡すケースがある（テスト等）。
+        _find_duplicate は受け取った dict をそのまま返すだけで、kind の補完はしない。
+        呼び出し側が `.get("_match_kind", "open")` で補完する想定。
+        """
+        existing = [
+            {"number": 1, "title": "毎日の家計管理が面倒で自動化したい"},
+        ]
+        result = _find_duplicate("毎日の家計管理が面倒で自動化したい", existing)
+        assert result is not None
+        # _match_kind がない dict が返ったときは呼び出し側が "open" 扱い
+        assert result.get("_match_kind", "open") == "open"
+
+
+class TestFilterRejectedIssues:
+    """_filter_rejected_issues のテスト.
+
+    closedAt が cutoff 日数以内、かつ stateReason=NOT_PLANNED または
+    rejected ラベル付きの issue だけを返すこと。
+    """
+
+    def test_not_planned_within_window_included(self):
+        """NOT_PLANNED で直近の close は含める."""
+        from datetime import datetime, timedelta, timezone
+
+        recent = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat().replace("+00:00", "Z")
+        issues = [
+            {
+                "number": 1,
+                "title": "foo",
+                "closedAt": recent,
+                "stateReason": "NOT_PLANNED",
+                "labels": [],
+            },
+        ]
+        result = _filter_rejected_issues(issues)
+        assert len(result) == 1
+        assert result[0]["number"] == 1
+
+    def test_completed_without_rejected_label_excluded(self):
+        """COMPLETED で rejected ラベルなしは含めない（done の作業は再起票許可）."""
+        from datetime import datetime, timedelta, timezone
+
+        recent = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat().replace("+00:00", "Z")
+        issues = [
+            {
+                "number": 1,
+                "title": "foo",
+                "closedAt": recent,
+                "stateReason": "COMPLETED",
+                "labels": [{"name": "pain-report"}],
+            },
+        ]
+        result = _filter_rejected_issues(issues)
+        assert result == []
+
+    def test_completed_with_rejected_label_included(self):
+        """COMPLETED でも rejected ラベル付きは含める（手動却下対策）."""
+        from datetime import datetime, timedelta, timezone
+
+        recent = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat().replace("+00:00", "Z")
+        issues = [
+            {
+                "number": 2,
+                "title": "bar",
+                "closedAt": recent,
+                "stateReason": "COMPLETED",
+                "labels": [{"name": "rejected"}],
+            },
+        ]
+        result = _filter_rejected_issues(issues)
+        assert len(result) == 1
+        assert result[0]["number"] == 2
+
+    def test_outside_lookback_window_excluded(self):
+        """cutoff より古い close は除外する."""
+        from datetime import datetime, timedelta, timezone
+
+        old = (
+            datetime.now(timezone.utc) - timedelta(days=REJECTED_LOOKBACK_DAYS + 30)
+        ).isoformat().replace("+00:00", "Z")
+        issues = [
+            {
+                "number": 1,
+                "title": "foo",
+                "closedAt": old,
+                "stateReason": "NOT_PLANNED",
+                "labels": [],
+            },
+        ]
+        result = _filter_rejected_issues(issues)
+        assert result == []
+
+    def test_missing_closed_at_excluded(self):
+        """closedAt がない issue は除外する."""
+        issues = [
+            {"number": 1, "title": "foo", "stateReason": "NOT_PLANNED", "labels": []},
+        ]
+        result = _filter_rejected_issues(issues)
+        assert result == []
+
+
+class TestRecordSkippedPain:
+    """_record_skipped_pain のテスト."""
+
+    def test_appends_jsonl_line(self, tmp_path, monkeypatch):
+        """指定パスに jsonl 形式で 1 行追記される."""
+        path = tmp_path / "skipped_pains.jsonl"
+        pain = {
+            "pain": "PayPay が起動しない",
+            "source_url": "https://example.com",
+            "source_title": "PayPay レビュー",
+        }
+        matched = {"number": 156, "title": "[テクノロジー] PayPay 起動不可"}
+
+        _record_skipped_pain(pain, matched, "2026-04-28", str(path))
+
+        content = path.read_text(encoding="utf-8").strip().splitlines()
+        assert len(content) == 1
+        record = json.loads(content[0])
+        assert record["pain"] == "PayPay が起動しない"
+        assert record["matched_issue_number"] == 156
+        assert record["date"] == "2026-04-28"
+
+    def test_creates_parent_dir_if_missing(self, tmp_path):
+        """親ディレクトリが存在しない場合は自動作成する."""
+        path = tmp_path / "nested" / "dir" / "skipped.jsonl"
+        pain = {"pain": "x"}
+        matched = {"number": 1, "title": "y"}
+        _record_skipped_pain(pain, matched, "2026-04-28", str(path))
+        assert path.exists()
+
+
+class TestRecordDedupMetrics:
+    """_record_dedup_metrics のテスト."""
+
+    def test_writes_new_metrics_file(self, tmp_path):
+        """新規ファイルに stats を date_str キーで書き込む."""
+        path = tmp_path / "dedup_metrics.json"
+        stats = {"open_match": 2, "rejected_match": 5, "new_issues": 1}
+        _record_dedup_metrics("2026-04-28", stats, str(path))
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert "2026-04-28" in data
+        assert data["2026-04-28"]["open_match"] == 2
+        assert data["2026-04-28"]["rejected_match"] == 5
+        assert data["2026-04-28"]["new_issues"] == 1
+
+    def test_appends_to_existing_metrics(self, tmp_path):
+        """既存ファイルに別 date_str を追加する（過去データを保持）."""
+        path = tmp_path / "dedup_metrics.json"
+        path.write_text(
+            json.dumps({"2026-04-27": {"open_match": 1, "rejected_match": 0, "new_issues": 3}}),
+            encoding="utf-8",
+        )
+        stats = {"open_match": 0, "rejected_match": 2, "new_issues": 1}
+        _record_dedup_metrics("2026-04-28", stats, str(path))
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert "2026-04-27" in data
+        assert "2026-04-28" in data
+        assert data["2026-04-27"]["new_issues"] == 3
+        assert data["2026-04-28"]["rejected_match"] == 2
+
+    def test_overwrites_same_date(self, tmp_path):
+        """同じ date_str で 2 回呼ばれた場合は後勝ちで上書きする."""
+        path = tmp_path / "dedup_metrics.json"
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 1, "rejected_match": 0, "new_issues": 0},
+            str(path),
+        )
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 0, "rejected_match": 5, "new_issues": 2},
+            str(path),
+        )
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["2026-04-28"]["rejected_match"] == 5
+        assert data["2026-04-28"]["open_match"] == 0
+
+    def test_recovers_from_corrupted_file(self, tmp_path):
+        """壊れた JSON を上書きして新規データを書く（クラッシュしない）."""
+        path = tmp_path / "dedup_metrics.json"
+        path.write_text("not a valid json {", encoding="utf-8")
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 1, "rejected_match": 1, "new_issues": 1},
+            str(path),
+        )
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["2026-04-28"]["open_match"] == 1
