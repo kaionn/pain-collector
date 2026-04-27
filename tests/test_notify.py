@@ -14,6 +14,7 @@ from src.notify import (
     REJECTED_LOOKBACK_DAYS,
     _filter_rejected_issues,
     _find_duplicate,
+    _record_dedup_metrics,
     _record_skipped_pain,
 )
 
@@ -264,3 +265,66 @@ class TestRecordSkippedPain:
         matched = {"number": 1, "title": "y"}
         _record_skipped_pain(pain, matched, "2026-04-28", str(path))
         assert path.exists()
+
+
+class TestRecordDedupMetrics:
+    """_record_dedup_metrics のテスト."""
+
+    def test_writes_new_metrics_file(self, tmp_path):
+        """新規ファイルに stats を date_str キーで書き込む."""
+        path = tmp_path / "dedup_metrics.json"
+        stats = {"open_match": 2, "rejected_match": 5, "new_issues": 1}
+        _record_dedup_metrics("2026-04-28", stats, str(path))
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert "2026-04-28" in data
+        assert data["2026-04-28"]["open_match"] == 2
+        assert data["2026-04-28"]["rejected_match"] == 5
+        assert data["2026-04-28"]["new_issues"] == 1
+
+    def test_appends_to_existing_metrics(self, tmp_path):
+        """既存ファイルに別 date_str を追加する（過去データを保持）."""
+        path = tmp_path / "dedup_metrics.json"
+        path.write_text(
+            json.dumps({"2026-04-27": {"open_match": 1, "rejected_match": 0, "new_issues": 3}}),
+            encoding="utf-8",
+        )
+        stats = {"open_match": 0, "rejected_match": 2, "new_issues": 1}
+        _record_dedup_metrics("2026-04-28", stats, str(path))
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert "2026-04-27" in data
+        assert "2026-04-28" in data
+        assert data["2026-04-27"]["new_issues"] == 3
+        assert data["2026-04-28"]["rejected_match"] == 2
+
+    def test_overwrites_same_date(self, tmp_path):
+        """同じ date_str で 2 回呼ばれた場合は後勝ちで上書きする."""
+        path = tmp_path / "dedup_metrics.json"
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 1, "rejected_match": 0, "new_issues": 0},
+            str(path),
+        )
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 0, "rejected_match": 5, "new_issues": 2},
+            str(path),
+        )
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["2026-04-28"]["rejected_match"] == 5
+        assert data["2026-04-28"]["open_match"] == 0
+
+    def test_recovers_from_corrupted_file(self, tmp_path):
+        """壊れた JSON を上書きして新規データを書く（クラッシュしない）."""
+        path = tmp_path / "dedup_metrics.json"
+        path.write_text("not a valid json {", encoding="utf-8")
+        _record_dedup_metrics(
+            "2026-04-28",
+            {"open_match": 1, "rejected_match": 1, "new_issues": 1},
+            str(path),
+        )
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["2026-04-28"]["open_match"] == 1

@@ -63,6 +63,32 @@ def _post_bot_message(payload: dict) -> None:
     resp.raise_for_status()
 
 
+def notify_dedup_summary(stats: dict, date_str: str) -> None:
+    """日次 dedup サマリーを Discord (Webhook) に通知する.
+
+    rejected match で起票スキップした件数があるときに呼ばれる想定。
+    個別ペインの再通知ではなく、運用観測用の集計値として 1 メッセージにまとめる。
+    """
+    rejected = int(stats.get("rejected_match", 0))
+    open_match = int(stats.get("open_match", 0))
+    new_issues = int(stats.get("new_issues", 0))
+
+    payload = {
+        "content": (
+            f"📋 **{date_str} dedup サマリー**\n"
+            f"- 新規起票: {new_issues} 件\n"
+            f"- open Issue 重複（コメント追記）: {open_match} 件\n"
+            f"- rejected と類似で起票スキップ: {rejected} 件"
+        )
+    }
+
+    try:
+        _post_webhook(payload)
+        logger.info(f"Discord dedup サマリー送信: {date_str}")
+    except Exception as e:
+        logger.warning(f"Discord dedup サマリー失敗: {e}")
+
+
 def notify_issue_created(
     pain: dict, issue_number: int, issue_url: str
 ) -> None:

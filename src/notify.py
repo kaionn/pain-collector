@@ -34,6 +34,7 @@ DUPLICATE_THRESHOLD_LOW = 0.4   # グレーゾーン（LLM で二次判定）
 REJECTED_LOOKBACK_DAYS = 180
 REJECTED_FETCH_LIMIT = 500
 SKIPPED_PAINS_PATH = "raw/skipped_pains.jsonl"
+DEDUP_METRICS_PATH = "data/dedup_metrics.json"
 
 
 def _fetch_open_issues() -> list[dict]:
@@ -143,6 +144,47 @@ def _record_skipped_pain(
         logger.warning(f"スキップ記録失敗: {e}")
 
 
+def _record_dedup_metrics(
+    date_str: str,
+    stats: dict,
+    path: str | None = None,
+) -> None:
+    """日次の dedup 集計（open/rejected match 件数 + 新規起票件数）を記録する.
+
+    既存の data/dedup_metrics.json を読み込み、date_str をキーに上書きする。
+    1 日複数回実行された場合は最後の呼び出しの値で更新される。
+    """
+    target_path = path or DEDUP_METRICS_PATH
+    try:
+        if os.path.exists(target_path):
+            with open(target_path, encoding="utf-8") as f:
+                data = json.load(f)
+                if not isinstance(data, dict):
+                    data = {}
+        else:
+            data = {}
+    except Exception:
+        data = {}
+
+    data[date_str] = {
+        "open_match": int(stats.get("open_match", 0)),
+        "rejected_match": int(stats.get("rejected_match", 0)),
+        "new_issues": int(stats.get("new_issues", 0)),
+    }
+
+    try:
+        parent = os.path.dirname(target_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(target_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True)
+        logger.info(
+            f"dedup metrics 記録: {date_str} → {data[date_str]} ({target_path})"
+        )
+    except Exception as e:
+        logger.warning(f"dedup metrics 記録失敗: {e}")
+
+
 def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
     """LLM でグレーゾーンの重複を二次判定する."""
     import os
@@ -208,15 +250,18 @@ def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
     return None
 
 
-def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
+def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> dict:
     """深刻度が高いペイン TOP N を個別の GitHub Issue として作成する.
 
     重複判定は open Issue + 直近 REJECTED_LOOKBACK_DAYS 日に rejected (NOT_PLANNED
     または rejected ラベル) で close された Issue の両方を対象に行う。
     rejected match した場合は新規起票せず raw/skipped_pains.jsonl に記録のみ残す。
+
+    戻り値: {"open_match": int, "rejected_match": int, "new_issues": int}
     """
+    stats = {"open_match": 0, "rejected_match": 0, "new_issues": 0}
     if not pains:
-        return
+        return stats
 
     open_issues = _fetch_open_issues()
     rejected_issues = _fetch_rejected_issues()
@@ -241,6 +286,7 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
             issue = _create_issue(pain, date_str)
             if issue:
                 combined.append({**issue, "_match_kind": "open"})
+                stats["new_issues"] += 1
             continue
 
         kind = duplicate.get("_match_kind", "open")
@@ -250,11 +296,24 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
                 f"{duplicate['title'][:50]}"
             )
             _record_skipped_pain(pain, duplicate, date_str)
+            stats["rejected_match"] += 1
         else:
             logger.info(
                 f"重複検出 → #{duplicate['number']} {duplicate['title'][:50]}"
             )
             _comment_duplicate(duplicate["number"], pain, date_str)
+            stats["open_match"] += 1
+
+    _record_dedup_metrics(date_str, stats)
+
+    if stats["rejected_match"] > 0:
+        try:
+            from . import discord_notify
+            discord_notify.notify_dedup_summary(stats, date_str)
+        except Exception as e:
+            logger.warning(f"Discord dedup サマリー通知失敗: {e}")
+
+    return stats
 
 
 def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:

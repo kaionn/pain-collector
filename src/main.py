@@ -217,8 +217,8 @@ def process_day(
     logger.info(f"レポートを保存: {output_path}")
     logger.info(f"ペイン件数: {len(pains)} 件")
 
-    # LINE Notify で TOP3 を通知
-    notify.send_top_pains(pains, date_str)
+    # LINE Notify で TOP3 を通知（戻り値は dedup 統計）
+    dedup_stats = notify.send_top_pains(pains, date_str)
 
     # 高ポテンシャルなペインのディープダイブレポートを自動生成
     logger.info("--- ディープダイブ ---")
@@ -229,10 +229,15 @@ def process_day(
     generate_spec.run_for_latest(date_str)
 
     # 日次サマリー生成
-    _write_daily_summary(date_str, sources, pains)
+    _write_daily_summary(date_str, sources, pains, dedup_stats)
 
 
-def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: list[dict]) -> None:
+def _write_daily_summary(
+    date_str: str,
+    sources: dict[str, list[dict]],
+    pains: list[dict],
+    dedup_stats: dict | None = None,
+) -> None:
     """日次サマリーを生成し、GitHub Actions Job Summary に出力する."""
     source_lines = ", ".join(f"{name} {len(posts)}件" for name, posts in sources.items())
     total_posts = sum(len(v) for v in sources.values())
@@ -245,6 +250,12 @@ def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: l
     whitespace = sum(1 for p in pains if p.get("market_signal") == "whitespace")
     underserved = sum(1 for p in pains if p.get("market_signal") == "underserved")
 
+    # dedup サマリー（送信されない場合は 0 件として表示）
+    stats = dedup_stats or {}
+    new_issues = stats.get("new_issues", 0)
+    open_match = stats.get("open_match", 0)
+    rejected_match = stats.get("rejected_match", 0)
+
     summary = (
         f"## 📊 Pain Collector Daily Summary ({date_str})\n\n"
         f"| 項目 | 値 |\n"
@@ -253,7 +264,10 @@ def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: l
         f"| 抽出ペイン数 | {len(pains)} 件 |\n"
         f"| スコア S/A | {score_s}/{score_a} 件 |\n"
         f"| ホワイトスペース | {whitespace} 件 |\n"
-        f"| 低満足度市場 | {underserved} 件 |\n\n"
+        f"| 低満足度市場 | {underserved} 件 |\n"
+        f"| 新規起票 | {new_issues} 件 |\n"
+        f"| open 重複（コメント追記） | {open_match} 件 |\n"
+        f"| rejected 類似で起票スキップ | {rejected_match} 件 |\n\n"
         f"収集内訳: {source_lines}\n"
     )
 
