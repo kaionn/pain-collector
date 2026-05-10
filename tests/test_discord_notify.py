@@ -64,21 +64,21 @@ class TestPostWebhook:
 
 class TestPostBotMessage:
     def test_skips_when_no_token(self, monkeypatch):
-        monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
+        monkeypatch.delenv("DIARY_BOT_TOKEN", raising=False)
         monkeypatch.setenv("DISCORD_CHANNEL_ID", "123")
         with patch("src.discord_notify.create_retry_session") as mock_session:
             _post_bot_message({"content": "test"})
             mock_session.assert_not_called()
 
     def test_skips_when_no_channel_id(self, monkeypatch):
-        monkeypatch.setenv("DISCORD_BOT_TOKEN", "token")
+        monkeypatch.setenv("DIARY_BOT_TOKEN", "token")
         monkeypatch.delenv("DISCORD_CHANNEL_ID", raising=False)
         with patch("src.discord_notify.create_retry_session") as mock_session:
             _post_bot_message({"content": "test"})
             mock_session.assert_not_called()
 
     def test_posts_with_bot_auth(self, monkeypatch):
-        monkeypatch.setenv("DISCORD_BOT_TOKEN", "my-bot-token")
+        monkeypatch.setenv("DIARY_BOT_TOKEN", "my-bot-token")
         monkeypatch.setenv("DISCORD_CHANNEL_ID", "999888777")
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
@@ -177,7 +177,7 @@ class TestNotifyMvpPicked:
 
     def test_bot_api_sends_individual_messages(self, monkeypatch):
         """Bot API 利用時は候補ごとに個別メッセージを送信する."""
-        monkeypatch.setenv("DISCORD_BOT_TOKEN", "token")
+        monkeypatch.setenv("DIARY_BOT_TOKEN", "token")
         monkeypatch.setenv("DISCORD_CHANNEL_ID", "123")
         call_count = {"n": 0}
 
@@ -197,7 +197,7 @@ class TestNotifyMvpPicked:
 
     def test_approve_button_only_when_spec_exists(self, monkeypatch):
         """Spec ありの候補のみ Approve ボタンが付く."""
-        monkeypatch.setenv("DISCORD_BOT_TOKEN", "token")
+        monkeypatch.setenv("DIARY_BOT_TOKEN", "token")
         monkeypatch.setenv("DISCORD_CHANNEL_ID", "123")
         payloads = []
 
@@ -228,7 +228,7 @@ class TestNotifyMvpPicked:
     def test_webhook_fallback_when_no_bot(self, monkeypatch):
         """Bot 未設定時は Webhook にフォールバックする."""
         monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
-        monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
+        monkeypatch.delenv("DIARY_BOT_TOKEN", raising=False)
         monkeypatch.delenv("DISCORD_CHANNEL_ID", raising=False)
         captured = {}
 
@@ -256,7 +256,7 @@ class TestNotifyMvpPicked:
 
     def test_bot_fallback_to_webhook_on_error(self, monkeypatch):
         """Bot API 失敗時は Webhook にフォールバックする."""
-        monkeypatch.setenv("DISCORD_BOT_TOKEN", "token")
+        monkeypatch.setenv("DIARY_BOT_TOKEN", "token")
         monkeypatch.setenv("DISCORD_CHANNEL_ID", "123")
         monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
         call_urls = []

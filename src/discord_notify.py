@@ -48,7 +48,7 @@ def _post_webhook(payload: dict) -> None:
 
 def _post_bot_message(payload: dict) -> None:
     """Discord Bot API でチャンネルにメッセージを送信する."""
-    token = os.environ.get("DISCORD_BOT_TOKEN", "")
+    token = os.environ.get("DIARY_BOT_TOKEN", "")
     channel_id = os.environ.get("DISCORD_CHANNEL_ID", "")
     if not token or not channel_id:
         return
@@ -130,7 +130,7 @@ def notify_mvp_picked(
         return
 
     bot_available = bool(
-        os.environ.get("DISCORD_BOT_TOKEN") and os.environ.get("DISCORD_CHANNEL_ID")
+        os.environ.get("DIARY_BOT_TOKEN") and os.environ.get("DISCORD_CHANNEL_ID")
     )
 
     rank_emoji = ["🥇", "🥈", "🥉"]
