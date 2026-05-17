@@ -8,6 +8,7 @@ from src.discord_notify import (
     _post_bot_message,
     _post_webhook,
     _severity_color,
+    notify_daily_digest,
     notify_issue_created,
     notify_mvp_picked,
 )
@@ -276,3 +277,112 @@ class TestNotifyMvpPicked:
             notify_mvp_picked(self.SAMPLE_PICKED, "2026-03-25", "https://github.com/test")
 
         assert any("webhook" in url for url in call_urls)
+
+
+# --- notify_daily_digest ---
+
+
+class TestNotifyDailyDigest:
+    """notify_daily_digest のテスト."""
+
+    @staticmethod
+    def _make_item(number: int, severity: int, pain_text: str, **extra: object) -> dict:
+        pain = {
+            "severity": severity,
+            "category": "テクノロジー",
+            "pain": pain_text,
+            "willingness_to_pay": "high",
+            "target_user": "一般ユーザー",
+            **extra,
+        }
+        return {
+            "number": number,
+            "title": f"[{pain['category']}] {pain_text}",
+            "url": f"https://github.com/x/y/issues/{number}",
+            "body": "...",
+            "pain": pain,
+        }
+
+    def test_empty_created_skips(self, monkeypatch):
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        with patch("src.discord_notify.create_retry_session") as mock_session:
+            notify_daily_digest([], "2026-05-17")
+            mock_session.assert_not_called()
+
+    def test_sends_single_message_with_multiple_embeds(self, monkeypatch):
+        """複数 Issue を 1 メッセージにまとめて送信する."""
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        captured = {}
+
+        def fake_post(url, json=None, timeout=None):
+            captured["payload"] = json
+            captured["call_count"] = captured.get("call_count", 0) + 1
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            return resp
+
+        mock_session = MagicMock()
+        mock_session.post = fake_post
+
+        created = [
+            self._make_item(1, 5, "ペイン A"),
+            self._make_item(2, 4, "ペイン B"),
+            self._make_item(3, 3, "ペイン C"),
+        ]
+
+        with patch("src.discord_notify.create_retry_session", return_value=mock_session):
+            notify_daily_digest(created, "2026-05-17")
+
+        assert captured["call_count"] == 1
+        assert len(captured["payload"]["embeds"]) == 3
+        assert "本日のペイン Issue: 3 件" in captured["payload"]["content"]
+
+    def test_sorted_by_severity_desc(self, monkeypatch):
+        """embed は severity 降順で並ぶ."""
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        captured = {}
+
+        def fake_post(url, json=None, timeout=None):
+            captured["payload"] = json
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            return resp
+
+        mock_session = MagicMock()
+        mock_session.post = fake_post
+
+        created = [
+            self._make_item(1, 3, "低"),
+            self._make_item(2, 5, "高"),
+            self._make_item(3, 4, "中"),
+        ]
+        with patch("src.discord_notify.create_retry_session", return_value=mock_session):
+            notify_daily_digest(created, "2026-05-17")
+
+        embeds = captured["payload"]["embeds"]
+        # 先頭は severity 5
+        assert "高" in embeds[0]["title"]
+        assert "中" in embeds[1]["title"]
+        assert "低" in embeds[2]["title"]
+
+    def test_truncates_to_10_embeds(self, monkeypatch):
+        """Discord の embed 上限 10 を超えたら本文に省略表記を入れる."""
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        captured = {}
+
+        def fake_post(url, json=None, timeout=None):
+            captured["payload"] = json
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            return resp
+
+        mock_session = MagicMock()
+        mock_session.post = fake_post
+
+        created = [self._make_item(i, 5, f"ペイン{i}") for i in range(15)]
+        with patch("src.discord_notify.create_retry_session", return_value=mock_session):
+            notify_daily_digest(created, "2026-05-17")
+
+        assert len(captured["payload"]["embeds"]) == 10
+        assert "本日のペイン Issue: 15 件" in captured["payload"]["content"]
+        assert "残り 5 件" in captured["payload"]["content"]

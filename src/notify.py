@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 import subprocess
 
 from sklearn.metrics.pairwise import cosine_similarity
@@ -9,6 +10,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 logger = logging.getLogger(__name__)
 
 from src.tokenizer import create_tfidf_vectorizer
+
+# Issue 本文に埋め込むプロダクトキーのメタデータマーカー
+_PRODUCT_KEY_MARKER_RE = re.compile(r"<!--\s*product:([a-z0-9_\-:.]+)\s*-->", re.IGNORECASE)
 
 PRODUCT_TYPE_LABELS = {
     "モバイルアプリ": "📱モバイルアプリ",
@@ -29,15 +33,76 @@ DUPLICATE_THRESHOLD_HIGH = 0.7  # 確実に重複
 DUPLICATE_THRESHOLD_LOW = 0.4   # グレーゾーン（LLM で二次判定）
 
 
+def _extract_product_key(source_url: str | None) -> str | None:
+    """source_url から「同一プロダクト」を識別するキーを抽出する.
+
+    App Store レビューや特定の Q&A スレッドなど、URL から確実に
+    プロダクト/スレッドを特定できるソースに限り key を返す。
+    Reddit のサブレディットや Twitter は同一プロダクトを意味しないので除外。
+
+    例:
+      https://apps.apple.com/app/id1232780281 -> appstore:1232780281
+      https://apps.apple.com/jp/app/notion/id1232780281 -> appstore:1232780281
+      https://news.ycombinator.com/item?id=48060054 -> hn:48060054
+      https://stackoverflow.com/questions/67855644/... -> so:67855644
+      https://togetter.com/li/2695085 -> togetter:2695085
+    """
+    if not source_url:
+        return None
+
+    m = re.search(r"apps\.apple\.com/[^?#]*?/id(\d+)", source_url, re.IGNORECASE)
+    if m:
+        return f"appstore:{m.group(1)}"
+
+    m = re.search(r"news\.ycombinator\.com/item\?id=(\d+)", source_url, re.IGNORECASE)
+    if m:
+        return f"hn:{m.group(1)}"
+
+    m = re.search(r"stackoverflow\.com/questions/(\d+)", source_url, re.IGNORECASE)
+    if m:
+        return f"so:{m.group(1)}"
+
+    m = re.search(r"togetter\.com/li/(\d+)", source_url, re.IGNORECASE)
+    if m:
+        return f"togetter:{m.group(1)}"
+
+    return None
+
+
+def _extract_product_key_from_body(body: str | None) -> str | None:
+    """Issue 本文から `<!-- product:KEY -->` メタデータを抽出する.
+
+    メタデータが無い古い Issue の場合は、本文中の `## ソース` セクションの
+    URL から再抽出を試みる（後方互換）。
+    """
+    if not body:
+        return None
+
+    m = _PRODUCT_KEY_MARKER_RE.search(body)
+    if m:
+        return m.group(1).lower()
+
+    # 後方互換: 本文中のリンクから URL を拾って _extract_product_key にかける
+    for url_match in re.finditer(r"https?://[^\s)\]]+", body):
+        key = _extract_product_key(url_match.group(0))
+        if key:
+            return key
+
+    return None
+
+
 def _fetch_open_issues() -> list[dict]:
-    """open 状態の Issue タイトル一覧を取得する."""
+    """open 状態の Issue を取得する（番号・タイトル・本文）.
+
+    本文は同一プロダクトの重複検出に使う。
+    """
     try:
         result = subprocess.run(
             [
                 "gh", "issue", "list",
                 "--label", "pain-report",
                 "--state", "open",
-                "--json", "number,title",
+                "--json", "number,title,body",
                 "--limit", "200",
             ],
             capture_output=True,
@@ -49,6 +114,24 @@ def _fetch_open_issues() -> list[dict]:
     except Exception:
         pass
     return []
+
+
+def _find_duplicate_by_product(
+    product_key: str | None, existing_issues: list[dict]
+) -> dict | None:
+    """同一プロダクトキーを持つ既存 open Issue を返す.
+
+    App Store 同一アプリの別バグレポート等、TF-IDF では拾えない
+    「同じプロダクトに対する違うペイン」をまとめるための重複検出。
+    """
+    if not product_key or not existing_issues:
+        return None
+
+    for issue in existing_issues:
+        existing_key = _extract_product_key_from_body(issue.get("body"))
+        if existing_key == product_key:
+            return issue
+    return None
 
 
 def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
@@ -117,7 +200,13 @@ def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
 
 
 def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
-    """深刻度が高いペイン TOP N を個別の GitHub Issue として作成する."""
+    """深刻度が高いペイン TOP N を個別の GitHub Issue として作成する.
+
+    重複検出は 2 段階:
+      1. 同一プロダクトキー（App Store の app_id 等）で既存 Issue にコメント化
+      2. それ以外は pain_text の TF-IDF cosine similarity で判定
+    Discord 通知は個別通知をやめ、本関数の最後に当日分の digest をまとめて送信する。
+    """
     if not pains:
         return
 
@@ -127,7 +216,20 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
     sorted_pains = sorted(pains, key=lambda x: x.get("severity", 0), reverse=True)
     top = sorted_pains[:top_n]
 
+    created_for_digest: list[dict] = []
+
     for pain in top:
+        product_key = _extract_product_key(pain.get("source_url"))
+        product_duplicate = _find_duplicate_by_product(product_key, existing_issues)
+
+        if product_duplicate:
+            logger.info(
+                f"プロダクト重複検出 ({product_key}) → "
+                f"#{product_duplicate['number']} {product_duplicate['title'][:50]}"
+            )
+            _comment_duplicate(product_duplicate["number"], pain, date_str)
+            continue
+
         pain_text = pain.get("pain", "")
         duplicate = _find_duplicate(pain_text, existing_issues)
 
@@ -135,9 +237,17 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
             logger.info(f"重複検出 → #{duplicate['number']} {duplicate['title'][:50]}")
             _comment_duplicate(duplicate["number"], pain, date_str)
         else:
-            issue = _create_issue(pain, date_str)
+            issue = _create_issue(pain, date_str, notify_discord=False)
             if issue:
-                existing_issues.append(issue)
+                existing_issues.append({**issue, "body": issue.get("body", "")})
+                created_for_digest.append({**issue, "pain": pain})
+
+    if created_for_digest:
+        try:
+            from . import discord_notify
+            discord_notify.notify_daily_digest(created_for_digest, date_str)
+        except Exception as e:
+            logger.warning(f"Discord digest 通知失敗（続行）: {e}")
 
 
 def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:
@@ -162,8 +272,12 @@ def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:
         logger.warning(f"コメント追加失敗: {e}")
 
 
-def _create_issue(pain: dict, date_str: str) -> dict | None:
-    """1 件のペインから GitHub Issue を作成する. 成功時は {number, title} を返す."""
+def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dict | None:
+    """1 件のペインから GitHub Issue を作成する. 成功時は {number, title, url, body} を返す.
+
+    notify_discord=False の場合は Discord 個別通知をスキップする
+    （send_top_pains のように呼び出し側で digest 通知する場合に使う）。
+    """
     severity = pain.get("severity", 0)
     stars = "★" * severity + "☆" * (5 - severity)
     category = pain.get("category", "")
@@ -246,6 +360,11 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
     from . import gh_client
     lines.append(gh_client.HELP_BLOCK)
 
+    # 同一プロダクトの重複検出に使うメタデータ（不可視 HTML コメント）
+    product_key = _extract_product_key(source_url)
+    if product_key:
+        lines.append(f"\n<!-- product:{product_key} -->")
+
     body = "\n".join(lines)
     title = f"[{category}] {pain_text[:80]}"
 
@@ -303,14 +422,20 @@ def _create_issue(pain: dict, date_str: str) -> dict | None:
             except Exception as e:
                 logger.warning(f"スコアリング失敗（続行）: {e}")
 
-            # Discord 通知
-            try:
-                from . import discord_notify
-                discord_notify.notify_issue_created(pain, issue_number, issue_url)
-            except Exception as e:
-                logger.warning(f"Discord 通知失敗（続行）: {e}")
+            # Discord 通知（digest 集約の場合は呼び出し側でまとめて通知するためスキップ）
+            if notify_discord:
+                try:
+                    from . import discord_notify
+                    discord_notify.notify_issue_created(pain, issue_number, issue_url)
+                except Exception as e:
+                    logger.warning(f"Discord 通知失敗（続行）: {e}")
 
-            return {"number": issue_number, "title": title}
+            return {
+                "number": issue_number,
+                "title": title,
+                "url": issue_url,
+                "body": body,
+            }
         else:
             logger.error(f"Issue 作成失敗: {result.stderr[:200]}")
     except Exception as e:

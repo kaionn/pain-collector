@@ -6,7 +6,14 @@ TF-IDF による重複検出の純粋ロジックのみをテストする。
 
 import pytest
 
-from src.notify import DUPLICATE_THRESHOLD_HIGH, DUPLICATE_THRESHOLD_LOW, _find_duplicate
+from src.notify import (
+    DUPLICATE_THRESHOLD_HIGH,
+    DUPLICATE_THRESHOLD_LOW,
+    _extract_product_key,
+    _extract_product_key_from_body,
+    _find_duplicate,
+    _find_duplicate_by_product,
+)
 
 
 class TestFindDuplicate:
@@ -100,3 +107,105 @@ class TestFindDuplicate:
         result = _find_duplicate(pain_text, existing)
         assert result is not None
         assert result["number"] == 5
+
+
+class TestExtractProductKey:
+    """_extract_product_key のテスト."""
+
+    def test_none_url_returns_none(self):
+        assert _extract_product_key(None) is None
+
+    def test_empty_url_returns_none(self):
+        assert _extract_product_key("") is None
+
+    def test_appstore_app_id_extracted(self):
+        url = "https://apps.apple.com/app/id1232780281"
+        assert _extract_product_key(url) == "appstore:1232780281"
+
+    def test_appstore_with_locale_and_name(self):
+        url = "https://apps.apple.com/jp/app/notion/id1232780281"
+        assert _extract_product_key(url) == "appstore:1232780281"
+
+    def test_appstore_with_query_params(self):
+        url = "https://apps.apple.com/us/app/notion/id1232780281?uo=4"
+        assert _extract_product_key(url) == "appstore:1232780281"
+
+    def test_hacker_news_item(self):
+        url = "https://news.ycombinator.com/item?id=48060054"
+        assert _extract_product_key(url) == "hn:48060054"
+
+    def test_stackoverflow_question(self):
+        url = "https://stackoverflow.com/questions/67855644/docker-service-failed-to-start"
+        assert _extract_product_key(url) == "so:67855644"
+
+    def test_togetter_li(self):
+        url = "https://togetter.com/li/2695085"
+        assert _extract_product_key(url) == "togetter:2695085"
+
+    def test_unknown_source_returns_none(self):
+        """サブレディットや一般 URL は同一プロダクトを意味しないので None."""
+        assert _extract_product_key("https://www.reddit.com/r/programming/comments/abc/foo") is None
+        assert _extract_product_key("https://example.com/path") is None
+
+
+class TestExtractProductKeyFromBody:
+    """_extract_product_key_from_body のテスト."""
+
+    def test_none_body_returns_none(self):
+        assert _extract_product_key_from_body(None) is None
+
+    def test_html_marker_extracted(self):
+        body = "## ペイン\n本文...\n<!-- product:appstore:1232780281 -->"
+        assert _extract_product_key_from_body(body) == "appstore:1232780281"
+
+    def test_marker_case_insensitive(self):
+        body = "<!-- PRODUCT:APPSTORE:1232780281 -->"
+        assert _extract_product_key_from_body(body) == "appstore:1232780281"
+
+    def test_fallback_to_url_in_body(self):
+        """マーカーが無くてもソース URL から再抽出できる（後方互換）."""
+        body = "## ソース\n[Notion: 動作が重過ぎる](https://apps.apple.com/app/id1232780281)"
+        assert _extract_product_key_from_body(body) == "appstore:1232780281"
+
+    def test_no_match_returns_none(self):
+        body = "## ペイン\n何かのテキスト\n他に手がかりはなし"
+        assert _extract_product_key_from_body(body) is None
+
+
+class TestFindDuplicateByProduct:
+    """_find_duplicate_by_product のテスト."""
+
+    def test_none_product_key_returns_none(self):
+        existing = [{"number": 1, "title": "x", "body": "<!-- product:appstore:1 -->"}]
+        assert _find_duplicate_by_product(None, existing) is None
+
+    def test_empty_existing_returns_none(self):
+        assert _find_duplicate_by_product("appstore:1", []) is None
+
+    def test_same_product_key_matched(self):
+        existing = [
+            {"number": 100, "title": "Notion 重い", "body": "<!-- product:appstore:1232780281 -->"},
+            {"number": 200, "title": "別アプリ", "body": "<!-- product:appstore:99999 -->"},
+        ]
+        result = _find_duplicate_by_product("appstore:1232780281", existing)
+        assert result is not None
+        assert result["number"] == 100
+
+    def test_no_match_returns_none(self):
+        existing = [
+            {"number": 1, "title": "x", "body": "<!-- product:appstore:9999 -->"},
+        ]
+        assert _find_duplicate_by_product("appstore:1232780281", existing) is None
+
+    def test_matches_via_body_url_fallback(self):
+        """マーカー無し（古い Issue）でも本文 URL から判定できる."""
+        existing = [
+            {
+                "number": 50,
+                "title": "古い Issue",
+                "body": "## ソース\n[X](https://apps.apple.com/app/id1232780281)",
+            },
+        ]
+        result = _find_duplicate_by_product("appstore:1232780281", existing)
+        assert result is not None
+        assert result["number"] == 50

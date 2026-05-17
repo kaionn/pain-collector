@@ -119,6 +119,77 @@ def notify_issue_created(
         logger.warning(f"Discord 通知失敗: {e}")
 
 
+def notify_daily_digest(created: list[dict], date_str: str) -> None:
+    """1 日に新規作成した Issue を 1 つの digest メッセージにまとめて Discord に通知する.
+
+    created の各要素は notify._create_issue の戻り値 + {"pain": pain_dict}:
+        {"number": int, "title": str, "url": str, "body": str, "pain": dict}
+
+    個別の Issue 作成通知（notify_issue_created）はノイズが多いため、
+    日次集約版に置き換える。0 件なら何もしない。
+    """
+    if not created:
+        return
+
+    # 重複したプロダクトが連発した日でも 1 通にまとまるため、
+    # メッセージ内で severity 順にソートして可読性を上げる。
+    sorted_items = sorted(
+        created,
+        key=lambda x: x.get("pain", {}).get("severity", 0),
+        reverse=True,
+    )
+
+    embeds = []
+    max_color = 0x95A5A6
+    for item in sorted_items[:10]:  # Discord embed は 1 メッセージ 10 個まで
+        pain = item.get("pain", {})
+        severity = pain.get("severity", 0)
+        category = pain.get("category", "")
+        pain_text = pain.get("pain", "")
+        wtp = pain.get("willingness_to_pay", "-")
+        target = pain.get("target_user", "-")
+        market_signal = pain.get("market_signal")
+
+        title = f"[{category}] {pain_text[:60]}"
+        stars = "★" * severity + "☆" * (5 - severity)
+
+        field_value_parts = [f"{stars} ({severity}/5)"]
+        if wtp and wtp != "-":
+            field_value_parts.append(f"💰{wtp}")
+        if market_signal:
+            field_value_parts.append(_MARKET_SIGNAL_LABELS.get(market_signal, market_signal))
+        meta_line = " / ".join(field_value_parts)
+
+        description = f"{meta_line}\n対象: {target}"
+
+        embeds.append(
+            {
+                "title": f"#{item['number']} {title}",
+                "url": item.get("url", ""),
+                "description": description,
+                "color": _severity_color(severity),
+            }
+        )
+        max_color = max(max_color, _severity_color(severity))
+
+    total = len(created)
+    omitted = total - len(embeds)
+    headline = f"📋 本日のペイン Issue: {total} 件"
+    if omitted > 0:
+        headline += f"（うち {len(embeds)} 件を抜粋表示、残り {omitted} 件は GitHub で確認）"
+
+    payload = {
+        "content": f"{_MENTION} {headline}",
+        "embeds": embeds,
+    }
+
+    try:
+        _post_webhook(payload)
+        logger.info(f"Discord daily digest 通知送信: {total} 件")
+    except Exception as e:
+        logger.warning(f"Discord daily digest 通知失敗: {e}")
+
+
 def notify_mvp_picked(
     picked: list[dict], today: str, repo_url: str
 ) -> None:
