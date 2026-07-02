@@ -4,6 +4,7 @@ import logging
 
 import feedparser
 
+from src.collector_registry import register_collector
 from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ CATEGORIES = [
 ]
 
 
+@register_collector(key="hatena", display_name="はてブ")
 def collect() -> list[dict]:
     """はてブ RSS から現在のホットエントリを取得する."""
     all_entries = []

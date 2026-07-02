@@ -4,6 +4,7 @@ import logging
 
 import feedparser
 
+from src.collector_registry import register_collector
 from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 FEED_URL = "https://zenn.dev/feed"
 
 
+@register_collector(key="zenn", display_name="Zenn")
 def collect() -> list[dict]:
     """Zenn の RSS フィードからトレンド記事を取得する."""
     try:

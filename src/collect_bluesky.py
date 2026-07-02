@@ -4,6 +4,7 @@ import logging
 import re
 import time
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
 
@@ -63,6 +64,7 @@ def _parse_post(post: dict) -> dict:
     }
 
 
+@register_collector(key="bluesky", display_name="Bluesky")
 def collect() -> list[dict]:
     """Bluesky からペイン系投稿を収集する."""
     seen_urls: set[str] = set()

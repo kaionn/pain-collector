@@ -3,6 +3,7 @@
 import logging
 import re
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ def _fetch_articles(tag: str, per_page: int = 30) -> list[dict]:
         return []
 
 
+@register_collector(key="devto", display_name="Dev.to")
 def collect() -> list[dict]:
     """Dev.to からペイン系記事を収集する."""
     seen_urls: set[str] = set()

@@ -3,6 +3,7 @@
 import json
 import logging
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ def _fetch_reviews(app_id: str, country: str = "jp") -> list[dict]:
         return []
 
 
+@register_collector(key="appstore", display_name="AppStore")
 def collect() -> list[dict]:
     """App Store の低評価レビューを収集する."""
     all_reviews: list[dict] = []

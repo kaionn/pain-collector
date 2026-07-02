@@ -12,6 +12,7 @@ import time
 
 import requests
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -145,6 +146,7 @@ def _search(subreddit: str, base_url: str, headers: dict, time_filter: str = "we
     return [_parse_post(child) for child in children]
 
 
+@register_collector(key="reddit", display_name="Reddit", supports_backfill=True)
 def collect(backfill: bool = False) -> list[dict]:
     """全サブレディットからペイン系投稿を収集する."""
     # OAuth トークンがあれば API 経由、なければ公開エンドポイント

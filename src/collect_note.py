@@ -4,6 +4,7 @@ import logging
 
 import feedparser
 
+from src.collector_registry import register_collector
 from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ NOTE_RSS_URLS = [
 ]
 
 
+@register_collector(key="note", display_name="note")
 def collect() -> list[dict]:
     """note.com RSS から人気記事を取得する."""
     all_entries = []

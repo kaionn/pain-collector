@@ -6,6 +6,7 @@ import time
 
 import requests
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ def _parse_item(item: dict) -> dict:
     }
 
 
+@register_collector(key="hackernews", display_name="HN")
 def collect(max_stories: int = 200) -> list[dict]:
     """HN トップストーリーからペイン系投稿を収集する."""
     story_ids = _fetch_top_story_ids(max_stories)

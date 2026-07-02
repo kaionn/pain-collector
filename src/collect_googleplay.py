@@ -4,6 +4,8 @@ import logging
 
 from google_play_scraper import Sort, reviews
 
+from src.collector_registry import register_collector
+
 logger = logging.getLogger(__name__)
 
 # 人気アプリの パッケージ名
@@ -38,6 +40,7 @@ TARGET_APPS = [
 MAX_REVIEWS_PER_APP = 30
 
 
+@register_collector(key="googleplay", display_name="GooglePlay")
 def collect() -> list[dict]:
     """Google Play Store の低評価レビューを収集する."""
     all_reviews: list[dict] = []

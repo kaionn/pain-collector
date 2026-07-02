@@ -4,6 +4,7 @@ import logging
 import re
 import zlib
 
+from src.collector_registry import register_collector
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ def _fetch_questions(tag: str) -> list[dict]:
         return []
 
 
+@register_collector(key="stackoverflow", display_name="StackOverflow")
 def collect() -> list[dict]:
     """Stack Overflow から未解決ペイン系質問を収集する."""
     seen_ids: set[int] = set()

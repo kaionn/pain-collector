@@ -5,6 +5,7 @@ import time
 
 from bs4 import BeautifulSoup
 
+from src.collector_registry import register_collector
 from src.http_utils import DEFAULT_HEADERS, create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
 
@@ -57,6 +58,7 @@ def _fetch_topics(page_name: str, url: str) -> list[dict]:
     return topics
 
 
+@register_collector(key="girlschannel", display_name="ガルちゃん")
 def collect() -> list[dict]:
     """ガールズちゃんねるからペイン系トピックを収集する."""
     seen_urls: set[str] = set()

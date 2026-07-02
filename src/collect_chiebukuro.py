@@ -6,6 +6,7 @@ import time
 
 from bs4 import BeautifulSoup
 
+from src.collector_registry import register_collector
 from src.http_utils import DEFAULT_HEADERS, create_retry_session
 from src.pain_keywords_ja import contains_pain_keyword
 
@@ -63,6 +64,7 @@ def _fetch_questions(category: str, url: str) -> list[dict]:
     return questions
 
 
+@register_collector(key="chiebukuro", display_name="知恵袋")
 def collect() -> list[dict]:
     """Yahoo 知恵袋からペイン系質問を収集する."""
     seen_urls: set[str] = set()

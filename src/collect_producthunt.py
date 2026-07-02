@@ -4,11 +4,14 @@ import logging
 
 import feedparser
 
+from src.collector_registry import register_collector
+
 logger = logging.getLogger(__name__)
 
 FEED_URL = "https://www.producthunt.com/feed"
 
 
+@register_collector(key="producthunt", display_name="ProductHunt")
 def collect() -> list[dict]:
     """Product Hunt の RSS フィードからトレンドプロダクトを取得する."""
     try:

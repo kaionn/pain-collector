@@ -9,7 +9,9 @@ import logging
 import os
 from datetime import datetime, timezone, timedelta
 
-from . import collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, collect_producthunt, collect_komachi, collect_mamastar, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle, generate_spec
+# collect_* は @register_collector の副作用で collector_registry に登録するためだけに import する
+# （_collect_all は collector_registry.all_collectors() 経由で呼び出す）
+from . import collector_registry, collect_reddit, collect_hatena, collect_zenn, collect_hn, collect_note, collect_devto, collect_stackoverflow, collect_bluesky, collect_appstore, collect_googleplay, collect_chiebukuro, collect_girlschannel, collect_producthunt, collect_komachi, collect_mamastar, extract_pains, feedback, market_check, notify, weekly_trends, deep_dive, issue_lifecycle, generate_spec
 
 logger = logging.getLogger(__name__)
 
@@ -501,55 +503,39 @@ def main() -> None:
         return
 
     def _collect_all(backfill: bool = False) -> dict[str, list[dict]]:
-        """全ソースからデータを収集し、サマリーを表示する."""
+        """全ソースからデータを収集し、サマリーを表示する（registry 駆動）."""
         sources: dict[str, list[dict]] = {}
+        entries = collector_registry.all_collectors()
 
-        collectors = [
-            ("Reddit", lambda: collect_reddit.collect(backfill=backfill)),
-            ("はてブ", collect_hatena.collect),
-            ("Zenn", collect_zenn.collect),
-            ("HN", collect_hn.collect),
-            ("note", collect_note.collect),
-            ("Dev.to", collect_devto.collect),
-            ("StackOverflow", collect_stackoverflow.collect),
-            ("Bluesky", collect_bluesky.collect),
-            ("AppStore", collect_appstore.collect),
-            ("GooglePlay", collect_googleplay.collect),
-            ("知恵袋", collect_chiebukuro.collect),
-            ("ガルちゃん", collect_girlschannel.collect),
-            ("ProductHunt", collect_producthunt.collect),
-            ("発言小町", collect_komachi.collect),
-            ("ママスタ", collect_mamastar.collect),
-        ]
-
-        # raw JSON のキー名マッピング
-        raw_keys = {
-            "Reddit": "reddit", "はてブ": "hatena", "Zenn": "zenn",
-            "HN": "hackernews", "note": "note", "Dev.to": "devto",
-            "StackOverflow": "stackoverflow", "Bluesky": "bluesky",
-            "AppStore": "appstore", "GooglePlay": "googleplay",
-            "知恵袋": "chiebukuro", "ガルちゃん": "girlschannel",
-            "ProductHunt": "producthunt", "発言小町": "komachi",
-            "ママスタ": "mamastar",
-        }
-
-        for name, collector_fn in collectors:
-            suffix = "（バックフィル）" if backfill and name == "Reddit" else ""
-            logger.info(f"--- {name} 収集{suffix} ---")
+        for entry in entries:
+            suffix = "（バックフィル）" if backfill and entry.supports_backfill else ""
+            logger.info(f"--- {entry.display_name} 収集{suffix} ---")
             try:
-                sources[raw_keys[name]] = collector_fn()
+                posts = entry.fn(backfill=backfill) if entry.supports_backfill else entry.fn()
             except Exception as e:
-                logger.warning(f"{name} でエラー: {e}")
-                sources[raw_keys[name]] = []
+                logger.warning(f"{entry.display_name} でエラー: {e}")
+                posts = []
+
+            validated = []
+            dropped = 0
+            for post in posts:
+                v = collector_registry.validate_post(post, entry.key)
+                if v is None:
+                    dropped += 1
+                else:
+                    validated.append(v)
+            if dropped:
+                logger.info(f"  {entry.display_name}: 不正な post を {dropped} 件 drop")
+
+            sources[entry.key] = validated
 
         # 収集サマリー
         total = sum(len(v) for v in sources.values())
         logger.info("--- 収集サマリー ---")
-        for name, collector_fn in collectors:
-            key = raw_keys[name]
-            posts = sources[key]
+        for entry in entries:
+            posts = sources[entry.key]
             status = "OK" if posts else "EMPTY"
-            logger.info(f"  [{status}] {name}: {len(posts)} 件")
+            logger.info(f"  [{status}] {entry.display_name}: {len(posts)} 件")
         logger.info(f"  合計: {total} 件")
 
         # ソースの健全性を更新
