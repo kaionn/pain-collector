@@ -172,8 +172,8 @@ def _apply_post_limits(sources: dict[str, list[dict]]) -> list[dict]:
 def process_day(
     date_str: str,
     sources: dict[str, list[dict]],
-) -> None:
-    """1日分の抽出・保存を行う（収集済みデータを受け取る）."""
+) -> int:
+    """1日分の抽出・保存を行う（収集済みデータを受け取る）. 抽出したペイン件数を返す."""
     logger.info(f"=== Pain Collector: {date_str} ===")
 
     # 生データを JSON で全件保存
@@ -191,7 +191,7 @@ def process_day(
 
     if not all_posts:
         logger.info("投稿が0件のため終了")
-        return
+        return 0
 
     # LLM でペイン抽出
     logger.info("--- ペイン抽出 ---")
@@ -199,7 +199,7 @@ def process_day(
 
     if not pains:
         logger.info("ペインが0件のため終了")
-        return
+        return 0
 
     # App Store で競合チェック（上位5件のみ）
     logger.info("--- 競合チェック ---")
@@ -230,6 +230,8 @@ def process_day(
 
     # 日次サマリー生成
     _write_daily_summary(date_str, sources, pains)
+
+    return len(pains)
 
 
 def _write_daily_summary(date_str: str, sources: dict[str, list[dict]], pains: list[dict]) -> None:
@@ -557,13 +559,31 @@ def main() -> None:
 
     if args.backfill > 0:
         sources = _collect_all(backfill=True)
+        pains_count = 0
         for i in range(args.backfill, 0, -1):
             target = today - timedelta(days=i)
-            process_day(target.isoformat(), sources)
+            pains_count = process_day(target.isoformat(), sources)
             logger.info("=" * 60)
     else:
         sources = _collect_all()
-        process_day(today.isoformat(), sources)
+        pains_count = process_day(today.isoformat(), sources)
+
+    _check_and_alert(sources, pains_count)
+
+
+def _check_and_alert(sources: dict[str, list[dict]], pains_count: int) -> None:
+    """日次実行の健全性をチェックし、異常があれば Discord にアラートする.
+
+    チェック・通知自体の失敗でパイプラインを落とさない。
+    """
+    try:
+        from . import discord_notify, run_health
+
+        problems = run_health.check_daily_run(sources, pains_count)
+        if problems:
+            discord_notify.notify_pipeline_alert(problems)
+    except Exception as e:
+        logger.warning(f"健全性チェック失敗: {e}")
 
 
 if __name__ == "__main__":

@@ -232,6 +232,34 @@ def notify_mvp_picked(
         logger.warning(f"Discord MVP 選定通知失敗: {e}")
 
 
+def notify_pipeline_alert(problems: list[str]) -> None:
+    """パイプラインの異常を Discord へ通知する（Webhook）.
+
+    problems が空なら何もしない。送信失敗時もパイプラインを落とさない。
+    """
+    if not problems:
+        return
+
+    description = "\n".join(f"- {p}" for p in problems)
+
+    payload = {
+        "content": f"{_MENTION} 🚨 パイプライン異常を検知しました",
+        "embeds": [
+            {
+                "title": "Pain Collector 異常検知",
+                "description": description,
+                "color": 0xE74C3C,
+            }
+        ],
+    }
+
+    try:
+        _post_webhook(payload)
+        logger.info(f"Discord パイプラインアラート送信: {len(problems)} 件")
+    except Exception as e:
+        logger.warning(f"Discord パイプラインアラート送信失敗: {e}")
+
+
 def _build_mvp_embed(
     item: dict, index: int, rank_emoji: list[str], today: str, repo_url: str
 ) -> dict:

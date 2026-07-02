@@ -11,6 +11,7 @@ from src.discord_notify import (
     notify_daily_digest,
     notify_issue_created,
     notify_mvp_picked,
+    notify_pipeline_alert,
 )
 
 
@@ -277,6 +278,46 @@ class TestNotifyMvpPicked:
             notify_mvp_picked(self.SAMPLE_PICKED, "2026-03-25", "https://github.com/test")
 
         assert any("webhook" in url for url in call_urls)
+
+
+# --- notify_pipeline_alert ---
+
+
+class TestNotifyPipelineAlert:
+    def test_empty_problems_skips(self, monkeypatch):
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        with patch("src.discord_notify.create_retry_session") as mock_session:
+            notify_pipeline_alert([])
+            mock_session.assert_not_called()
+
+    def test_sends_problems_as_bulleted_description(self, monkeypatch):
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        captured = {}
+
+        def fake_post(url, json=None, timeout=None):
+            captured["payload"] = json
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            return resp
+
+        mock_session = MagicMock()
+        mock_session.post = fake_post
+
+        with patch("src.discord_notify.create_retry_session", return_value=mock_session):
+            notify_pipeline_alert(["問題A", "問題B"])
+
+        embed = captured["payload"]["embeds"][0]
+        assert embed["color"] == 0xE74C3C
+        assert "- 問題A" in embed["description"]
+        assert "- 問題B" in embed["description"]
+
+    def test_send_failure_does_not_raise(self, monkeypatch):
+        monkeypatch.setenv("DISCORD_WEBHOOK_URL", "https://example.com/webhook")
+        mock_session = MagicMock()
+        mock_session.post.side_effect = Exception("network error")
+
+        with patch("src.discord_notify.create_retry_session", return_value=mock_session):
+            notify_pipeline_alert(["問題A"])  # raise しないことを確認
 
 
 # --- notify_daily_digest ---
