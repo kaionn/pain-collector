@@ -10,7 +10,7 @@ pain-collector: SNS やレビューサイトからペイン（ユーザーの課
 - LLM: OpenAI API（`gh models run` 経由）
 - テキスト分析: scikit-learn（TF-IDF）、fugashi（日本語形態素解析）
 - CI/CD: GitHub Actions（日次・週次・月次の定期実行）
-- 通知: LINE Notify
+- 通知: Discord（Webhook + Bot API）
 - Issue 管理: GitHub Issues（ペイン → スコアリング → 選定 → 承認 → ビルド）
 
 ## ディレクトリ構成
