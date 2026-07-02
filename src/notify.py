@@ -15,6 +15,20 @@ from src.tokenizer import create_tfidf_vectorizer
 # Issue 本文に埋め込むプロダクトキーのメタデータマーカー
 _PRODUCT_KEY_MARKER_RE = re.compile(r"<!--\s*product:([a-z0-9_\-:.]+)\s*-->", re.IGNORECASE)
 
+# Issue 本文に埋め込む元ペインデータのメタデータマーカー（再スコア時の SSOT）
+_PAIN_DATA_MARKER_RE = re.compile(r"<!--\s*pain-data:(.+?)\s*-->", re.DOTALL)
+
+# score_open_issues() の再スコアリングに必要なキーのみ埋め込む
+_PAIN_DATA_KEYS = (
+    "pain",
+    "app_idea",
+    "existing_solutions",
+    "severity",
+    "willingness_to_pay",
+    "category",
+    "source_engagement",
+)
+
 PRODUCT_TYPE_LABELS = {
     "モバイルアプリ": "📱モバイルアプリ",
     "Webサービス": "🌐Webサービス",
@@ -90,6 +104,49 @@ def _extract_product_key_from_body(body: str | None) -> str | None:
             return key
 
     return None
+
+
+def _sanitize_for_html_comment(value):
+    """HTML コメントに埋め込む値から `-->` を除去する（コメント終端の破壊を防ぐ）."""
+    if isinstance(value, str):
+        return value.replace("-->", "")
+    if isinstance(value, dict):
+        return {k: _sanitize_for_html_comment(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_sanitize_for_html_comment(v) for v in value]
+    return value
+
+
+def _build_pain_data_comment(pain: dict) -> str:
+    """再スコアリングに必要な pain データを不可視 HTML コメントとして埋め込む文字列を作る."""
+    data = {key: pain[key] for key in _PAIN_DATA_KEYS if key in pain}
+    sanitized = _sanitize_for_html_comment(data)
+    compact = json.dumps(sanitized, ensure_ascii=False, separators=(",", ":"))
+    return f"<!-- pain-data:{compact} -->"
+
+
+def extract_pain_data_from_body(body: str | None) -> dict | None:
+    """Issue 本文から `<!-- pain-data:{json} -->` メタデータを抽出する.
+
+    メタデータが無い（古い Issue）・パース失敗の場合は None を返す。
+    呼び出し側はタイトルからの簡易復元にフォールバックすること。
+    """
+    if not body:
+        return None
+
+    m = _PAIN_DATA_MARKER_RE.search(body)
+    if not m:
+        return None
+
+    try:
+        data = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return None
+
+    if not isinstance(data, dict):
+        return None
+
+    return data
 
 
 def _fetch_open_issues() -> list[dict]:
@@ -354,6 +411,9 @@ def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dic
     product_key = _extract_product_key(source_url)
     if product_key:
         lines.append(f"\n<!-- product:{product_key} -->")
+
+    # 再スコアリング時に元ペインを復元するためのメタデータ（不可視 HTML コメント）
+    lines.append(f"\n{_build_pain_data_comment(pain)}")
 
     body = "\n".join(lines)
     title = f"[{category}] {pain_text[:80]}"

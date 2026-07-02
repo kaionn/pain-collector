@@ -9,10 +9,12 @@ import pytest
 from src.notify import (
     DUPLICATE_THRESHOLD_HIGH,
     DUPLICATE_THRESHOLD_LOW,
+    _build_pain_data_comment,
     _extract_product_key,
     _extract_product_key_from_body,
     _find_duplicate,
     _find_duplicate_by_product,
+    extract_pain_data_from_body,
 )
 
 
@@ -209,3 +211,75 @@ class TestFindDuplicateByProduct:
         result = _find_duplicate_by_product("appstore:1232780281", existing)
         assert result is not None
         assert result["number"] == 50
+
+
+class TestPainDataEmbedding:
+    """_build_pain_data_comment / extract_pain_data_from_body のテスト（Issue メタデータ SSOT）."""
+
+    def test_roundtrip_with_japanese_and_emoji(self):
+        """日本語・絵文字を含むペインデータが埋め込み→抽出で完全に復元される."""
+        pain = {
+            "pain": "毎日の家計簿入力が面倒 😩",
+            "app_idea": "レシート撮影で自動仕訳するアプリ 📸",
+            "existing_solutions": "Zaim はあるが手入力が多い",
+            "severity": 4,
+            "willingness_to_pay": "high",
+            "category": "生産性",
+            "source_engagement": {"score": 120},
+        }
+        comment = _build_pain_data_comment(pain)
+        body = f"## ペイン\n{pain['pain']}\n{comment}"
+
+        restored = extract_pain_data_from_body(body)
+
+        assert restored == pain
+
+    def test_embeds_only_scoring_relevant_keys(self):
+        """スコアリングに不要なキー（source_url 等）は埋め込まれない."""
+        pain = {
+            "pain": "テスト",
+            "severity": 2,
+            "willingness_to_pay": "low",
+            "source_url": "https://example.com/should-not-be-embedded",
+        }
+        comment = _build_pain_data_comment(pain)
+        restored = extract_pain_data_from_body(comment)
+
+        assert restored is not None
+        assert "source_url" not in restored
+        assert restored["pain"] == "テスト"
+
+    def test_sanitizes_html_comment_terminator_in_value(self):
+        """値に `-->` が含まれる場合、コメント終端が壊れないようサニタイズされる."""
+        pain = {
+            "pain": "コメント終端を含む --> テキスト",
+            "severity": 3,
+            "willingness_to_pay": "medium",
+        }
+        comment = _build_pain_data_comment(pain)
+
+        # コメント内に本物のコメント終端がサニタイズ後の 1 箇所しか現れないこと
+        assert comment.count("-->") == 1
+        assert comment.endswith("-->")
+
+        restored = extract_pain_data_from_body(comment)
+        assert restored is not None
+        assert "-->" not in restored["pain"]
+
+    def test_none_body_returns_none(self):
+        assert extract_pain_data_from_body(None) is None
+
+    def test_empty_body_returns_none(self):
+        assert extract_pain_data_from_body("") is None
+
+    def test_missing_marker_returns_none(self):
+        body = "## ペイン\n本文のみ。メタデータなし。"
+        assert extract_pain_data_from_body(body) is None
+
+    def test_malformed_json_returns_none(self):
+        body = "<!-- pain-data:{not valid json} -->"
+        assert extract_pain_data_from_body(body) is None
+
+    def test_non_dict_json_returns_none(self):
+        body = '<!-- pain-data:["a", "b"] -->'
+        assert extract_pain_data_from_body(body) is None

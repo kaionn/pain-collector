@@ -1,7 +1,11 @@
 """scoring.py の純粋ロジック関数のユニットテスト."""
 
+import json
+
 import pytest
 
+from src import scoring
+from src.notify import _build_pain_data_comment
 from src.scoring import WEIGHTS, calculate_total_score, normalize_engagement
 
 
@@ -227,3 +231,102 @@ class TestScoreLabels:
 
     def test_score_60_is_S(self):
         assert self._get_label(60) == "score-S"
+
+
+class TestScoreOpenIssues:
+    """score_open_issues() の Issue メタデータ SSOT テスト（Renovate/Sentry fingerprinting 方式）."""
+
+    def _fake_gh_result(self, issues):
+        class FakeResult:
+            returncode = 0
+            stdout = json.dumps(issues)
+            stderr = ""
+
+        return FakeResult()
+
+    def test_uses_embedded_pain_data_when_present(self, monkeypatch):
+        """pain-data メタデータがある Issue は元の severity / WTP でスコアされる."""
+        original_pain = {
+            "pain": "元のペインテキスト",
+            "app_idea": "元のアイデア",
+            "existing_solutions": "既存ツールA",
+            "severity": 5,
+            "willingness_to_pay": "high",
+            "category": "健康",
+        }
+        body = f"## ペイン\n{original_pain['pain']}\n{_build_pain_data_comment(original_pain)}"
+        issues = [
+            {"number": 1, "title": "元のペインテキスト", "body": body, "labels": []},
+        ]
+
+        monkeypatch.setattr(
+            scoring.subprocess, "run", lambda *a, **kw: self._fake_gh_result(issues)
+        )
+
+        captured = {}
+
+        def fake_score_and_update_issue(pain, issue_number):
+            captured["pain"] = pain
+            captured["issue_number"] = issue_number
+
+        monkeypatch.setattr(scoring, "score_and_update_issue", fake_score_and_update_issue)
+
+        scoring.score_open_issues()
+
+        assert captured["issue_number"] == 1
+        assert captured["pain"]["severity"] == 5
+        assert captured["pain"]["willingness_to_pay"] == "high"
+        assert captured["pain"]["app_idea"] == "元のアイデア"
+
+    def test_falls_back_to_title_when_no_pain_data(self, monkeypatch):
+        """pain-data メタデータが無い（古い）Issue はタイトルから簡易復元する（後方互換）."""
+        issues = [
+            {
+                "number": 2,
+                "title": "古い形式の Issue タイトル",
+                "body": "## ペイン\n本文のみ",
+                "labels": [],
+            },
+        ]
+
+        monkeypatch.setattr(
+            scoring.subprocess, "run", lambda *a, **kw: self._fake_gh_result(issues)
+        )
+
+        captured = {}
+
+        def fake_score_and_update_issue(pain, issue_number):
+            captured["pain"] = pain
+            captured["issue_number"] = issue_number
+
+        monkeypatch.setattr(scoring, "score_and_update_issue", fake_score_and_update_issue)
+
+        scoring.score_open_issues()
+
+        assert captured["issue_number"] == 2
+        assert captured["pain"]["pain"] == "古い形式の Issue タイトル"
+        assert captured["pain"]["severity"] == 3
+        assert captured["pain"]["willingness_to_pay"] == "medium"
+
+    def test_already_scored_issue_is_skipped(self, monkeypatch):
+        """スコアラベル済みの Issue はスキップされる（再スコアされない）."""
+        issues = [
+            {
+                "number": 3,
+                "title": "スコア済み",
+                "body": "",
+                "labels": [{"name": "🥇score-A"}],
+            },
+        ]
+        monkeypatch.setattr(
+            scoring.subprocess, "run", lambda *a, **kw: self._fake_gh_result(issues)
+        )
+
+        called = []
+        monkeypatch.setattr(
+            scoring, "score_and_update_issue", lambda pain, num: called.append(num)
+        )
+
+        scoring.score_open_issues()
+
+        assert called == []

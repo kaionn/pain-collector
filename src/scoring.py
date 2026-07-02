@@ -5,7 +5,7 @@ import logging
 import math
 import subprocess
 
-from src import llm_client
+from src import llm_client, notify
 
 logger = logging.getLogger(__name__)
 
@@ -201,15 +201,17 @@ def score_open_issues() -> None:
         if labels & score_labels:
             continue  # 既にスコア済み
 
-        # Issue body からペイン情報を簡易的に再構成
-        pain = {
-            "pain": issue["title"],
-            "app_idea": "",
-            "existing_solutions": None,
-            "severity": 3,
-            "willingness_to_pay": "medium",
-            "category": "",
-        }
+        # Issue body に埋め込まれた元ペインデータを復元する（無ければタイトルから簡易復元）
+        pain = notify.extract_pain_data_from_body(issue.get("body"))
+        if pain is None:
+            pain = {
+                "pain": issue["title"],
+                "app_idea": "",
+                "existing_solutions": None,
+                "severity": 3,
+                "willingness_to_pay": "medium",
+                "category": "",
+            }
         score_and_update_issue(pain, issue["number"])
 
     logger.info("スコアリング完了")

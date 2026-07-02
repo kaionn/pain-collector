@@ -219,7 +219,7 @@ def process_day(
     logger.info(f"レポートを保存: {output_path}")
     logger.info(f"ペイン件数: {len(pains)} 件")
 
-    # LINE Notify で TOP3 を通知
+    # 深刻度上位のペインを GitHub Issue として作成し、Discord digest で通知
     notify.send_top_pains(pains, date_str)
 
     # 高ポテンシャルなペインのディープダイブレポートを自動生成
