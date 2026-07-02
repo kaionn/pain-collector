@@ -7,8 +7,9 @@
 import json
 import logging
 import os
-import subprocess
 from collections.abc import Callable
+
+from src import llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -182,9 +183,7 @@ def extract(posts: list[dict]) -> list[dict]:
         logger.info("投稿が0件のためスキップ")
         return []
 
-    token = os.environ.get("GITHUB_TOKEN", "")
-    use_models = bool(token)
-    base_label = "GitHub Models" if use_models else "Claude Code"
+    base_label = "GitHub Models" if os.environ.get("GITHUB_TOKEN") else "Claude Code"
 
     lifestyle_posts = [p for p in posts if p.get("source") in LIFESTYLE_SOURCES]
     standard_posts = [p for p in posts if p.get("source") not in LIFESTYLE_SOURCES]
@@ -192,19 +191,11 @@ def extract(posts: list[dict]) -> list[dict]:
     pains: list[dict] = []
 
     if standard_posts:
-        call_fn = (
-            _call_github_models(token, variant="default")
-            if use_models
-            else _call_claude_factory(variant="default")
-        )
+        call_fn = _make_call_fn(variant="default")
         pains.extend(_extract_in_batches(standard_posts, call_fn, base_label))
 
     if lifestyle_posts:
-        call_fn = (
-            _call_github_models(token, variant="lifestyle")
-            if use_models
-            else _call_claude_factory(variant="lifestyle")
-        )
+        call_fn = _make_call_fn(variant="lifestyle")
         pains.extend(_extract_in_batches(lifestyle_posts, call_fn, f"{base_label}/lifestyle"))
 
     # 元投稿のエンゲージメント情報をペインに付与
@@ -352,73 +343,45 @@ def _save_failed_posts(posts: list[dict]) -> None:
     logger.info(f"失敗投稿を保存: {path} ({len(posts)}件追加)")
 
 
-def _call_github_models(token: str, variant: str = "default") -> Callable[[str], str]:
-    """GitHub Models API を呼び出すコールバックを返す."""
-    from openai import OpenAI
-
-    client = OpenAI(
-        base_url="https://models.github.ai/inference",
-        api_key=token,
-    )
+def _make_call_fn(variant: str = "default") -> Callable[[str], str]:
+    """LLM 呼び出しコールバックを返す（バックエンドは llm_client が自動選択）."""
     system_prompt = _build_system_prompt(variant)
 
     def call(batch_text: str) -> str:
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": f"以下の投稿からペインを抽出してください:\n\n{batch_text}",
-                },
-            ],
+        content = llm_client.chat(
+            f"以下の投稿からペインを抽出してください:\n\n{batch_text}",
+            system=system_prompt,
             temperature=0.3,
         )
-        return response.choices[0].message.content or "[]"
+        return content or "[]"
 
     return call
+
+
+def _call_github_models(token: str, variant: str = "default") -> Callable[[str], str]:
+    """LLM 呼び出しコールバックを返す（後方互換用エイリアス）.
+
+    `token` はバックエンド選択に使わない。llm_client が呼び出し時点の
+    `GITHUB_TOKEN` を見て自動判定するため、weekly_trends.py 等の既存の
+    トークン有無チェックと結果が一致する。シグネチャのみ維持している。
+    """
+    return _make_call_fn(variant)
 
 
 # 後方互換: weekly_trends 等は extract_pains._call_claude を関数として直接使う
 def _call_claude(batch_text: str) -> str:
-    """Claude Code CLI を呼び出す（標準プロンプト・後方互換用）."""
-    return _call_claude_factory(variant="default")(batch_text)
+    """LLM 呼び出し（標準プロンプト・後方互換用）."""
+    return _make_call_fn(variant="default")(batch_text)
 
 
 def _call_claude_factory(variant: str = "default") -> Callable[[str], str]:
-    """Claude Code CLI 呼び出しコールバックを返す."""
-    system_prompt = _build_system_prompt(variant)
-
-    def call(batch_text: str) -> str:
-        prompt = (
-            f"{system_prompt}\n\n"
-            f"以下の投稿からペインを抽出してください:\n\n{batch_text}"
-        )
-        result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "text"],
-            capture_output=True,
-            text=True,
-            timeout=180,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(result.stderr[:200])
-        return result.stdout.strip()
-
-    return call
+    """LLM 呼び出しコールバックを返す（後方互換用エイリアス）."""
+    return _make_call_fn(variant)
 
 
 def _parse_json_response(content: str) -> list[dict]:
     """LLM レスポンスから JSON 配列をパースする."""
-    content = content.strip()
-    # コードブロック除去
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    # JSON 配列部分だけ抽出
-    start = content.find("[")
-    end = content.rfind("]")
-    if start != -1 and end != -1:
-        content = content[start : end + 1]
-    return json.loads(content)
+    return llm_client.parse_json_response(content)
 
 
 def _format_posts(posts: list[dict]) -> str:

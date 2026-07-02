@@ -3,10 +3,10 @@
 import json
 import logging
 import os
-import subprocess
 
 import requests
 
+from src import llm_client
 from src.http_utils import create_retry_session
 
 logger = logging.getLogger(__name__)
@@ -86,7 +86,6 @@ def _get_category_thresholds(category: str) -> tuple[float, int]:
 
 def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
     """app_idea から App Store 検索に適した英語キーワードを 3 セット抽出する."""
-    token = os.environ.get("GITHUB_TOKEN", "")
     prompt = (
         "以下のアプリアイデアから、App Store で検索するための英語キーワードセットを3つ生成してください。\n"
         "各キーワードセットは2-3語で、異なる言い回し・同義語を使ってください。\n"
@@ -96,29 +95,7 @@ def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
     )
 
     try:
-        if token:
-            from openai import OpenAI
-            client = OpenAI(
-                base_url="https://models.github.ai/inference",
-                api_key=token,
-            )
-            response = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=60,
-            )
-            content = (response.choices[0].message.content or "").strip()
-        else:
-            result = subprocess.run(
-                ["claude", "-p", prompt, "--output-format", "text"],
-                capture_output=True, text=True, timeout=30,
-            )
-            if result.returncode == 0:
-                content = result.stdout.strip()
-            else:
-                return [app_idea[:50]]
-
+        content = llm_client.chat(prompt, temperature=0, max_tokens=60).strip()
         keywords = [line.strip() for line in content.splitlines() if line.strip()]
         return keywords[:3] if keywords else [app_idea[:50]]
     except Exception as e:
@@ -267,31 +244,9 @@ def extract_competitor_pains(apps: list[dict]) -> list[dict]:
     review_text = "\n---\n".join(all_review_texts[:15])
     prompt = f"{COMPETITOR_REVIEW_PROMPT}\n\n--- レビュー ---\n{review_text}"
 
-    token = os.environ.get("GITHUB_TOKEN", "")
     try:
-        if token:
-            from openai import OpenAI
-            client = OpenAI(
-                base_url="https://models.github.ai/inference",
-                api_key=token,
-            )
-            response = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-            )
-            content = response.choices[0].message.content or "[]"
-        else:
-            result = subprocess.run(
-                ["claude", "-p", prompt, "--output-format", "text"],
-                capture_output=True, text=True, timeout=60,
-            )
-            if result.returncode != 0:
-                return []
-            content = result.stdout.strip()
-
-        from src.extract_pains import _parse_json_response
-        pains = _parse_json_response(content)
+        content = llm_client.chat(prompt, temperature=0.3)
+        pains = llm_client.parse_json_response(content or "[]")
         logger.info(f"競合レビューから {len(pains)} 件のペインを逆抽出")
         return pains
     except Exception as e:

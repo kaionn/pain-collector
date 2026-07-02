@@ -10,11 +10,12 @@ API コストを抑えるため、1日あたり最大 1 件のみ処理する。
 import logging
 import os
 import re
-import subprocess
 
 from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
+
+from src import llm_client
 
 from .tokenizer import create_tfidf_vectorizer
 
@@ -158,38 +159,7 @@ def _call_llm(system_prompt: str, user_prompt: str) -> str:
     Raises:
         RuntimeError: LLM の呼び出しに失敗した場合。
     """
-    token = os.environ.get("GITHUB_TOKEN", "")
-
-    if token:
-        from openai import OpenAI
-
-        client = OpenAI(
-            base_url="https://models.github.ai/inference",
-            api_key=token,
-        )
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.3,
-        )
-        return response.choices[0].message.content or ""
-
-    # ローカル: Claude Code CLI にフォールバック
-    combined_prompt = f"{system_prompt}\n\n{user_prompt}"
-    result = subprocess.run(
-        ["claude", "-p", combined_prompt, "--output-format", "text"],
-        capture_output=True,
-        text=True,
-        timeout=180,
-    )
-
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr[:200])
-
-    return result.stdout.strip()
+    return llm_client.chat(user_prompt, system=system_prompt, temperature=0.3)
 
 
 def run(pains: list[dict], date_str: str, top_n: int = 1) -> None:

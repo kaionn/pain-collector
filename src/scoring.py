@@ -3,8 +3,9 @@
 import json
 import logging
 import math
-import os
 import subprocess
+
+from src import llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -40,43 +41,13 @@ WEIGHTS = {
 
 def _call_llm(prompt: str) -> str:
     """LLM を呼び出す."""
-    token = os.environ.get("GITHUB_TOKEN", "")
-
-    if token:
-        from openai import OpenAI
-
-        client = OpenAI(
-            base_url="https://models.github.ai/inference",
-            api_key=token,
-        )
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
-        )
-        return response.choices[0].message.content or "{}"
-
-    result = subprocess.run(
-        ["claude", "-p", prompt, "--output-format", "text"],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr[:200])
-    return result.stdout.strip()
+    content = llm_client.chat(prompt, temperature=0.3)
+    return content or "{}"
 
 
 def _parse_score_response(content: str) -> dict:
     """LLM レスポンスからスコア JSON をパースする."""
-    content = content.strip()
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    start = content.find("{")
-    end = content.rfind("}")
-    if start != -1 and end != -1:
-        content = content[start : end + 1]
-    return json.loads(content)
+    return llm_client.parse_json_object(content)
 
 
 def normalize_engagement(engagement: dict) -> int:

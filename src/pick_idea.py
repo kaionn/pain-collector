@@ -13,6 +13,8 @@ from datetime import datetime, timezone, timedelta
 
 from sklearn.metrics.pairwise import cosine_similarity
 
+from src import llm_client
+
 from .tokenizer import create_tfidf_vectorizer
 
 logger = logging.getLogger(__name__)
@@ -219,31 +221,7 @@ def _fetch_scored_issues() -> list[dict]:
 
 def _call_llm(prompt: str) -> str:
     """LLM を呼び出す."""
-    token = os.environ.get("GITHUB_TOKEN", "")
-
-    if token:
-        from openai import OpenAI
-
-        client = OpenAI(
-            base_url="https://models.github.ai/inference",
-            api_key=token,
-        )
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
-        )
-        return response.choices[0].message.content or ""
-
-    result = subprocess.run(
-        ["claude", "-p", prompt, "--output-format", "text"],
-        capture_output=True,
-        text=True,
-        timeout=180,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr[:200])
-    return result.stdout.strip()
+    return llm_client.chat(prompt, temperature=0.3)
 
 
 def _parse_llm_picks(content: str, candidates: list[dict]) -> list[dict]:

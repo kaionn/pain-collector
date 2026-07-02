@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
+from src import llm_client
 from src.tokenizer import create_tfidf_vectorizer
 
 # Issue 本文に埋め込むプロダクトキーのメタデータマーカー
@@ -135,8 +136,11 @@ def _find_duplicate_by_product(
 
 
 def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
-    """LLM でグレーゾーンの重複を二次判定する."""
+    """LLM でグレーゾーンの重複を二次判定する（GITHUB_TOKEN がない環境ではスキップ）."""
     import os
+
+    if not os.environ.get("GITHUB_TOKEN"):
+        return False
 
     prompt = (
         "以下の2つのペインが実質的に同じ課題を指しているか判定してください。\n"
@@ -145,26 +149,12 @@ def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
         f"ペイン B: {existing_title}\n"
     )
 
-    token = os.environ.get("GITHUB_TOKEN", "")
-    if token:
-        try:
-            from openai import OpenAI
-
-            client = OpenAI(
-                base_url="https://models.github.ai/inference",
-                api_key=token,
-            )
-            response = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=10,
-            )
-            answer = (response.choices[0].message.content or "").strip().upper()
-            return answer.startswith("YES")
-        except Exception as e:
-            logger.warning(f"LLM 二次判定失敗: {e}")
-    return False
+    try:
+        answer = llm_client.chat(prompt, temperature=0, max_tokens=10).strip().upper()
+        return answer.startswith("YES")
+    except Exception as e:
+        logger.warning(f"LLM 二次判定失敗: {e}")
+        return False
 
 
 def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:

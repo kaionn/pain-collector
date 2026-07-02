@@ -10,6 +10,8 @@ import os
 import subprocess
 from datetime import datetime, timezone, timedelta, date
 
+from src import llm_client
+
 logger = logging.getLogger(__name__)
 
 PATTERN_TTL_DAYS = 90
@@ -134,31 +136,9 @@ def _generalize_patterns_with_llm(titles: list[str], pattern_type: str) -> list[
             '[\"パターン1\", \"パターン2\", ...]'
         )
 
-    token = os.environ.get("GITHUB_TOKEN", "")
     try:
-        if token:
-            from openai import OpenAI
-            client = OpenAI(
-                base_url="https://models.github.ai/inference",
-                api_key=token,
-            )
-            response = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-            )
-            content = response.choices[0].message.content or "[]"
-        else:
-            result = subprocess.run(
-                ["claude", "-p", prompt, "--output-format", "text"],
-                capture_output=True, text=True, timeout=60,
-            )
-            if result.returncode != 0:
-                raise RuntimeError(result.stderr[:200])
-            content = result.stdout.strip()
-
-        from src.extract_pains import _parse_json_response
-        return _parse_json_response(content)
+        content = llm_client.chat(prompt, temperature=0)
+        return llm_client.parse_json_response(content or "[]")
     except Exception as e:
         logger.warning(f"LLM パターン汎化に失敗、フォールバック: {e}")
         return titles

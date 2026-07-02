@@ -10,8 +10,9 @@ import json
 import logging
 import os
 import re
-import subprocess
 from typing import Any
+
+from src import llm_client
 
 from . import generate_product_name
 from . import spec_validator
@@ -97,35 +98,7 @@ _Source: Issue #{source_issue}_
 
 def _call_llm(system_prompt: str, user_prompt: str) -> str:
     """LLM を呼び出す."""
-    token = os.environ.get("GITHUB_TOKEN", "")
-
-    if token:
-        from openai import OpenAI
-
-        client = OpenAI(
-            base_url="https://models.github.ai/inference",
-            api_key=token,
-        )
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.3,
-        )
-        return response.choices[0].message.content or ""
-
-    combined = f"{system_prompt}\n\n{user_prompt}"
-    result = subprocess.run(
-        ["claude", "-p", combined, "--output-format", "text"],
-        capture_output=True,
-        text=True,
-        timeout=180,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr[:200])
-    return result.stdout.strip()
+    return llm_client.chat(user_prompt, system=system_prompt, temperature=0.3)
 
 
 def _strip_code_fence(text: str) -> str:

@@ -16,6 +16,7 @@ import time
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = os.environ.get("LLM_MODEL", "openai/gpt-4o-mini")
+GITHUB_MODELS_BASE_URL = "https://models.github.ai/inference"
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF_SECONDS = 2.0
@@ -39,7 +40,7 @@ def _call_github_models(
     from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
     client = OpenAI(
-        base_url="https://models.github.ai/inference",
+        base_url=GITHUB_MODELS_BASE_URL,
         api_key=token,
     )
 

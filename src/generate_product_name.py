@@ -12,6 +12,8 @@ import re
 import subprocess
 import sys
 
+from src import llm_client
+
 logger = logging.getLogger(__name__)
 
 MAX_LENGTH = 30
@@ -97,11 +99,11 @@ def _call_llm(title: str, *, timeout: int = LLM_TIMEOUT_SEC) -> str | None:
             from openai import OpenAI
 
             client = OpenAI(
-                base_url="https://models.github.ai/inference",
+                base_url=llm_client.GITHUB_MODELS_BASE_URL,
                 api_key=token,
             )
             response = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
+                model=llm_client.DEFAULT_MODEL,
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt},
