@@ -30,16 +30,19 @@ jobs:
         with:
           ref: main
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Sync latest pipeline_state.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          python3 -m src.state_sync fetch \
+          uv run python -m src.state_sync fetch \
             --repo "${{ github.repository }}" \
             --remote-path data/pipeline_state.json \
             --local-path data/pipeline_state.json
@@ -50,7 +53,7 @@ jobs:
           STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
         run: |
           set -euo pipefail
-          python3 -m src.monitor_stalled \
+          uv run python -m src.monitor_stalled \
             --state data/pipeline_state.json \
             --output stalled.json
           COUNT=$(jq -r '.stalled_count' stalled.json)
@@ -70,16 +73,16 @@ jobs:
           set -euo pipefail
 
           # state を更新（apply モード）
-          python3 -m src.monitor_stalled \
+          uv run python -m src.monitor_stalled \
             --state data/pipeline_state.json \
             --output stalled.json \
             --apply
 
           # 各 stalled Issue に対してラベル変更とコメント
-          python3 -m src.workflow_alerts stalled-issues --summary stalled.json
+          uv run python -m src.workflow_alerts stalled-issues --summary stalled.json
 
           # GitHub API 経由で pipeline_state.json を更新（branch protection バイパス）
-          python3 -m src.state_sync push \
+          uv run python -m src.state_sync push \
             --repo "${{ github.repository }}" \
             --remote-path data/pipeline_state.json \
             --local-path data/pipeline_state.json \
@@ -95,4 +98,4 @@ jobs:
             echo "DISCORD_WEBHOOK_URL 未設定のため Discord 通知をスキップ"
             exit 0
           fi
-          python3 -m src.workflow_alerts discord --summary stalled.json
+          uv run python -m src.workflow_alerts discord --summary stalled.json

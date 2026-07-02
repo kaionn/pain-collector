@@ -18,40 +18,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync
 
       - name: Generate monthly report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --monthly
+        run: uv run python -m src.main --monthly
 
       - name: Cross analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --cross-analysis
+        run: uv run python -m src.main --cross-analysis
 
       - name: Generate dashboard
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --dashboard
+        run: uv run python -m src.main --dashboard
 
       - name: Portfolio snapshot
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --portfolio
+        run: uv run python -m src.main --portfolio
 
       - name: Validate top ideas
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --validate
+        run: uv run python -m src.main --validate
 
       - name: Commit and push
         run: |

@@ -16,17 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync
 
       - name: Learn from feedback
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --learn
+        run: uv run python -m src.main --learn
 
       - name: Commit and push
         run: |

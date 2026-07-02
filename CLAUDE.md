@@ -31,15 +31,19 @@ data/          # パイプライン状態（pipeline_state.json 等）
 ## コマンド
 
 ```bash
-# 依存インストール
-pip install -r requirements.txt
+# 依存インストール（pyproject.toml + uv.lock が正）
+uv sync
 
 # テスト実行
-python -m pytest tests/ -v
+uv run pytest tests/ -v
 
 # 日次収集
 python -m src.main
+```
 
+`requirements.txt` は過渡期のため当面残す（`pip install` によるローカル互換用）。依存の一次情報は `pyproject.toml` + `uv.lock`。
+
+```bash
 # 週次トレンド
 python -m src.main --weekly
 

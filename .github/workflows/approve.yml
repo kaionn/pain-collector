@@ -22,16 +22,19 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Sync latest pipeline_state.json from GitHub API
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # /spec 直後の /approve でも race を避けるため、リモートの最新を取り直す
-          python3 -m src.state_sync fetch \
+          uv run python -m src.state_sync fetch \
             --repo "${{ github.repository }}" \
             --remote-path data/pipeline_state.json \
             --local-path data/pipeline_state.json
@@ -56,7 +59,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PICKED_CHECK=$(python3 -m src.approve_checks picked-check \
+          PICKED_CHECK=$(uv run python -m src.approve_checks picked-check \
             --state data/pipeline_state.json \
             --issue-number "$ISSUE_NUMBER")
 
@@ -82,7 +85,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           # 既存 state に product_name が保存されていれば再利用（冪等化）
-          EXISTING=$(python3 -m src.approve_checks resolve-product-name \
+          EXISTING=$(uv run python -m src.approve_checks resolve-product-name \
             --state data/pipeline_state.json \
             --issue-number "$ISSUE_NUMBER")
 
@@ -91,7 +94,7 @@ jobs:
             PRODUCT_NAME="$EXISTING"
           else
             TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title')
-            PRODUCT_NAME=$(python3 -m src.generate_product_name \
+            PRODUCT_NAME=$(uv run python -m src.generate_product_name \
               --title "$TITLE" \
               --issue-number "$ISSUE_NUMBER")
             echo "新規生成した product_name: $PRODUCT_NAME"
@@ -110,14 +113,14 @@ jobs:
             --body "🚀 承認されました。自動実装を開始します...
           プロダクト名: \`$PRODUCT_NAME\`（リポジトリ: kaionn/$PRODUCT_NAME）"
 
-          python3 -m src.approve_checks update-state \
+          uv run python -m src.approve_checks update-state \
             --state data/pipeline_state.json \
             --issue-number "$ISSUE_NUMBER" \
             --status building \
             --product-name "$PRODUCT_NAME"
 
           # pipeline_state.json を GitHub API で直接更新（Branch Protection バイパス）
-          python3 -m src.state_sync push \
+          uv run python -m src.state_sync push \
             --repo "${{ github.repository }}" \
             --remote-path data/pipeline_state.json \
             --local-path data/pipeline_state.json \
@@ -135,7 +138,7 @@ jobs:
 
           # Deep Dive があれば同様に渡す
           DEEP_DIVE_CONTENT=""
-          DEEP_DIVE_PATH=$(python3 -m src.approve_checks deep-dive-path \
+          DEEP_DIVE_PATH=$(uv run python -m src.approve_checks deep-dive-path \
             --state data/pipeline_state.json \
             --issue-number "$ISSUE_NUMBER")
           if [ -n "$DEEP_DIVE_PATH" ] && [ -f "$DEEP_DIVE_PATH" ]; then

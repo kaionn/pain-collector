@@ -17,18 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync
 
       - name: Run weekly analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -c "
+        run: uv run python -c "
           from datetime import datetime, timezone, timedelta;
           from src.weekly_trends import run;
           today = datetime.now(timezone(timedelta(hours=9))).date();
@@ -39,12 +39,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --score-issues
+        run: uv run python -m src.main --score-issues
 
       - name: Issue cleanup
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --cleanup
+        run: uv run python -m src.main --cleanup
 
       - name: Pick idea
         env:
@@ -53,13 +53,13 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-        run: python -m src.main --pick-idea
+        run: uv run python -m src.main --pick-idea
 
       - name: Weekly deep dive (top 5)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: python -m src.main --deep-dive-weekly
+        run: uv run python -m src.main --deep-dive-weekly
 
       - name: Commit and push
         run: |
