@@ -2,9 +2,11 @@
 
 import json
 import logging
+import os
 import re
 import subprocess
 
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,15 @@ WTP_LABELS = {
 
 DUPLICATE_THRESHOLD_HIGH = 0.7  # 確実に重複
 DUPLICATE_THRESHOLD_LOW = 0.4   # グレーゾーン（LLM で二次判定）
+
+# embeddings dedup（GummySearch / BERTopic 方式）。`PAIN_USE_EMBEDDINGS=1` で有効化
+EMBED_THRESHOLD_HIGH = float(os.environ.get("PAIN_EMBED_THRESHOLD_HIGH", "0.85"))
+EMBED_THRESHOLD_LOW = float(os.environ.get("PAIN_EMBED_THRESHOLD_LOW", "0.60"))
+
+
+def _use_embeddings() -> bool:
+    """`PAIN_USE_EMBEDDINGS` フラグで embeddings dedup が有効かどうかを判定する（既定 OFF）."""
+    return os.environ.get("PAIN_USE_EMBEDDINGS", "").strip().lower() in ("1", "true")
 
 
 def _extract_product_key(source_url: str | None) -> str | None:
@@ -194,8 +205,6 @@ def _find_duplicate_by_product(
 
 def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
     """LLM でグレーゾーンの重複を二次判定する（GITHUB_TOKEN がない環境ではスキップ）."""
-    import os
-
     if not os.environ.get("GITHUB_TOKEN"):
         return False
 
@@ -214,36 +223,86 @@ def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
         return False
 
 
+def _tfidf_similarities(pain_text: str, titles: list[str]) -> np.ndarray | None:
+    """既存タイトル群と pain_text の TF-IDF cosine similarity を計算する.
+
+    トークンが極端に少ない等で TF-IDF が組めない場合は None を返す。
+    """
+    corpus = titles + [pain_text]
+    try:
+        tfidf = create_tfidf_vectorizer().fit_transform(corpus)
+        return cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
+    except ValueError:
+        return None
+
+
+def _embedding_similarities(pain_text: str, titles: list[str]) -> np.ndarray | None:
+    """既存タイトル群と pain_text の embeddings cosine similarity を計算する.
+
+    `llm_client.embed()` が None を返した場合（GITHUB_TOKEN 無し・API 失敗）は
+    None を返し、呼び出し側で TF-IDF にフォールバックさせる。
+    """
+    vectors = llm_client.embed(titles + [pain_text])
+    if vectors is None:
+        return None
+
+    matrix = np.array(vectors)
+    return cosine_similarity(matrix[-1:], matrix[:-1]).flatten()
+
+
+def _judge_by_similarity(
+    pain_text: str,
+    existing_issues: list[dict],
+    titles: list[str],
+    sims: np.ndarray,
+    threshold_high: float,
+    threshold_low: float,
+) -> dict | None:
+    """類似度配列を閾値判定し、確実な重複はそのまま、グレーゾーンは LLM で二次判定する."""
+    max_idx = sims.argmax()
+    max_sim = sims[max_idx]
+
+    if max_sim >= threshold_high:
+        return existing_issues[max_idx]
+
+    if max_sim >= threshold_low:
+        logger.info(f"グレーゾーン (sim={max_sim:.2f}) → LLM 二次判定")
+        if _llm_judge_duplicate(pain_text, titles[max_idx]):
+            return existing_issues[max_idx]
+
+    return None
+
+
 def _find_duplicate(pain_text: str, existing_issues: list[dict]) -> dict | None:
     """既存 Issue の中から重複を検出する（2 段階判定）.
 
-    1. TF-IDF cosine similarity >= 0.7 → 確実に重複
-    2. 0.4 <= similarity < 0.7 → LLM で二次判定
+    `PAIN_USE_EMBEDDINGS=1` が設定されていれば embeddings cosine similarity
+    （高 0.85 / 低 0.60、GummySearch / BERTopic 方式）、未設定なら現行の
+    TF-IDF cosine similarity（高 0.7 / 低 0.4）を使う。いずれもグレーゾーンは
+    `_llm_judge_duplicate` で二次判定する。embeddings が取得できない場合は
+    TF-IDF に自動フォールバックする。
     """
     if not existing_issues:
         return None
 
     titles = [issue["title"] for issue in existing_issues]
-    corpus = titles + [pain_text]
 
-    try:
-        tfidf = create_tfidf_vectorizer().fit_transform(corpus)
-        sims = cosine_similarity(tfidf[-1:], tfidf[:-1]).flatten()
+    if _use_embeddings():
+        sims = _embedding_similarities(pain_text, titles)
+        if sims is not None:
+            return _judge_by_similarity(
+                pain_text, existing_issues, titles, sims,
+                EMBED_THRESHOLD_HIGH, EMBED_THRESHOLD_LOW,
+            )
+        logger.info("embeddings 取得失敗 → TF-IDF にフォールバック")
 
-        max_idx = sims.argmax()
-        max_sim = sims[max_idx]
-
-        if max_sim >= DUPLICATE_THRESHOLD_HIGH:
-            return existing_issues[max_idx]
-
-        if max_sim >= DUPLICATE_THRESHOLD_LOW:
-            logger.info(f"グレーゾーン (sim={max_sim:.2f}) → LLM 二次判定")
-            if _llm_judge_duplicate(pain_text, titles[max_idx]):
-                return existing_issues[max_idx]
-    except ValueError:
-        pass
-
-    return None
+    sims = _tfidf_similarities(pain_text, titles)
+    if sims is None:
+        return None
+    return _judge_by_similarity(
+        pain_text, existing_issues, titles, sims,
+        DUPLICATE_THRESHOLD_HIGH, DUPLICATE_THRESHOLD_LOW,
+    )
 
 
 def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:

@@ -86,6 +86,8 @@ python -m src.main --pick-idea
 
 Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタデータを埋め込み、本文パースなしで高速判定する。既存 Issue は `## ソース` セクションの URL から再抽出するフォールバックで後方互換を維持。
 
+`PAIN_USE_EMBEDDINGS=1` を設定すると、TF-IDF の代わりに `llm_client.embed()`（GitHub Models embeddings API）による cosine similarity 判定に切り替わる（既定 OFF）。閾値は高 0.85 / 低 0.60。embeddings が取得できない場合（`GITHUB_TOKEN` 無し・API 失敗）は自動で TF-IDF にフォールバックする。
+
 通知は個別配信ではなく日次 digest に集約する（severity 降順）。「同一アプリに対する別バグ報告」が大量重複する設計上の盲点への対策。
 
 ## モバイル候補の技術スタック既定

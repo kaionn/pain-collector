@@ -16,6 +16,7 @@ import time
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = os.environ.get("LLM_MODEL", "openai/gpt-4o-mini")
+DEFAULT_EMBED_MODEL = os.environ.get("LLM_EMBED_MODEL", "openai/text-embedding-3-small")
 GITHUB_MODELS_BASE_URL = "https://models.github.ai/inference"
 
 MAX_RETRIES = 3
@@ -69,6 +70,37 @@ def _call_github_models(
         raise
 
     return response.choices[0].message.content or ""
+
+
+def _call_github_embeddings(
+    token: str,
+    texts: list[str],
+    *,
+    model: str | None,
+) -> list[list[float]]:
+    """GitHub Models の embeddings API (openai SDK) を呼び出す."""
+    from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
+
+    client = OpenAI(
+        base_url=GITHUB_MODELS_BASE_URL,
+        api_key=token,
+    )
+
+    try:
+        response = client.embeddings.create(
+            model=model or DEFAULT_EMBED_MODEL,
+            input=texts,
+        )
+    except RateLimitError as e:
+        raise _RetriableLLMError(str(e)) from e
+    except APIConnectionError as e:
+        raise _RetriableLLMError(str(e)) from e
+    except APIStatusError as e:
+        if e.status_code >= 500:
+            raise _RetriableLLMError(str(e)) from e
+        raise
+
+    return [item.embedding for item in response.data]
 
 
 def _call_claude_cli(user_content: str, *, system: str | None) -> str:
@@ -133,6 +165,43 @@ def chat(
     logger.error(f"LLM 呼び出しが{MAX_RETRIES}回失敗: {last_exc}")
     assert last_exc is not None
     raise last_exc
+
+
+def embed(
+    texts: list[str],
+    *,
+    model: str | None = None,
+) -> list[list[float]] | None:
+    """テキスト群を埋め込みベクトル化する（GummySearch / BERTopic 方式の dedup 用）.
+
+    GitHub Models の embeddings API のみに対応する。`GITHUB_TOKEN` が無い
+    （Claude CLI バックエンド）場合、または API 呼び出しが最終的に失敗した場合は
+    None を返す。呼び出し側は TF-IDF 等へのフォールバックを行うこと。
+    """
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        logger.info("GITHUB_TOKEN 未設定のため embeddings をスキップ")
+        return None
+
+    last_exc: Exception | None = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            return _call_github_embeddings(token, texts, model=model)
+        except _RetriableLLMError as e:
+            last_exc = e
+            if attempt < MAX_RETRIES:
+                wait = INITIAL_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                logger.warning(
+                    f"embeddings 呼び出し失敗 ({attempt}/{MAX_RETRIES}): {e}. "
+                    f"{wait}秒後にリトライ"
+                )
+                time.sleep(wait)
+        except Exception as e:
+            logger.warning(f"embeddings 呼び出し失敗（リトライ対象外）: {e}")
+            return None
+
+    logger.error(f"embeddings 呼び出しが{MAX_RETRIES}回失敗: {last_exc}")
+    return None
 
 
 def _strip_code_fence(content: str) -> str:

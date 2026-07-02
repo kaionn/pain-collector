@@ -8,6 +8,7 @@ import pytest
 from src.llm_client import (
     _RetriableLLMError,
     chat,
+    embed,
     parse_json_object,
     parse_json_response,
 )
@@ -149,6 +150,63 @@ class TestRetry:
             result = chat("CLI 呼び出し", system="システム指示")
 
         assert result == "成功しました"
+
+
+class TestEmbed:
+    """embed() のテスト（ネットワークには一切出ない）."""
+
+    def test_no_token_returns_none(self, monkeypatch):
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        with patch("src.llm_client._call_github_embeddings") as mock_embed:
+            result = embed(["テキスト"])
+
+        assert result is None
+        mock_embed.assert_not_called()
+
+    def test_success_returns_vectors(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
+        with patch(
+            "src.llm_client._call_github_embeddings",
+            return_value=[[0.1, 0.2], [0.3, 0.4]],
+        ) as mock_embed:
+            result = embed(["テキスト1", "テキスト2"])
+
+        assert result == [[0.1, 0.2], [0.3, 0.4]]
+        mock_embed.assert_called_once()
+
+    def test_retriable_failure_returns_none_after_max_retries(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
+        with (
+            patch(
+                "src.llm_client._call_github_embeddings",
+                side_effect=_RetriableLLMError("常に失敗"),
+            ),
+            patch("src.llm_client.time.sleep") as mock_sleep,
+        ):
+            result = embed(["テキスト"])
+
+        assert result is None
+        assert mock_sleep.call_count == 2
+
+    def test_non_retriable_exception_returns_none(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
+        with patch(
+            "src.llm_client._call_github_embeddings",
+            side_effect=ValueError("致命的エラー"),
+        ):
+            result = embed(["テキスト"])
+
+        assert result is None
+
+    def test_passes_model_override(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
+        with patch(
+            "src.llm_client._call_github_embeddings", return_value=[[0.1]]
+        ) as mock_embed:
+            embed(["テキスト"], model="openai/text-embedding-3-large")
+
+        kwargs = mock_embed.call_args.kwargs
+        assert kwargs["model"] == "openai/text-embedding-3-large"
 
 
 class TestParseJsonResponse:

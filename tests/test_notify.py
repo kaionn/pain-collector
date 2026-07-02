@@ -4,11 +4,15 @@
 TF-IDF による重複検出の純粋ロジックのみをテストする。
 """
 
+from unittest.mock import patch
+
 import pytest
 
 from src.notify import (
     DUPLICATE_THRESHOLD_HIGH,
     DUPLICATE_THRESHOLD_LOW,
+    EMBED_THRESHOLD_HIGH,
+    EMBED_THRESHOLD_LOW,
     _build_pain_data_comment,
     _extract_product_key,
     _extract_product_key_from_body,
@@ -109,6 +113,87 @@ class TestFindDuplicate:
         result = _find_duplicate(pain_text, existing)
         assert result is not None
         assert result["number"] == 5
+
+
+class TestFindDuplicateEmbeddings:
+    """_find_duplicate の embeddings dedup 切替（PAIN_USE_EMBEDDINGS）のテスト.
+
+    embeddings のベクトルは cosine similarity を検証しやすい単純な値で
+    モックする（実際の embeddings API には出ない）。
+    """
+
+    def test_embed_threshold_constants(self):
+        assert EMBED_THRESHOLD_HIGH == 0.85
+        assert EMBED_THRESHOLD_LOW == 0.60
+
+    def test_flag_off_never_calls_embed(self, monkeypatch):
+        """フラグ未設定時は embeddings を一切呼ばず、TF-IDF 経路のまま動く."""
+        monkeypatch.delenv("PAIN_USE_EMBEDDINGS", raising=False)
+        existing = [{"number": 1, "title": "毎日の家計管理が面倒で自動化したい"}]
+
+        with patch("src.notify.llm_client.embed") as mock_embed:
+            result = _find_duplicate("毎日の家計管理が面倒で自動化したい", existing)
+
+        mock_embed.assert_not_called()
+        assert result is not None
+        assert result["number"] == 1
+
+    def test_flag_on_high_similarity_detected(self, monkeypatch):
+        monkeypatch.setenv("PAIN_USE_EMBEDDINGS", "1")
+        existing = [
+            {"number": 1, "title": "A"},
+            {"number": 2, "title": "B"},
+        ]
+        # titles + [pain_text] の順でベクトル化される -> [A, B, pain]
+        vectors = [[1.0, 0.0], [0.0, 1.0], [1.0, 0.01]]
+
+        with patch("src.notify.llm_client.embed", return_value=vectors) as mock_embed:
+            result = _find_duplicate("pain text", existing)
+
+        mock_embed.assert_called_once()
+        assert result is not None
+        assert result["number"] == 1
+
+    def test_flag_on_grey_zone_defers_to_llm_judge(self, monkeypatch):
+        monkeypatch.setenv("PAIN_USE_EMBEDDINGS", "true")
+        existing = [{"number": 5, "title": "似ているタイトル"}]
+        # cos_sim ≈ 0.75 -> 0.60〜0.85 のグレーゾーン
+        vectors = [[1.0, 0.0], [0.75, 0.66]]
+
+        with (
+            patch("src.notify.llm_client.embed", return_value=vectors),
+            patch("src.notify._llm_judge_duplicate", return_value=True) as mock_judge,
+        ):
+            result = _find_duplicate("pain text", existing)
+
+        mock_judge.assert_called_once()
+        assert result is not None
+        assert result["number"] == 5
+
+    def test_flag_on_grey_zone_llm_rejects_returns_none(self, monkeypatch):
+        monkeypatch.setenv("PAIN_USE_EMBEDDINGS", "1")
+        existing = [{"number": 5, "title": "似ているタイトル"}]
+        vectors = [[1.0, 0.0], [0.75, 0.66]]
+
+        with (
+            patch("src.notify.llm_client.embed", return_value=vectors),
+            patch("src.notify._llm_judge_duplicate", return_value=False),
+        ):
+            result = _find_duplicate("pain text", existing)
+
+        assert result is None
+
+    def test_flag_on_embed_none_falls_back_to_tfidf(self, monkeypatch):
+        """embed() が None（GITHUB_TOKEN 無し・API 失敗）を返したら TF-IDF にフォールバックする."""
+        monkeypatch.setenv("PAIN_USE_EMBEDDINGS", "1")
+        existing = [{"number": 1, "title": "毎日の家計管理が面倒で自動化したい"}]
+
+        with patch("src.notify.llm_client.embed", return_value=None) as mock_embed:
+            result = _find_duplicate("毎日の家計管理が面倒で自動化したい", existing)
+
+        mock_embed.assert_called_once()
+        assert result is not None
+        assert result["number"] == 1
 
 
 class TestExtractProductKey:
