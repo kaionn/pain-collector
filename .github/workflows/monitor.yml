@@ -16,6 +16,11 @@ on:
         required: false
         default: 'false'
         type: string
+      force_pat_check:
+        description: 'true なら PAT 失効チェックの結果を必ず Discord に通知する（疎通確認用）'
+        required: false
+        default: 'false'
+        type: string
 
 permissions:
   contents: write
@@ -36,6 +41,18 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
+
+      # PAT 失効の事前検知（失効すると collect.yml の checkout が死ぬため、
+      # PAT 非依存で動く本ワークフローに置く）。通知は UTC 21 時台 = JST 朝 6 時台の 1 回のみ
+      - name: Check PAT expiry
+        continue-on-error: true
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          uv run python -m src.pat_expiry_check --warn-days 7 --gate-hour 21 \
+            ${{ github.event.inputs.force_pat_check == 'true' && '--force' || '' }}
 
       - name: Sync latest pipeline_state.json
         env:
