@@ -15,6 +15,9 @@ jobs:
     if: github.event_name == 'schedule' || github.actor == 'kaionn'
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Branch Protection バイパスには PAT が必要（GITHUB_TOKEN では push が拒否される）
+          token: ${{ secrets.PAT_TOKEN }}
 
       - uses: astral-sh/setup-uv@v5
         with:
