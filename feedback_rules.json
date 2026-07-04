@@ -1,21 +1,77 @@
 {
   "exclude_patterns": [
-    {"pattern": "国際政治・外交・軍事・安全保障に関するニュース報道", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "企業の不祥事・炎上・サービストラブルの報道", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "犯罪・事件・裁判に関する報道", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "政治的な意見・主張・政策議論", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "自然災害・疫病に関するニュース", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "エンタメ・カルチャーの感想や批評（映画、ゲーム、マンガ、本）", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "個人の一回限りのトラブル体験談（飲食店のミス、配送トラブル等）", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "哲学的・思想的・抽象的な議論", "created_at": "2026-03-01", "source_issues": []}
+    {
+      "pattern": "国際政治・外交・軍事・安全保障に関するニュース報道",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "企業の不祥事・炎上・サービストラブルの報道",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "犯罪・事件・裁判に関する報道",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "政治的な意見・主張・政策議論",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "自然災害・疫病に関するニュース",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "エンタメ・カルチャーの感想や批評（映画、ゲーム、マンガ、本）",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "個人の一回限りのトラブル体験談（飲食店のミス、配送トラブル等）",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "哲学的・思想的・抽象的な議論",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    }
   ],
   "priority_patterns": [
-    {"pattern": "日常的に繰り返し発生する具体的な不便・不満", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "既存ツールやアプリへの具体的な改善要望", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "業務効率化や時間短縮に関するペイン", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "個人開発者が1-2週間で MVP を作れるスケールのペイン", "created_at": "2026-03-01", "source_issues": []},
-    {"pattern": "課金意欲・購入意欲を明示的に表現しているペイン", "created_at": "2026-04-04", "source_issues": []},
-    {"pattern": "既存有料サービスへの不満（既にお金を払っているユーザーのペイン）", "created_at": "2026-04-04", "source_issues": []}
+    {
+      "pattern": "日常的に繰り返し発生する具体的な不便・不満",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "既存ツールやアプリへの具体的な改善要望",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "業務効率化や時間短縮に関するペイン",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "個人開発者が1-2週間で MVP を作れるスケールのペイン",
+      "created_at": "2026-03-01",
+      "source_issues": []
+    },
+    {
+      "pattern": "課金意欲・購入意欲を明示的に表現しているペイン",
+      "created_at": "2026-04-04",
+      "source_issues": []
+    },
+    {
+      "pattern": "既存有料サービスへの不満（既にお金を払っているユーザーのペイン）",
+      "created_at": "2026-04-04",
+      "source_issues": []
+    }
   ],
-  "updated_at": "2026-04-04T10:00:00+09:00"
+  "updated_at": "2026-07-05T06:27:33.793418+09:00"
 }
