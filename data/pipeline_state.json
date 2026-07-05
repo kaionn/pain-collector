@@ -109,6 +109,32 @@
         }
       ],
       "product_name": "subscription-guard"
+    },
+    {
+      "issue_number": 223,
+      "title": "[テクノロジー] Developers are facing issues with SSL certificate validation in Docker, causing ",
+      "picked_at": "2026-07-05T15:47:56.557775+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": "ssl-certificate-docker-issues",
+      "status": "probing",
+      "source": "issue-command",
+      "events": [
+        {
+          "action": "pick",
+          "at": "2026-07-05T15:47:56.557795+09:00",
+          "payload": {
+            "by": "issue-command"
+          }
+        },
+        {
+          "action": "probe",
+          "at": "2026-07-05T15:48:02.186217+09:00",
+          "payload": {
+            "product_name": "ssl-certificate-docker-issues"
+          }
+        }
+      ]
     }
   ]
 }
