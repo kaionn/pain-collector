@@ -11,13 +11,14 @@ permissions:
 
 jobs:
   dispatch:
-    # /pick /spec /status /reject /help いずれかで開始 + pain-report ラベル付き Issue のみ
+    # /pick /spec /status /probe /reject /help いずれかで開始 + pain-report ラベル付き Issue のみ
     if: |
       contains(github.event.issue.labels.*.name, 'pain-report') &&
       (
         startsWith(github.event.comment.body, '/pick') ||
         startsWith(github.event.comment.body, '/spec') ||
         startsWith(github.event.comment.body, '/status') ||
+        startsWith(github.event.comment.body, '/probe') ||
         startsWith(github.event.comment.body, '/reject') ||
         startsWith(github.event.comment.body, '/help')
       )
@@ -65,6 +66,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # /probe の signal-lab への workflow dispatch にのみ使用（他リポジトリへの
+          # dispatch は GITHUB_TOKEN では権限不足なため、その呼び出しだけ GH_TOKEN を上書きする）
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}

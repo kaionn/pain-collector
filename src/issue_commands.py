@@ -1,12 +1,13 @@
 """Issue コメントから操作するコマンド群.
 
 GitHub Actions の issue_comment トリガーから呼び出され、
-スコアラベルや日次パイプラインに依存せず単体で Issue を pick → spec → approve まで進められる。
+スコアラベルや日次パイプラインに依存せず単体で Issue を pick → spec → probe まで進められる。
 
 サブコマンド:
 - pick     : pipeline_state.json の picked[] にこの Issue を追加
 - spec     : Issue 本文から Spec を生成し、picked[] の spec を更新（--force で再生成）
 - status   : この Issue の picked / spec / deep_dive 状態を返却
+- probe    : Signal Lab（kaionn/signal-lab）へ検証用 LP 生成を dispatch する
 - reject   : picked[] からこの Issue を削除
 - help     : コマンド一覧を返す（既存 Issue で覚えがない時用）
 
@@ -19,14 +20,18 @@ GitHub Actions の issue_comment トリガーから呼び出され、
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import logging
 import os
+import re
 import shlex
 from datetime import datetime, timezone, timedelta
 
+from . import generate_product_name
 from . import generate_spec
 from . import gh_client
+from . import notify
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -39,6 +44,10 @@ JST = timezone(timedelta(hours=9))
 LABEL_PICKED = "📌picked"
 LABEL_SPEC_READY = "📐spec-ready"
 LABEL_BUILDING = "building"
+LABEL_PROBING = "🧪probing"
+
+SIGNAL_LAB_REPO = "kaionn/signal-lab"
+SIGNAL_LAB_WORKFLOW = "probe-request.yml"
 
 HELP_TEXT = gh_client.HELP_BLOCK
 
@@ -191,7 +200,7 @@ def cmd_pick(issue_number: int, args: list[str] | None = None) -> int:
         "✅ MVP 候補として pick されたのだ。\n\n"
         "次のステップ:\n"
         "- `/spec` で Spec を生成\n"
-        "- Spec 生成後に `/approve` で自動実装トリガー\n"
+        "- `/probe` で Signal Lab に検証用 LP を生成依頼\n"
         "- 取り消すには `/reject`",
     )
     _notify_discord(f"📌 picked: #{issue_number} {entry['title'][:60]}")
@@ -262,9 +271,152 @@ def cmd_spec(issue_number: int, args: list[str] | None = None) -> int:
     gh_client.post_comment(
         issue_number,
         f"✅ Spec を生成したのだ: `{rel_path}`\n\n"
-        f"次は `/approve` コメントで自動実装が走るのだ。",
+        f"次は `/probe` コメントで Signal Lab に検証用 LP 生成を依頼できるのだ。",
     )
     _notify_discord(f"📐 spec-ready: #{issue_number} → {rel_path}")
+    return 0
+
+
+_SOURCE_SECTION_RE = re.compile(r"## ソース\n+\[(.*?)\]\((https?://[^\s)]+)\)")
+_MARKET_SECTION_RE = re.compile(r"## 市場シグナル\n(.*?)(?:\n##|\Z)", re.DOTALL)
+_MARKET_APP_RE = re.compile(
+    r"- \[(?P<name>.*?)\]\((?P<url>https?://[^\s)]+)\) "
+    r"⭐(?P<rating>[^\s(]+) \((?P<reviews>\d+)件\) (?P<price>.+)"
+)
+
+
+def _first_sentence(text: str) -> str:
+    """先頭の一文（句点区切り）を取り出す。無ければ先頭行を短縮して返す."""
+    stripped = text.strip()
+    if not stripped:
+        return ""
+    first_line = stripped.split("\n", 1)[0].strip()
+    if "。" in first_line:
+        return first_line.split("。", 1)[0] + "。"
+    return first_line[:120]
+
+
+def _extract_source(body: str) -> tuple[str | None, str | None]:
+    """Issue 本文の `## ソース` セクションから (source_url, source_title) を抽出する."""
+    m = _SOURCE_SECTION_RE.search(body)
+    if not m:
+        return None, None
+    title, url = m.group(1), m.group(2)
+    return url, title
+
+
+def _extract_market_apps(body: str) -> list[dict]:
+    """Issue 本文の `## 市場シグナル` セクションから競合アプリ一覧を抽出する."""
+    section_match = _MARKET_SECTION_RE.search(body)
+    if not section_match:
+        return []
+
+    apps = []
+    for m in _MARKET_APP_RE.finditer(section_match.group(1)):
+        apps.append({
+            "name": m.group("name"),
+            "url": m.group("url"),
+            "rating": m.group("rating"),
+            "reviews": int(m.group("reviews")),
+            "price": m.group("price").strip(),
+        })
+    return apps
+
+
+def _build_probe_payload(issue_number: int, title: str, body: str, product_name: str) -> dict:
+    """signal-lab の probe-request.yml へ渡すペイロードを構築する.
+
+    構造化データは notify.extract_pain_data_from_body（Issue 本文に埋め込まれた
+    pain-data メタデータ）を再利用し、そこに含まれない source_url / market_apps のみ
+    Issue 本文の該当セクションから抽出する。
+    """
+    pain_data = notify.extract_pain_data_from_body(body) or {
+        "pain": title,
+        "app_idea": "",
+        "existing_solutions": None,
+        "severity": 3,
+        "willingness_to_pay": "medium",
+    }
+
+    pain_text = pain_data.get("pain") or title
+    existing = pain_data.get("existing_solutions")
+    pain_full = f"{pain_text}\n\n既存ソリューション: {existing}" if existing else pain_text
+
+    idea = pain_data.get("app_idea") or ""
+    tagline = _first_sentence(idea) if idea else title
+
+    source_url, source_title = _extract_source(body)
+    market_apps = _extract_market_apps(body)
+
+    return {
+        "slug": product_name,
+        "title": product_name,
+        "tagline": tagline,
+        "pain": pain_full,
+        "idea": idea,
+        "source_url": source_url,
+        "source_title": source_title,
+        "market_apps": market_apps,
+        "severity": pain_data.get("severity", 3),
+        "monetization": pain_data.get("willingness_to_pay", "medium"),
+    }
+
+
+def cmd_probe(issue_number: int, args: list[str] | None = None) -> int:
+    """Signal Lab（kaionn/signal-lab）へ検証用 LP 生成を dispatch する."""
+    state = _load_state()
+    entry = _find_entry(state, issue_number)
+    if entry is None:
+        # 未 pick の場合は自動で pick も行う（/spec と同じ流儀）
+        cmd_pick(issue_number)
+        state = _load_state()
+        entry = _find_entry(state, issue_number)
+        if entry is None:
+            gh_client.post_comment(issue_number, "❌ pick に失敗したのだ。")
+            return 1
+
+    issue = gh_client.fetch_issue(issue_number)
+    title = issue.get("title", "")
+    body = issue.get("body", "") or ""
+
+    # 既存 product_name があれば再利用（冪等化。/approve と同じ方針）
+    product_name = entry.get("product_name") or generate_product_name.generate(title, issue_number)
+
+    payload = _build_probe_payload(issue_number, title, body, product_name)
+    encoded_payload = base64.b64encode(
+        json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    ).decode("ascii")
+
+    dispatched = gh_client.trigger_workflow(
+        SIGNAL_LAB_REPO,
+        SIGNAL_LAB_WORKFLOW,
+        {
+            "issue_number": str(issue_number),
+            "source_repo": "kaionn/pain-collector",
+            "payload": encoded_payload,
+        },
+        token=os.environ.get("PAT_TOKEN"),
+    )
+
+    if not dispatched:
+        gh_client.post_comment(
+            issue_number,
+            "❌ Signal Lab への dispatch に失敗したのだ。Actions ログを確認するのだ。",
+        )
+        return 1
+
+    entry["product_name"] = product_name
+    entry["status"] = "probing"
+    _append_event(entry, "probe", {"product_name": product_name})
+    _save_state(state)
+
+    gh_client.add_labels(issue_number, [LABEL_PROBING])
+    gh_client.post_comment(
+        issue_number,
+        "🧪 Probe 生成を Signal Lab に依頼したのだ。PR ができたら通知が届くのだ。\n\n"
+        f"プロダクト名: `{product_name}`",
+    )
+    _notify_discord(f"🧪 probing: #{issue_number} {product_name}")
     return 0
 
 
@@ -357,6 +509,7 @@ COMMANDS = {
     "pick": cmd_pick,
     "spec": cmd_spec,
     "status": cmd_status,
+    "probe": cmd_probe,
     "reject": cmd_reject,
     "help": cmd_help,
 }
