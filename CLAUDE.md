@@ -97,3 +97,44 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 ## .gitignore とワークフローの commit 対象を同期する
 
 成果物ディレクトリを `.gitignore` に追加・除外する際は、それを `git add` で明示している全ワークフロー（`collect.yml` 等）の add 対象も同時に揃える。
+
+## LLM 呼び出しの統一（src/llm_client.py）
+
+新規モジュールで LLM を呼ぶ場合は `src/llm_client.py` の `chat()` / `parse_json_response()` / `parse_json_object()` / `embed()` を経由する。モデル名（`openai/gpt-4o-mini`）・base_url（`https://models.github.ai/inference`）・リトライは同モジュールに一元化されている。`openai` SDK や `subprocess`（Claude CLI）を直呼びしてモデル名・base_url をハードコードしない。
+
+例外: 呼び出しごとに可変のタイムアウトを CLI 引数で公開しているモジュール（`generate_product_name.py` 等）や、「例外を投げず None を返す」契約をテストが検証しているモジュールは、トランスポート統合はせず定数（`llm_client.DEFAULT_MODEL` / `GITHUB_MODELS_BASE_URL`）の共有のみに留める。`chat()` はタイムアウト引数を持たず例外を投げる契約のため。
+
+## コレクタの追加方法（collector registry）
+
+新しいコレクタを追加する際は `src/collector_registry.py` の `@register_collector(key, display_name, supports_backfill=...)` デコレータで登録する。`main.py` に手動の並行リスト（collectors / raw_keys）を書き足さない（registry 撤廃済み）。出力 post は `validate_post()` を通す。テスト `test_collector_registry.py` の「登録済みキー集合が期待値と一致する」検証があるため、追加時は期待集合も更新する。
+
+## コレクタのテスト方針（tests/collectors/）
+
+各コレクタは最低 2 テスト（happy path + エラー時空リスト）を `tests/collectors/` に置く。モック方式はソースの取得手段で決める:
+
+- HTTP JSON/HTML API（reddit, hn, appstore 等）: `responses` で HTTP レスポンスをモック
+- RSS 系（hatena, zenn, note, producthunt）: `responses` は効かない（`feedparser.parse` が内部で `urllib` を使い requests をフックしないため）。`feedparser.parse` 自体をモックし、モック内で本物の `feedparser.parse(FIXTURE_XML)` に生の RSS 文字列を渡す。**必ず `real_parse = feedparser.parse` で元関数を先に退避してから使う**（lambda 内で `feedparser.parse` を参照するとパッチ後の自分自身を指して無限再帰する）
+- google_play_scraper: batchexecute プロトコルのため HTTP モック不可。`reviews` 関数自体をモックする
+
+リトライ系コレクタは実待機を避けるため `time.sleep` を monkeypatch する。
+
+## ワークフローのコードは src/ モジュールに置く
+
+`.github/workflows/*.yml` に `python3 - <<'PY'` の heredoc や `python3 -c` を埋めない（テスト不能・レビュー困難）。ロジックは `src/` の CLI サブコマンド（`state_sync.py` / `workflow_alerts.py` / `approve_checks.py` 等）に置き、`uv run python -m src.xxx` で呼ぶ。単純な JSON 抽出は `jq` で済ませる。`grep -rn "python3 - <<\|python3 -c" .github/workflows/` がヒット 0 件であることを維持する。
+
+注: `issue-commands.yml` には未撤廃のインライン bash（SHA 取得 + PUT）が残存。将来統一するなら `state_sync.py` へ寄せる。
+
+## ワークフローの PAT_TOKEN 運用
+
+- **main へ push する全ワークフロー（collect / weekly / monthly / learn）は `actions/checkout` に `token: ${{ secrets.PAT_TOKEN }}` を渡す。** 既定の `GITHUB_TOKEN` では Branch Protection に拒否され `GH006: Protected branch update failed` で失敗する。新規ワークフローを追加する際も必ず揃える
+- `PAT_TOKEN` は fine-grained PAT（対象: 本リポジトリ、権限: Contents Read/Write + Issues Read/Write）で **約 90 日で失効し、失効するとパイプライン全体が停止する**。ローテート手順:
+  1. https://github.com/settings/personal-access-tokens/new で再発行
+  2. `gh secret set PAT_TOKEN --repo kaionn/pain-collector`（トークンをチャットに貼らず手元実行）
+  3. `gh workflow run collect.yml` で疎通確認（checkout 通過 + commit/push 成功まで見る）
+- 失効の事前警告は `monitor.yml` の「Check PAT expiry」ステップ（`src/pat_expiry_check.py`）が担う。残り 7 日以内から毎朝 JST 6 時台に Discord へ警告、失効済み（401）なら即アラート。疎通確認: `gh workflow run monitor.yml -f force_pat_check=true -f dry_run=true`
+- **monitor.yml は PAT 非依存で動く設計を維持する**（PAT が失効しても監視自体が生き残るための前提。監視ステップに PAT 必須の処理を足さない）
+
+## Discord 通知の構成
+
+- 通知は 2 系統: 日次 digest・Issue 通知・パイプラインアラートは `DISCORD_WEBHOOK_URL`（宛先チャンネルは Webhook URL 自体に埋め込み）、週次 MVP 選定（承認ボタン付き）は `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`
+- メンション先の Discord ユーザー ID は `src/discord_notify.py` にハードコードされている。通知が届いているのに気づけない場合はここを疑う
