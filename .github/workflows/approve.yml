@@ -1,17 +1,17 @@
-name: Approve and Build MVP
+name: Approve and Build MVP (deprecated)
 
 on:
   issue_comment:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
   issues: write
-  models: read
 
 jobs:
   check-approve:
     # /approve コメントかつ pain-report ラベル付き Issue のみ
+    # mvp-factory への自動 build dispatch は廃止済み。/probe (Signal Lab) への案内のみ行う。
     if: |
       github.event.comment.body == '/approve' &&
       contains(github.event.issue.labels.*.name, 'pain-report')
@@ -22,25 +22,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: uv sync
-
-      - name: Sync latest pipeline_state.json from GitHub API
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # /spec 直後の /approve でも race を避けるため、リモートの最新を取り直す
-          uv run python -m src.state_sync fetch \
-            --repo "${{ github.repository }}" \
-            --remote-path data/pipeline_state.json \
-            --local-path data/pipeline_state.json
-
       - name: Validate approver
-        id: validate-approver
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -49,108 +31,15 @@ jobs:
           OWNER=$(gh repo view --json owner -q '.owner.login')
           if [ "$COMMENTER" != "$OWNER" ]; then
             echo "::warning::Unauthorized approver: $COMMENTER"
-            gh issue comment "$ISSUE_NUMBER" --body "⚠️ リポジトリオーナーのみ承認できます。"
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ リポジトリオーナーのみ実行できます。"
             exit 1
           fi
 
-      - name: Validate picked & spec
-        id: validate-spec
+      - name: Guide to /probe
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PICKED_CHECK=$(uv run python -m src.approve_checks picked-check \
-            --state data/pipeline_state.json \
-            --issue-number "$ISSUE_NUMBER")
+          gh issue comment "$ISSUE_NUMBER" --body "🚧 \`/approve\` は廃止されました（mvp-factory はアーカイブ予定なのだ）。
 
-          if [ "$PICKED_CHECK" = "NO_STATE" ] || [ "$PICKED_CHECK" = "NOT_PICKED" ]; then
-            gh issue comment "$ISSUE_NUMBER" --body "❌ この Issue は picked されていません。先に \`/pick\` → \`/spec\` を実行してください。"
-            exit 1
-          fi
-
-          if [ "$PICKED_CHECK" = "NO_SPEC" ] || [ ! -f "$PICKED_CHECK" ]; then
-            gh issue comment "$ISSUE_NUMBER" --body "❌ Spec ファイルが見つかりません。\`/spec\` を実行してから再度 \`/approve\` してください。"
-            exit 1
-          fi
-
-          SPEC_FILE="$PICKED_CHECK"
-
-          echo "spec_file=$SPEC_FILE" >> "$GITHUB_OUTPUT"
-          echo "✅ Spec found: $SPEC_FILE"
-
-      - name: Resolve product name
-        id: product-name
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          # 既存 state に product_name が保存されていれば再利用（冪等化）
-          EXISTING=$(uv run python -m src.approve_checks resolve-product-name \
-            --state data/pipeline_state.json \
-            --issue-number "$ISSUE_NUMBER")
-
-          if [ -n "$EXISTING" ]; then
-            echo "既存の product_name を再利用: $EXISTING"
-            PRODUCT_NAME="$EXISTING"
-          else
-            TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q '.title')
-            PRODUCT_NAME=$(uv run python -m src.generate_product_name \
-              --title "$TITLE" \
-              --issue-number "$ISSUE_NUMBER")
-            echo "新規生成した product_name: $PRODUCT_NAME"
-          fi
-
-          echo "product_name=$PRODUCT_NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Update state (status=building, product_name)
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          PRODUCT_NAME: ${{ steps.product-name.outputs.product_name }}
-        run: |
-          gh issue edit "$ISSUE_NUMBER" --add-label "building"
-          gh issue comment "$ISSUE_NUMBER" \
-            --body "🚀 承認されました。自動実装を開始します...
-          プロダクト名: \`$PRODUCT_NAME\`（リポジトリ: kaionn/$PRODUCT_NAME）"
-
-          uv run python -m src.approve_checks update-state \
-            --state data/pipeline_state.json \
-            --issue-number "$ISSUE_NUMBER" \
-            --status building \
-            --product-name "$PRODUCT_NAME"
-
-          # pipeline_state.json を GitHub API で直接更新（Branch Protection バイパス）
-          uv run python -m src.state_sync push \
-            --repo "${{ github.repository }}" \
-            --remote-path data/pipeline_state.json \
-            --local-path data/pipeline_state.json \
-            --message "pipeline: #$ISSUE_NUMBER を building に更新 (product=$PRODUCT_NAME)" \
-            --create-if-missing
-
-      - name: Trigger mvp-factory build
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          PRODUCT_NAME: ${{ steps.product-name.outputs.product_name }}
-        run: |
-          # Spec ファイルの内容を base64 エンコードして渡す
-          SPEC_CONTENT=$(base64 < "${{ steps.validate-spec.outputs.spec_file }}")
-
-          # Deep Dive があれば同様に渡す
-          DEEP_DIVE_CONTENT=""
-          DEEP_DIVE_PATH=$(uv run python -m src.approve_checks deep-dive-path \
-            --state data/pipeline_state.json \
-            --issue-number "$ISSUE_NUMBER")
-          if [ -n "$DEEP_DIVE_PATH" ] && [ -f "$DEEP_DIVE_PATH" ]; then
-            DEEP_DIVE_CONTENT=$(base64 < "$DEEP_DIVE_PATH")
-          fi
-
-          gh workflow run build.yml \
-            --repo kaionn/mvp-factory \
-            -f issue_number="$ISSUE_NUMBER" \
-            -f source_repo="${{ github.repository }}" \
-            -f spec_content="$SPEC_CONTENT" \
-            -f deep_dive_content="$DEEP_DIVE_CONTENT" \
-            -f product_name="$PRODUCT_NAME"
-
-          echo "✅ mvp-factory の build.yml を dispatch しました（product: $PRODUCT_NAME）"
+          新機構では \`/probe\` で Signal Lab に検証用 LP を生成し、需要シグナルを見てから本実装するのだ。→ \`/probe\` を実行してほしいのだ。"
