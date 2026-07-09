@@ -19,7 +19,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
-    "responses>=0.25.0",
+    "responses>=0.26.2",
 ]
 
 [tool.uv]
