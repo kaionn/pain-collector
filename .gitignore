@@ -7,5 +7,9 @@ logs/
 .claude/memory/
 .claude/sessions/
 .claude/state/
-data/
+# data/ は既定で除外しつつ、追跡済みのパイプライン状態とスキーマだけ許可する
+# （data/ 丸ごと除外だと weekly.yml の git add data/pipeline_state.json が拒否される）
+data/*
+!data/pipeline_state.json
+!data/schemas/
 raw/
