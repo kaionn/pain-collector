@@ -31,12 +31,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: uv run python -c "
-          from datetime import datetime, timezone, timedelta;
-          from src.weekly_trends import run;
-          today = datetime.now(timezone(timedelta(hours=9))).date();
-          run(today)
-          "
+        run: uv run python -m src.main --weekly
 
       - name: Score unscored issues
         env:

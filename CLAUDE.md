@@ -120,7 +120,7 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 
 ## ワークフローのコードは src/ モジュールに置く
 
-`.github/workflows/*.yml` に `python3 - <<'PY'` の heredoc や `python3 -c` を埋めない（テスト不能・レビュー困難）。ロジックは `src/` の CLI サブコマンド（`state_sync.py` / `workflow_alerts.py` / `approve_checks.py` 等）に置き、`uv run python -m src.xxx` で呼ぶ。単純な JSON 抽出は `jq` で済ませる。`grep -rn "python3 - <<\|python3 -c" .github/workflows/` がヒット 0 件であることを維持する。
+`.github/workflows/*.yml` に `python3 - <<'PY'` の heredoc や `python3 -c` を埋めない（テスト不能・レビュー困難）。ロジックは `src/` の CLI サブコマンド（`state_sync.py` / `workflow_alerts.py` / `approve_checks.py` 等）に置き、`uv run python -m src.xxx` で呼ぶ。単純な JSON 抽出は `jq` で済ませる。`grep -rnE "python3? +(- <<|-c )" .github/workflows/` がヒット 0 件であることを維持する（`python -c` の 3 なし表記も対象。weekly.yml のインライン `python -c` が YAML folding の先頭空白で IndentationError になり 17 週サイレント失敗した実績あり）。
 
 注: `issue-commands.yml` には未撤廃のインライン bash（SHA 取得 + PUT）が残存。将来統一するなら `state_sync.py` へ寄せる。
 
