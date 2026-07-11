@@ -63,7 +63,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add weekly/ picks/ deep_dive/ specs/ data/pipeline_state.json
+          # pick 空振り等で picks/ が未生成でも git add を fatal にしない
+          for path in weekly/ picks/ deep_dive/ specs/ data/pipeline_state.json; do
+            if [ -e "$path" ]; then
+              git add "$path"
+            fi
+          done
           if git diff --cached --quiet; then
             echo "No new reports to commit"
           else

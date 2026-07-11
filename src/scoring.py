@@ -160,15 +160,21 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
     else:
         label = "🥉score-C"
 
+    # ラベルが repo に未定義だと gh は失敗する。ここが黙って落ちると
+    # pick_idea が候補を見つけられず選定が空振りする（17 週無検出の実績あり）
     try:
-        subprocess.run(
+        result = subprocess.run(
             ["gh", "issue", "edit", str(issue_number), "--add-label", label],
             capture_output=True,
             text=True,
             timeout=30,
         )
-    except Exception:
-        pass
+        if result.returncode != 0:
+            logger.warning(
+                f"#{issue_number} スコアラベル '{label}' の付与に失敗: {result.stderr.strip()}"
+            )
+    except Exception as e:
+        logger.warning(f"#{issue_number} スコアラベル付与で例外: {e}")
 
 
 def score_open_issues() -> None:
