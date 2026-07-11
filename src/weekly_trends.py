@@ -131,7 +131,7 @@ def cluster_pains(pains: list[dict], threshold: float = 0.3) -> list[dict]:
     texts = [p["pain"] for p in pains]
 
     try:
-        tfidf = TfidfVectorizer().fit_transform(texts)
+        tfidf = create_tfidf_vectorizer().fit_transform(texts)
         sim_matrix = cosine_similarity(tfidf)
     except ValueError:
         return [{"representative": t, "count": 1, "members": [t]} for t in texts]
