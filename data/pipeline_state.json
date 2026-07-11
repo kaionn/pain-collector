@@ -135,6 +135,30 @@
           }
         }
       ]
+    },
+    {
+      "issue_number": 229,
+      "picked_at": "2026-07-12T08:53:16.047404+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 232,
+      "picked_at": "2026-07-12T08:53:16.047416+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 227,
+      "picked_at": "2026-07-12T08:53:16.047420+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
