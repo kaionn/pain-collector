@@ -272,19 +272,62 @@ def generate_trend_visualization(pains: list[dict], trends: list[dict], target_d
     return "\n".join(lines)
 
 
+# GitHub Models gpt-4o-mini のリクエスト上限 8000 トークンに対する安全マージン。
+# 日本語はおおむね 1 文字 1〜2 トークン。
+MAX_TREND_PROMPT_CHARS = 4000
+
+
+def _build_trend_corpus(clusters: list[dict], max_chars: int) -> tuple[str, int]:
+    """クラスタ一覧を「代表ペイン (類似 N 件)」形式の行に変換し、文字数上限内で採用する.
+
+    cluster_pains() の戻り値（count 降順ソート済み）を前提に、先頭から
+    合計文字数が max_chars を超えない範囲でのみ行を採用する。
+
+    Returns:
+        (結合テキスト, 文字数上限で採用できず落としたクラスタ数)
+    """
+    lines: list[str] = []
+    total_chars = 0
+    dropped = 0
+
+    for i, c in enumerate(clusters):
+        line = f"{c['representative']} (類似 {c['count']} 件)"
+        added_chars = len(line) + (1 if lines else 0)  # 改行分
+        if total_chars + added_chars > max_chars:
+            dropped = len(clusters) - i
+            break
+        lines.append(line)
+        total_chars += added_chars
+
+    return "\n".join(lines), dropped
+
+
 def analyze_trends(target_date: date) -> list[dict]:
-    """週次トレンド分析を実行する."""
+    """週次トレンド分析を実行する.
+
+    ペイン全件をそのまま LLM に投げると数百件・数万字規模になり GitHub Models の
+    リクエスト上限（8000 トークン）を超えて 413 になるため、類似ペインをクラスタ
+    リングし、代表ペインのみを文字数上限内でプロンプトに含める。
+    """
     pains = load_extracted_pains(target_date, days=7)
 
     if len(pains) < 3:
         logger.info(f"ペインが {len(pains)} 件のみ、分析スキップ")
         return []
 
-    # ペインテキストを LLM に投げてトレンド分析
-    pain_texts = [f"[{p['date']}] {p['pain']}" for p in pains]
-    combined = "\n".join(pain_texts)
+    clusters = cluster_pains(pains)
+    combined, dropped = _build_trend_corpus(clusters, MAX_TREND_PROMPT_CHARS)
+    adopted = len(clusters) - dropped
+    if dropped > 0:
+        logger.info(
+            f"トレンド分析: {len(clusters)} クラスタ中 {adopted} 件を採用"
+            f"（文字数上限で {dropped} 件割愛）"
+        )
 
-    prompt_text = f"{WEEKLY_PROMPT}\n\n--- ペインリスト ({len(pains)} 件) ---\n{combined}"
+    prompt_text = (
+        f"{WEEKLY_PROMPT}\n\n"
+        f"--- ペインリスト (全 {len(pains)} 件を {adopted} クラスタに集約) ---\n{combined}"
+    )
 
     # extract_pains の LLM 呼び出し基盤を流用
     token = os.environ.get("GITHUB_TOKEN", "")
