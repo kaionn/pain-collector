@@ -11,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
-from src import llm_client
+from src import llm_client, pain_gate
 from src.tokenizer import create_tfidf_vectorizer
 
 # Issue 本文に埋め込むプロダクトキーのメタデータマーカー
@@ -29,6 +29,7 @@ _PAIN_DATA_KEYS = (
     "willingness_to_pay",
     "category",
     "source_engagement",
+    "audience",
 )
 
 PRODUCT_TYPE_LABELS = {
@@ -44,6 +45,11 @@ WTP_LABELS = {
     "medium": "💰medium",
     "low": "💰low",
     "free": "💰free",
+}
+
+AUDIENCE_LABELS = {
+    "developer": "👨‍💻dev",
+    "consumer": "👤consumer",
 }
 
 DUPLICATE_THRESHOLD_HIGH = 0.7  # 確実に重複
@@ -342,11 +348,18 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
         if duplicate:
             logger.info(f"重複検出 → #{duplicate['number']} {duplicate['title'][:50]}")
             _comment_duplicate(duplicate["number"], pain, date_str)
-        else:
-            issue = _create_issue(pain, date_str, notify_discord=False)
-            if issue:
-                existing_issues.append({**issue, "body": issue.get("body", "")})
-                created_for_digest.append({**issue, "pain": pain})
+            continue
+
+        verdict = pain_gate.classify(pain)
+        if not verdict["actionable"]:
+            logger.info(f"gate reject ({verdict['reject_reason']}): {pain_text[:60]}")
+            continue
+        pain["audience"] = verdict["audience"]
+
+        issue = _create_issue(pain, date_str, notify_discord=False)
+        if issue:
+            existing_issues.append({**issue, "body": issue.get("body", "")})
+            created_for_digest.append({**issue, "pain": pain})
 
     if created_for_digest:
         try:
@@ -490,6 +503,10 @@ def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dic
     wtp_label = WTP_LABELS.get(wtp)
     if wtp_label:
         labels.append(wtp_label)
+
+    audience_label = AUDIENCE_LABELS.get(pain.get("audience", ""))
+    if audience_label:
+        labels.append(audience_label)
 
     if severity >= 3:
         labels.append(f"🔥severity-{severity}")
