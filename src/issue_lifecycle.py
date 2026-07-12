@@ -5,12 +5,17 @@ import logging
 import subprocess
 from datetime import datetime, timezone, timedelta
 
+from src import notify, pain_gate
+
 logger = logging.getLogger(__name__)
 
 
 STALE_DAYS = 30
 CLOSE_DAYS = 60
 KEEP_LABELS = {"👍good", "💡interesting"}
+
+PICKED_LABEL = "📌picked"
+SCOPE_OUT_LABEL = "🚫scope-out"
 
 
 def _fetch_open_issues() -> list[dict]:
@@ -21,7 +26,7 @@ def _fetch_open_issues() -> list[dict]:
                 "gh", "issue", "list",
                 "--label", "pain-report",
                 "--state", "open",
-                "--json", "number,title,labels,createdAt",
+                "--json", "number,title,body,labels,createdAt",
                 "--limit", "200",
             ],
             capture_output=True,
@@ -52,6 +57,20 @@ def _add_label(issue_number: int, label: str) -> None:
         logger.info(f"#{issue_number} に '{label}' ラベルを追加")
     except Exception as e:
         logger.warning(f"#{issue_number} ラベル追加失敗: {e}")
+
+
+def _comment_issue(issue_number: int, body: str) -> None:
+    """Issue にコメントを投稿する."""
+    try:
+        subprocess.run(
+            ["gh", "issue", "comment", str(issue_number), "--body", body],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        logger.info(f"#{issue_number} にコメント投稿")
+    except Exception as e:
+        logger.warning(f"#{issue_number} コメント投稿失敗: {e}")
 
 
 def _close_issue(issue_number: int, reason: str) -> None:
@@ -178,3 +197,82 @@ def cleanup() -> None:
             stale_count += 1
 
     logger.info(f"完了: stale={stale_count}, close={close_count}, bad={bad_count}")
+
+
+def _restore_pain_data(issue: dict) -> dict:
+    """Issue から pain データを復元する.
+
+    本文の pain-data メタデータを優先し、無ければタイトルから簡易復元する。
+    """
+    pain = notify.extract_pain_data_from_body(issue.get("body"))
+    if pain is not None:
+        return pain
+    return {
+        "pain": issue.get("title", ""),
+        "category": "",
+        "product_type": "",
+        "target_user": "",
+        "app_idea": "",
+    }
+
+
+def _reject_issue(issue_number: int, reason: str) -> None:
+    """reject 判定の Issue に理由コメント・scope-out ラベル付与・クローズを行う."""
+    _comment_issue(issue_number, f"🚫 actionability 再評価により close: {reason}")
+    _add_label(issue_number, SCOPE_OUT_LABEL)
+    _close_issue(issue_number, reason)
+
+
+def _log_regate_summary(checked: int, rejected: list[dict], audience_labeled: int) -> None:
+    """regate の結果サマリーをログ出力する."""
+    logger.info(f"regate 完了: checked={checked}, rejected={len(rejected)}, audience_labeled={audience_labeled}")
+    for item in rejected:
+        title_trunc = item["title"][:50]
+        logger.info(f"#{item['number']} {title_trunc} → {item['reason']}")
+
+
+def regate(apply: bool = False) -> dict:
+    """open の pain-report Issue を pain_gate で再評価する.
+
+    既存 Issue プールは actionability ゲート導入前のものが混在するため、
+    一括で再判定し reject 対象を close・audience ラベル未付与分を補完する。
+
+    Args:
+        apply: True なら実際に GitHub へ書き込む（コメント・ラベル・クローズ）。
+               False（既定）は判定のみ行い書き込みは一切しない（dry-run）。
+
+    Returns:
+        {"checked": int, "rejected": [{"number": int, "title": str, "reason": str}],
+         "audience_labeled": int}
+    """
+    issues = _fetch_open_issues()
+    checked = 0
+    rejected: list[dict] = []
+    audience_labeled = 0
+
+    for issue in issues:
+        labels = _get_label_names(issue)
+        if PICKED_LABEL in labels or SCOPE_OUT_LABEL in labels:
+            continue
+
+        number = issue["number"]
+        title = issue.get("title", "")
+        checked += 1
+
+        pain = _restore_pain_data(issue)
+        verdict = pain_gate.classify(pain)
+
+        if not verdict["actionable"]:
+            reason = verdict.get("reject_reason") or "理由不明"
+            rejected.append({"number": number, "title": title, "reason": reason})
+            if apply:
+                _reject_issue(number, reason)
+            continue
+
+        audience_label = notify.AUDIENCE_LABELS.get(verdict.get("audience"))
+        if audience_label and audience_label not in labels and apply:
+            _add_label(number, audience_label)
+            audience_labeled += 1
+
+    _log_regate_summary(checked, rejected, audience_labeled)
+    return {"checked": checked, "rejected": rejected, "audience_labeled": audience_labeled}
