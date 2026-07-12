@@ -66,16 +66,22 @@ python -m src.main --pick-idea
 - `gh models run` を LLM 呼び出しに使用（API キー不要）
 - テスト追加時は `tests/` 配下に配置し `pytest` で実行可能にする
 
-## 選定（pick_idea.py）のドメイン多様性ルール
+## 品質ゲートと選定ルール（実装準拠）
 
-`--pick-idea` の選定基準は技術寄り偏重を抑制するためのハード制約を持つ:
+### Issue 化直前の actionability ゲート（src/pain_gate.py）
 
-- 開発者向け候補は最大 1 件まで（スコアが高くても 2 件目以降は不採用）
-- 一般ユーザー向けを最低 2 件含める
-- 直近 pick とカテゴリが連続したら -3 ペナルティ、3 連続目は除外
-- ジャッジ（LLM）がエンジニアであることに起因する dev ツール過大評価を自己バイアスとして明示
+抽出 LLM の skip ルールはリークするため、Issue 化直前（日次 top_n 件のみ）に二段目の専用 LLM 判定を通す。reject 基準は 4 つ: 特定既存アプリの不具合クレーム / 社会問題・政策 / 技術サポート Q&A / プロダクトで解決できない感情・状況（センシティブ領域）。判定失敗時は fail-open（Issue 化を止めない）。pass した Issue には audience ラベル（`👨‍💻dev` / `👤consumer`）が付き、pain-data メタデータにも `audience` が入る。
 
-スコア重み: ペインの強さ x3 / スコープの小ささ x3 / 技術的シンプルさ x2 / 差別化 x2 / 収益可能性 x2（最大 60 点）。
+### 選定（pick_idea.py）のドメイン多様性ルール
+
+`--pick-idea` は技術寄り偏重の抑制をプロンプト指示 + コード後処理の二段で行う:
+
+- 開発者向け候補は最大 1 件（`_enforce_diversity` がコードで強制。LLM が違反したら 2 件目以降を consumer 候補のスコア上位で置換し、置換分の詳細は承認後の Deep Dive で補完）
+- audience 判定はラベル優先（`👨‍💻dev` / `👤consumer`）、無ければプロダクト種別ラベル（⌨️CLI・開発ツール / ☁️API・SaaS → developer）でフォールバック
+- 直近 pick と同カテゴリの候補はソートで後方に降格（`_demote_same_category`。数値ペナルティ方式ではない）
+- ジャッジ LLM の dev ツール過大評価は PICK_PROMPT に自己バイアスとして明示
+
+スコア重み（scoring.py の WEIGHTS が正）: 技術的シンプルさ x2 / スコープ x2 / 差別化 x2 / コミュニティ検証 x2 / ペイン強度 x1 / 収益可能性 x3（最大 60 点）。SCORING_PROMPT にはアンカー例と full-range 指示（3〜4 固着の禁止）を含む。
 
 ## 通知 / Issue dedup 方針
 
