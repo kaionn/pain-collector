@@ -25,6 +25,7 @@ on:
 permissions:
   contents: write
   issues: write
+  actions: read
 
 jobs:
   detect-stalled:
@@ -53,6 +54,17 @@ jobs:
           set -euo pipefail
           uv run python -m src.pat_expiry_check --warn-days 7 --gate-hour 21 \
             ${{ github.event.inputs.force_pat_check == 'true' && '--force' || '' }}
+
+      # 定期 workflow の失敗検知（weekly.yml が 17 週サイレント失敗した再発防止）。
+      # 毎時実行 + 65 分窓で、各失敗をおよそ 1 回だけ通知する（stateless）
+      - name: Check failed workflow runs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          uv run python -m src.workflow_alerts failed-runs --repo "${{ github.repository }}"
 
       - name: Sync latest pipeline_state.json
         env:
