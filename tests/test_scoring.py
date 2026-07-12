@@ -6,7 +6,48 @@ import pytest
 
 from src import scoring
 from src.notify import _build_pain_data_comment
-from src.scoring import WEIGHTS, calculate_total_score, normalize_engagement
+from src.scoring import SCORING_PROMPT, WEIGHTS, calculate_total_score, normalize_engagement
+
+
+class TestScoringPrompt:
+    """SCORING_PROMPT の判別力改善マーカーを検証する（プロンプト退行防止）."""
+
+    def test_contains_scoring_examples_section(self):
+        assert "採点例" in SCORING_PROMPT
+
+    def test_contains_full_range_instruction(self):
+        assert "1〜5 の全域" in SCORING_PROMPT
+
+    def test_contains_high_score_example(self):
+        assert "高評価例" in SCORING_PROMPT
+
+    def test_contains_low_score_example(self):
+        assert "低評価例" in SCORING_PROMPT
+
+    def test_contains_self_bias_warning(self):
+        assert "自己バイアス" in SCORING_PROMPT
+
+    def test_contains_conservative_evaluation_instruction(self):
+        assert "保守的評価" in SCORING_PROMPT
+
+    def test_contains_technical_simplicity_anchor(self):
+        assert "単機能CRUD" in SCORING_PROMPT
+
+    def test_contains_scope_anchor(self):
+        assert "スコープ不定" in SCORING_PROMPT
+
+    def test_example_json_blocks_are_valid_and_have_required_keys(self):
+        """採点例に埋め込んだ JSON がパース可能で必須キーを持つことを確認する（スキーマ退行防止）."""
+        import re
+
+        required_keys = set(WEIGHTS) - {"community_validation"}
+        json_blocks = re.findall(
+            r"\{[^{}]*\"technical_simplicity\": \d,[^{}]*\}", SCORING_PROMPT
+        )
+        assert len(json_blocks) >= 2
+        for block in json_blocks:
+            parsed = json.loads(block)
+            assert required_keys <= set(parsed)
 
 
 class TestNormalizeEngagement:
