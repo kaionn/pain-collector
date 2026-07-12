@@ -23,11 +23,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JST = timezone(timedelta(hours=9))
 PIPELINE_STATE_PATH = os.path.join(BASE_DIR, "data", "pipeline_state.json")
 
+# ドメイン多様性のハード制約用ラベル
+DEV_AUDIENCE_LABEL = "👨‍💻dev"
+CONSUMER_AUDIENCE_LABEL = "👤consumer"
+DEV_PRODUCT_LABELS = {"⌨️CLI・開発ツール", "☁️API・SaaS"}
+
 PICK_PROMPT = """\
 あなたはプロダクト戦略アドバイザーです。
 
+あなた自身がエンジニアであるため、開発者向けツールを過大評価しがちです（自己バイアス）。
+一般生活者向けのペインも同じ真剣さで評価してください。
+
 以下は個人開発の MVP 候補としてスコアが高いペイン（課題）のリストです。
 これらを分析し、今すぐ着手すべきトップ 3 を選定してください。
+
+選定ルール:
+- 開発者向け（audience: developer）候補は最大 1 件までとする
+- 一般ユーザー向け（audience: consumer）を最低 2 件含めること
 
 各候補について **必ず以下の JSON 形式** で出力してください（Markdown 不要）:
 
@@ -45,6 +57,84 @@ PICK_PROMPT = """\
 
 JSON のみを出力してください。前置きや後書きは不要です。
 """
+
+
+def _issue_audience(issue: dict) -> str:
+    """Issue の labels から 'developer' | 'consumer' を判定する.
+
+    優先順:
+      1. 👨‍💻dev ラベル → developer
+      2. 👤consumer ラベル → consumer
+      3. フォールバック: プロダクト種別ラベルが DEV_PRODUCT_LABELS に含まれれば
+         developer、それ以外は consumer
+    """
+    labels = {label.get("name", "") for label in issue.get("labels", [])}
+
+    if DEV_AUDIENCE_LABEL in labels:
+        return "developer"
+    if CONSUMER_AUDIENCE_LABEL in labels:
+        return "consumer"
+    if labels & DEV_PRODUCT_LABELS:
+        return "developer"
+    return "consumer"
+
+
+def _enforce_diversity(selected: list[dict], pool: list[dict]) -> list[dict]:
+    """LLM 選定結果に「developer 最大 1 件」をコードで強制する.
+
+    selected / pool の要素は Issue dict（number, title, labels, score_label を含む）。
+    selected 内の developer が 1 件以下ならそのまま返す。2 件目以降の developer は、
+    pool 内の未選定 consumer 候補（pool の並び順 = スコア優先順）で先頭から置換する。
+    pool に consumer が不足する場合は置換できた分だけ置換し、不足を warning で明示する。
+    置換で入った候補には diversity_promoted=True フラグを立てる。
+    """
+    dev_indices = [i for i, issue in enumerate(selected) if _issue_audience(issue) == "developer"]
+    if len(dev_indices) <= 1:
+        return selected
+
+    selected_numbers = {issue["number"] for issue in selected}
+    replacement_pool = [
+        issue
+        for issue in pool
+        if issue["number"] not in selected_numbers and _issue_audience(issue) == "consumer"
+    ]
+
+    result = list(selected)
+    for idx in dev_indices[1:]:
+        if not replacement_pool:
+            logger.warning("多様性制約: consumer 候補が不足し developer 候補を置換しきれない")
+            break
+        replacement = dict(replacement_pool.pop(0))
+        replacement["diversity_promoted"] = True
+        result[idx] = replacement
+        selected_numbers.add(replacement["number"])
+
+    return result
+
+
+def _extract_category(title: str) -> str | None:
+    """Issue タイトル先頭の `[カテゴリ]` を抽出する."""
+    match = re.match(r"^\[([^\]]+)\]", title)
+    return match.group(1) if match else None
+
+
+def _demote_same_category(issues: list[dict]) -> list[dict]:
+    """直近 pick と同カテゴリの候補を安定ソートで後方へ回す.
+
+    pipeline_state.json の picked 末尾（直近 pick）のタイトルからカテゴリを抽出し、
+    同カテゴリの候補を他カテゴリの候補より後ろに配置する。
+    picked が空、またはタイトルがパース不能な場合は入力の順序をそのまま返す。
+    """
+    state = _load_pipeline_state()
+    picked = state.get("picked", [])
+    if not picked:
+        return issues
+
+    last_category = _extract_category(picked[-1].get("title", "") or "")
+    if last_category is None:
+        return issues
+
+    return sorted(issues, key=lambda issue: _extract_category(issue.get("title", "")) == last_category)
 
 
 def _load_pipeline_state() -> dict:
@@ -345,6 +435,7 @@ def _update_pipeline_state(picked: list[dict], today: str) -> None:
     for item in picked:
         state["picked"].append({
             "issue_number": item["number"],
+            "title": item.get("title"),
             "picked_at": datetime.now(JST).isoformat(),
             "spec": item.get("spec"),
             "deep_dive": item.get("deep_dive"),
@@ -376,6 +467,9 @@ def run() -> None:
         logger.info("未選定のスコア付き Issue がありません")
         return
 
+    # 直近 pick と同カテゴリの候補を後方へ回す
+    issues = _demote_same_category(issues)
+
     # 上位 10 件を LLM に渡す
     top = issues[:10]
     issue_texts = []
@@ -383,7 +477,10 @@ def run() -> None:
         title = issue["title"]
         body = issue.get("body", "")
         label = issue.get("score_label", "")
-        issue_texts.append(f"### #{issue['number']} {title}\nスコア: {label}\n{body}\n")
+        audience = _issue_audience(issue)
+        issue_texts.append(
+            f"### #{issue['number']} {title}\nスコア: {label}\naudience: {audience}\n{body}\n"
+        )
 
     combined = "\n".join(issue_texts)
     prompt = f"{PICK_PROMPT}\n\n--- 候補一覧 ---\n\n{combined}"
@@ -398,17 +495,34 @@ def run() -> None:
 
     # LLM 出力をパース
     llm_picks = _parse_llm_picks(content, top)
+    llm_pick_map = {p["number"]: p for p in llm_picks}
 
     today = datetime.now(JST).date().isoformat()
 
     # 選定結果に関連ファイル情報を付与
     issue_map = {i["number"]: i for i in top}
+    selected_issues = [issue_map[p["number"]] for p in llm_picks[:3] if p["number"] in issue_map]
+    # 「開発者向け候補は最大 1 件」のハード制約を適用
+    selected_issues = _enforce_diversity(selected_issues, top)
+
     picked: list[dict] = []
 
-    for pick in llm_picks[:3]:
-        number = pick["number"]
-        issue = issue_map.get(number, {})
+    for issue in selected_issues:
+        number = issue["number"]
         title = issue.get("title", "")
+        promoted = issue.get("diversity_promoted", False)
+        pick = None if promoted else llm_pick_map.get(number)
+
+        if pick is not None:
+            reason = pick.get("reason", "")
+            mvp_scope = pick.get("mvp_scope", [])
+            dev_period = pick.get("dev_period", "")
+            acquisition = pick.get("acquisition", "")
+        else:
+            reason = "多様性制約（開発者向けは最大 1 件）による繰り上げ"
+            mvp_scope = []
+            dev_period = "未生成（承認後の Deep Dive で補完）"
+            acquisition = "未生成（承認後の Deep Dive で補完）"
 
         # Deep Dive / Spec の紐付け
         related = _find_related_files(number, title)
@@ -417,13 +531,14 @@ def run() -> None:
             "number": number,
             "title": title,
             "score_label": issue.get("score_label", ""),
-            "reason": pick.get("reason", ""),
-            "mvp_scope": pick.get("mvp_scope", []),
-            "dev_period": pick.get("dev_period", ""),
-            "acquisition": pick.get("acquisition", ""),
+            "reason": reason,
+            "mvp_scope": mvp_scope,
+            "dev_period": dev_period,
+            "acquisition": acquisition,
             "deep_dive": related["deep_dive"],
             "spec": related["spec"],
             "status": related["status"],
+            "diversity_promoted": promoted,
         }
 
         # Spec が未生成なら自動生成を試みる

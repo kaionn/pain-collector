@@ -7,8 +7,11 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from src.pick_idea import (
+    _demote_same_category,
+    _enforce_diversity,
     _find_related_files,
     _generate_report,
+    _issue_audience,
     _load_past_picks,
     _parse_llm_picks,
     _update_pipeline_state,
@@ -265,3 +268,101 @@ class TestEnsureSpecExists:
     def test_skips_when_no_deep_dive(self):
         issue = {"number": 1, "spec": None, "deep_dive": None}
         assert _ensure_spec_exists(issue) is None
+
+
+class TestIssueAudience:
+    """_issue_audience のテスト."""
+
+    def test_dev_label_takes_priority(self):
+        issue = {"labels": [{"name": "👨‍💻dev"}, {"name": "👤consumer"}]}
+        assert _issue_audience(issue) == "developer"
+
+    def test_consumer_label(self):
+        issue = {"labels": [{"name": "👤consumer"}]}
+        assert _issue_audience(issue) == "consumer"
+
+    def test_fallback_dev_product_label_is_developer(self):
+        issue = {"labels": [{"name": "☁️API・SaaS"}]}
+        assert _issue_audience(issue) == "developer"
+
+    def test_fallback_cli_product_label_is_developer(self):
+        issue = {"labels": [{"name": "⌨️CLI・開発ツール"}]}
+        assert _issue_audience(issue) == "developer"
+
+    def test_fallback_mobile_product_label_is_consumer(self):
+        issue = {"labels": [{"name": "📱モバイルアプリ"}]}
+        assert _issue_audience(issue) == "consumer"
+
+    def test_fallback_no_labels_is_consumer(self):
+        issue = {"labels": []}
+        assert _issue_audience(issue) == "consumer"
+
+
+class TestEnforceDiversity:
+    """_enforce_diversity のテスト."""
+
+    def _dev_issue(self, number):
+        return {"number": number, "title": f"dev{number}", "labels": [{"name": "👨‍💻dev"}]}
+
+    def _consumer_issue(self, number):
+        return {"number": number, "title": f"consumer{number}", "labels": [{"name": "👤consumer"}]}
+
+    def test_replaces_extra_dev_candidates_with_consumer_pool(self):
+        selected = [self._dev_issue(1), self._dev_issue(2), self._dev_issue(3)]
+        pool = selected + [self._consumer_issue(10), self._consumer_issue(11)]
+
+        result = _enforce_diversity(selected, pool)
+
+        assert [i["number"] for i in result] == [1, 10, 11]
+        assert result[1]["diversity_promoted"] is True
+        assert result[2]["diversity_promoted"] is True
+        assert "diversity_promoted" not in result[0]
+
+    def test_no_change_when_at_most_one_dev(self):
+        selected = [self._dev_issue(1), self._consumer_issue(2), self._consumer_issue(3)]
+        pool = selected
+
+        result = _enforce_diversity(selected, pool)
+
+        assert result == selected
+
+    def test_partial_replacement_when_consumer_pool_insufficient(self):
+        selected = [self._dev_issue(1), self._dev_issue(2), self._dev_issue(3)]
+        pool = selected + [self._consumer_issue(10)]
+
+        result = _enforce_diversity(selected, pool)
+
+        assert [i["number"] for i in result] == [1, 10, 3]
+        assert result[1]["diversity_promoted"] is True
+        assert "diversity_promoted" not in result[2]
+
+
+class TestDemoteSameCategory:
+    """_demote_same_category のテスト."""
+
+    def test_demotes_candidates_matching_last_picked_category(self, tmp_dirs):
+        state = {"picked": [{"issue_number": 1, "title": "[テクノロジー] 直近pick"}]}
+        state_path = tmp_dirs / "data" / "pipeline_state.json"
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+
+        issues = [
+            {"number": 10, "title": "[テクノロジー] 候補A"},
+            {"number": 11, "title": "[生活] 候補B"},
+            {"number": 12, "title": "[テクノロジー] 候補C"},
+        ]
+
+        result = _demote_same_category(issues)
+
+        assert [i["number"] for i in result] == [11, 10, 12]
+
+    def test_no_change_when_no_past_picks(self, tmp_dirs):
+        issues = [{"number": 10, "title": "[テクノロジー] 候補A"}]
+        assert _demote_same_category(issues) == issues
+
+    def test_no_change_when_title_unparsable(self, tmp_dirs):
+        state = {"picked": [{"issue_number": 1, "title": "カテゴリなしタイトル"}]}
+        state_path = tmp_dirs / "data" / "pipeline_state.json"
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+
+        issues = [{"number": 10, "title": "[テクノロジー] 候補A"}]
+        assert _demote_same_category(issues) == issues
