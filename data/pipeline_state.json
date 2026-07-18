@@ -159,6 +159,15 @@
       "deep_dive": null,
       "product_name": null,
       "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 200,
+      "title": "[テクノロジー] UUIDの衝突が発生し、データベースの整合性に問題が生じている。これが原因でシステムの信頼性が低下し、開発者が困惑している。",
+      "picked_at": "2026-07-19T05:52:16.095234+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
