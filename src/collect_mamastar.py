@@ -23,18 +23,16 @@ _LIFESTYLE_KEYWORDS = re.compile(
 
 logger = logging.getLogger(__name__)
 
-# カテゴリ別トピック一覧 URL
-CATEGORIES = {
-    "育児": "https://mamastar.jp/bbs/topic?category=1",
-    "家事": "https://mamastar.jp/bbs/topic?category=5",
-    "夫婦": "https://mamastar.jp/bbs/topic?category=3",
-    "お金": "https://mamastar.jp/bbs/topic?category=6",
-    "働くママ": "https://mamastar.jp/bbs/topic?category=4",
+# カテゴリページ（?category=N）はトピックリンクが JS 化されサーバーレンダリングされなくなった。
+# 新着・ランキング一覧ページはリンクが取得できることを確認済みのためこちらに切り替える。
+PAGES = {
+    "新着": ("https://mamastar.jp/bbs/newlist", 3),
+    "ランキング": ("https://mamastar.jp/bbs/ranking/topic", 1),
 }
 
 _session = create_retry_session()
 
-PAGES_PER_CATEGORY = 2
+_TOPIC_URL_RE = re.compile(r"/bbs/topic/\d+$")
 
 
 def _fetch_topics(category: str, url: str) -> list[dict]:
@@ -47,27 +45,36 @@ def _fetch_topics(category: str, url: str) -> list[dict]:
         return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    topics: list[dict] = []
 
-    for a_tag in soup.select("a[href*='/bbs/topic/']"):
-        title = a_tag.get_text(strip=True)
-        href = a_tag.get("href", "")
+    # トピック詳細（/bbs/topic/{数字}）のみ対象にする（/bbs/topic/category/N 等のナビリンクを除外）。
+    # カード型アンカーは日付・コメント数まで連結されるため、内部の h3（見出し）があれば
+    # そちらをタイトルとして採用する
+    titles_by_url: dict[str, str] = {}
+    for a_tag in soup.find_all("a", href=True):
+        href = a_tag["href"]
+        if not _TOPIC_URL_RE.search(href):
+            continue
 
+        heading = a_tag.find("h3")
+        title = (heading or a_tag).get_text(strip=True)
         if not title or len(title) < 5:
             continue
 
         if not href.startswith("http"):
             href = f"https://mamastar.jp{href}"
 
-        topics.append({
+        titles_by_url.setdefault(href, title)
+
+    return [
+        {
             "source": "mamastar",
             "category": category,
             "title": title[:200],
-            "url": href,
+            "url": url,
             "body": title,
-        })
-
-    return topics
+        }
+        for url, title in titles_by_url.items()
+    ]
 
 
 @register_collector(key="mamastar", display_name="ママスタ")
@@ -76,12 +83,12 @@ def collect() -> list[dict]:
     seen_urls: set[str] = set()
     all_posts: list[dict] = []
 
-    for i, (category, url) in enumerate(CATEGORIES.items()):
+    for i, (category, (url, page_count)) in enumerate(PAGES.items()):
         topics: list[dict] = []
-        for page in range(1, PAGES_PER_CATEGORY + 1):
-            page_url = url if page == 1 else f"{url}&page={page}"
+        for page in range(1, page_count + 1):
+            page_url = url if page == 1 else f"{url}?page={page}"
             topics.extend(_fetch_topics(category, page_url))
-            if page < PAGES_PER_CATEGORY:
+            if page < page_count:
                 time.sleep(0.5)
 
         filtered = []
@@ -98,7 +105,7 @@ def collect() -> list[dict]:
         all_posts.extend(filtered)
         logger.info(f"{category}: {len(filtered)}/{len(topics)} 件がペインフィルタ通過")
 
-        if i < len(CATEGORIES) - 1:
+        if i < len(PAGES) - 1:
             time.sleep(1)
 
     return all_posts

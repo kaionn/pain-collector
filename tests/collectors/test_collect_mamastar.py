@@ -4,9 +4,9 @@ import re
 
 import responses
 
-from src.collect_mamastar import CATEGORIES, collect
+from src.collect_mamastar import PAGES, collect
 
-PAGE_URL_PATTERN = re.compile(r"https://mamastar\.jp/bbs/topic\?.*")
+PAGE_URL_PATTERN = re.compile(r"https://mamastar\.jp/bbs/(newlist|ranking/topic).*")
 
 FIXTURE_HTML = """
 <html><body>
@@ -35,7 +35,7 @@ def test_collect_returns_expected_post_shape(monkeypatch):
     assert post["source"] == "mamastar"
     assert post["title"] == "旦那にイライラが止まらない、もう限界"
     assert post["url"] == "https://mamastar.jp/bbs/topic/998877"
-    assert post["category"] in set(CATEGORIES)
+    assert post["category"] in set(PAGES)
 
 
 @responses.activate

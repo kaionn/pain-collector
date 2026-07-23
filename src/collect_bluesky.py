@@ -1,6 +1,7 @@
 """Bluesky からペイン系の投稿を収集する."""
 
 import logging
+import os
 import re
 import time
 
@@ -10,8 +11,10 @@ from src.pain_keywords_ja import contains_pain_keyword
 
 logger = logging.getLogger(__name__)
 
-# 認証不要の公開 API（Jetstream 経由の検索は不可のため、公開フィード API を使用）
-API_BASE = "https://public.api.bsky.app/xrpc"
+# 公開 API（未認証）は searchPosts を 403 で遮断するようになったため、
+# 環境変数があれば app password 認証でアクセスする
+PUBLIC_API_BASE = "https://public.api.bsky.app/xrpc"
+AUTH_API_BASE = "https://bsky.social/xrpc"
 
 # ペインに関連するアカウントのフィード or 検索用クエリ
 SEARCH_QUERIES = [
@@ -32,12 +35,35 @@ PAIN_KEYWORDS_EN = re.compile(
 _session = create_retry_session()
 
 
-def _search_posts(query: str, limit: int = 25) -> list[dict]:
-    """Bluesky の公開検索 API で投稿を取得する."""
-    url = f"{API_BASE}/app.bsky.feed.searchPosts"
+def _get_session_token() -> str | None:
+    """app password 認証でアクセストークンを取得する."""
+    identifier = os.environ.get("BLUESKY_IDENTIFIER", "")
+    app_password = os.environ.get("BLUESKY_APP_PASSWORD", "")
+    if not identifier or not app_password:
+        return None
+
+    try:
+        resp = _session.post(
+            f"{AUTH_API_BASE}/com.atproto.server.createSession",
+            json={"identifier": identifier, "password": app_password},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        token = resp.json().get("accessJwt")
+        if token:
+            logger.info("Bluesky セッションを取得")
+        return token
+    except Exception as e:
+        logger.warning(f"Bluesky セッション取得失敗: {e}")
+        return None
+
+
+def _search_posts(query: str, base_url: str, headers: dict, limit: int = 25) -> list[dict]:
+    """Bluesky の検索 API で投稿を取得する."""
+    url = f"{base_url}/app.bsky.feed.searchPosts"
     params = {"q": query, "limit": limit}
     try:
-        resp = _session.get(url, params=params, timeout=15)
+        resp = _session.get(url, params=params, headers=headers, timeout=15)
         resp.raise_for_status()
         return resp.json().get("posts", [])
     except Exception as e:
@@ -67,11 +93,20 @@ def _parse_post(post: dict) -> dict:
 @register_collector(key="bluesky", display_name="Bluesky")
 def collect() -> list[dict]:
     """Bluesky からペイン系投稿を収集する."""
+    token = _get_session_token()
+    if token:
+        base_url = AUTH_API_BASE
+        headers = {"Authorization": f"Bearer {token}"}
+    else:
+        base_url = PUBLIC_API_BASE
+        headers = {}
+        logger.info("Bluesky 認証未設定のため公開 API を使用")
+
     seen_urls: set[str] = set()
     all_posts: list[dict] = []
 
     for i, query in enumerate(SEARCH_QUERIES):
-        posts = _search_posts(query)
+        posts = _search_posts(query, base_url, headers)
 
         for post in posts:
             parsed = _parse_post(post)
