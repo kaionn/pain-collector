@@ -1,0 +1,31 @@
+{
+  "categories": {
+    "🚫scope-out": 56,
+    "お金・家計": 52,
+    "テクノロジー": 48,
+    "仕事・キャリア": 28,
+    "健康・体調": 26,
+    "住まい・暮らし": 9,
+    "移動・通勤": 9,
+    "人間関係": 7,
+    "食事・料理": 7,
+    "子育て・育児": 4,
+    "👨‍💻dev": 3,
+    "👤consumer": 3,
+    "📌picked": 2,
+    "学習・スキル": 2,
+    "stalled": 2,
+    "pr-created": 2,
+    "趣味・娯楽": 1
+  },
+  "market_signals": {
+    "🟢whitespace": 31,
+    "🟡underserved": 16
+  },
+  "scores": {
+    "🥇score-A": 49,
+    "🏆score-S": 2
+  },
+  "total_issues": 194,
+  "open_issues": 4
+}
