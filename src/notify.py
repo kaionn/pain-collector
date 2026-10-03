@@ -186,6 +186,8 @@ def _fetch_open_issues() -> list[dict]:
         )
         if result.returncode == 0:
             return json.loads(result.stdout)
+    except llm_client.LLMError:
+        raise
     except Exception:
         pass
     return []
@@ -224,6 +226,8 @@ def _llm_judge_duplicate(pain_text: str, existing_title: str) -> bool:
     try:
         answer = llm_client.chat(prompt, temperature=0, max_tokens=10).strip().upper()
         return answer.startswith("YES")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"LLM 二次判定失敗: {e}")
         return False
@@ -365,6 +369,8 @@ def send_top_pains(pains: list[dict], date_str: str, top_n: int = 3) -> None:
         try:
             from . import discord_notify
             discord_notify.notify_daily_digest(created_for_digest, date_str)
+        except llm_client.LLMError:
+            raise
         except Exception as e:
             logger.warning(f"Discord digest 通知失敗（続行）: {e}")
 
@@ -387,6 +393,8 @@ def _comment_duplicate(issue_number: int, pain: dict, date_str: str) -> None:
             timeout=30,
         )
         logger.info(f"#{issue_number} にコメント追加")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"コメント追加失敗: {e}")
 
@@ -545,6 +553,8 @@ def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dic
             try:
                 from . import scoring
                 scoring.score_and_update_issue(pain, issue_number)
+            except llm_client.LLMError:
+                raise
             except Exception as e:
                 logger.warning(f"スコアリング失敗（続行）: {e}")
 
@@ -553,6 +563,8 @@ def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dic
                 try:
                     from . import discord_notify
                     discord_notify.notify_issue_created(pain, issue_number, issue_url)
+                except llm_client.LLMError:
+                    raise
                 except Exception as e:
                     logger.warning(f"Discord 通知失敗（続行）: {e}")
 
@@ -564,6 +576,8 @@ def _create_issue(pain: dict, date_str: str, notify_discord: bool = True) -> dic
             }
         else:
             logger.error(f"Issue 作成失敗: {result.stderr[:200]}")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"Issue 作成失敗: {e}")
 

@@ -7,7 +7,7 @@ pain-collector: SNS やレビューサイトからペイン（ユーザーの課
 ## 技術スタック
 
 - Python 3.12
-- LLM: OpenAI API（`gh models run` 経由）
+- LLM: 明示設定した Anthropic / OpenAI-compatible API または Claude CLI
 - テキスト分析: scikit-learn（TF-IDF）、fugashi（日本語形態素解析）
 - CI/CD: GitHub Actions（日次・週次・月次の定期実行）
 - 通知: Discord（Webhook + Bot API）
@@ -63,14 +63,14 @@ python -m src.main --pick-idea
 ## 開発ルール
 
 - ワークフローの手動実行は `kaionn` アカウントのみ許可（actor ガード）
-- `gh models run` を LLM 呼び出しに使用（API キー不要）
+- LLM_PROVIDER / LLM_MODEL を明示設定し、API credential は repo token と分離する
 - テスト追加時は `tests/` 配下に配置し `pytest` で実行可能にする
 
 ## 品質ゲートと選定ルール（実装準拠）
 
 ### Issue 化直前の actionability ゲート（src/pain_gate.py）
 
-抽出 LLM の skip ルールはリークするため、Issue 化直前（日次 top_n 件のみ）に二段目の専用 LLM 判定を通す。reject 基準は 4 つ: 特定既存アプリの不具合クレーム / 社会問題・政策 / 技術サポート Q&A / プロダクトで解決できない感情・状況（センシティブ領域）。判定失敗時は fail-open（Issue 化を止めない）。pass した Issue には audience ラベル（`👨‍💻dev` / `👤consumer`）が付き、pain-data メタデータにも `audience` が入る。
+抽出 LLM の skip ルールはリークするため、Issue 化直前（日次 top_n 件のみ）に二段目の専用 LLM 判定を通す。reject 基準は 4 つ: 特定既存アプリの不具合クレーム / 社会問題・政策 / 技術サポート Q&A / プロダクトで解決できない感情・状況（センシティブ領域）。LLM の構成・認証・応答形式障害は失敗として伝播。その他のローカル障害は fail-open。pass した Issue には audience ラベル（`👨‍💻dev` / `👤consumer`）が付き、pain-data メタデータにも `audience` が入る。
 
 ### 選定（pick_idea.py）のドメイン多様性ルール
 
@@ -144,3 +144,12 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 
 - 通知は 2 系統: 日次 digest・Issue 通知・パイプラインアラートは `DISCORD_WEBHOOK_URL`（宛先チャンネルは Webhook URL 自体に埋め込み）、週次 MVP 選定（承認ボタン付き）は `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`
 - メンション先の Discord ユーザー ID は `src/discord_notify.py` にハードコードされている。通知が届いているのに気づけない場合はここを疑う
+
+## LLM の Actions 認証
+
+LLMを使用するworkflowは `.github/actions/setup-llm` で収集前に構成・認証を確認する。
+CLIは公式native installerの2.1.288固定版を使用し、更新を無効化する。
+Actionsは `LLM_CLAUDE_AUTH_MODE=ci-oauth`、本人の `CLAUDE_CODE_OAUTH_TOKEN` Secretを使用する。
+ローカルは既定の `local-subscription` と公式CLIログインを使用する。
+repo用PAT/GITHUB_TOKENとAI credentialを分離し、OAuth tokenをAPI keyへ流用しない。
+未設定・認証上書き・非公式endpointはfail-fast。設定手順はREADMEを参照する。

@@ -19,7 +19,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from .tokenizer import create_tfidf_vectorizer
 
-from . import extract_pains
+from . import extract_pains, llm_client
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -343,6 +343,8 @@ def analyze_trends(target_date: date) -> list[dict]:
         trends = extract_pains._parse_json_response(content)
         logger.info(f"{label} で {len(trends)} 件のトレンドを抽出")
         return trends
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"トレンド分析に失敗: {e}")
         return []
@@ -484,6 +486,8 @@ def analyze_cross_language(pains: list[dict]) -> list[dict]:
         results = extract_pains._parse_json_response(content)
         logger.info(f"{label} で {len(results)} 件の横断テーマを抽出")
         return results
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"横断分析に失敗: {e}")
         return []
