@@ -98,8 +98,12 @@ cd pain-collector
 2. 依存ライブラリをインストール
 
 ```bash
-pip install -r requirements.txt
+uv sync --frozen
 ```
+
+依存の一次情報は `pyproject.toml` と `uv.lock` です。上記はlockを更新せず、
+開発用依存を含めてプロジェクト内の `.venv` に導入します。
+`pip install -r requirements.txt` はローカル互換用として残しています。
 
 3. GitHub リポジトリの Secrets を設定
 
@@ -141,6 +145,22 @@ python -m src.main --weekly
 # フィードバック集計
 python -m src.main --feedback
 ```
+
+### クラウド環境での開発・mockedテスト
+
+Python 3.12以上とuvが利用できるcheckoutで、次を実行します。
+global installやMacの認証情報のコピーは不要です。
+
+```bash
+cd pain-collector
+uv sync --frozen
+uv run --frozen --no-sync pytest tests/ -v
+```
+
+`tests/` はHTTP、LLM、GitHub CLI等の外部処理をmockして検証します。
+このテストのために実API credentialやLLM providerを設定する必要はありません。
+上記の「手動実行」は実パイプラインを動かすため、mockedテストとは別です。
+新しい外部処理のテストにもmockを追加してください。
 
 ### GitHub Actions の設定（自動実行）
 
