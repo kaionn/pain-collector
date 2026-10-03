@@ -230,7 +230,7 @@ def test_array_not_mistaken_for_object():
 def clean_cli_env(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "claude-cli")
     monkeypatch.setenv("LLM_MODEL", "claude-opus-5-5")
-    for key in ("ANTHROPIC_BASE_URL", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"):
+    for key in ("LLM_CLAUDE_AUTH_MODE", "GITHUB_ACTIONS", "ANTHROPIC_BASE_URL", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"):
         monkeypatch.delenv(key, raising=False)
 
 
@@ -280,3 +280,78 @@ def test_cli_timeout_respects_caller(clean_cli_env):
             chat("synthetic", timeout=30)
         assert call.call_count == 2
         assert call.call_args.kwargs["timeout"] == 30
+
+@pytest.fixture
+def ci_cli_env(clean_cli_env, monkeypatch):
+    monkeypatch.setenv('LLM_CLAUDE_AUTH_MODE', 'ci-oauth')
+    monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('CLAUDE_CODE_OAUTH_TOKEN', 'mock-subscription-token')
+
+
+def test_ci_oauth_success_uses_only_cli(ci_cli_env):
+    result = MagicMock(returncode=0, stdout='{"type":"result","subtype":"success","is_error":false,"result":"[]"}')
+    with patch('src.llm_client.subprocess.run', side_effect=[_cli_auth(authMethod='oauth_token', subscriptionType=None), result]) as call, patch('src.llm_client._call_api') as api:
+        assert chat('synthetic') == '[]'
+        assert call.call_count == 2
+        assert 'mock-subscription-token' not in str(call.call_args_list)
+        api.assert_not_called()
+
+
+@pytest.mark.parametrize('changes', [{'authMethod': 'claude.ai'}, {'authMethod': 'api_key'}, {'authMethod': 'third_party'}, {'apiProvider': 'thirdParty'}, {'loggedIn': False}])
+def test_ci_oauth_rejects_other_auth(ci_cli_env, changes):
+    with patch('src.llm_client.subprocess.run', return_value=_cli_auth(authMethod='oauth_token', **changes) if 'authMethod' not in changes else _cli_auth(**changes)) as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 1
+
+
+@pytest.mark.parametrize('key,value', [('CLAUDE_CODE_OAUTH_TOKEN', ''), ('GITHUB_ACTIONS', ''), ('LLM_CLAUDE_AUTH_MODE', 'unknown'), ('ANTHROPIC_BASE_URL', 'https://company.example'), ('ANTHROPIC_API_KEY', 'mock-api-key'), ('ANTHROPIC_AUTH_TOKEN', 'mock-auth'), ('CLAUDE_CODE_USE_BEDROCK', '1')])
+def test_ci_bad_configuration_fails_before_cli(ci_cli_env, monkeypatch, key, value):
+    monkeypatch.setenv(key, value)
+    with patch('src.llm_client.subprocess.run') as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        call.assert_not_called()
+
+
+@pytest.mark.parametrize('stdout,code', [('not-json', 0), ('[]', 0), ('{}', 1)])
+def test_ci_bad_auth_json_fails_without_inference(ci_cli_env, stdout, code):
+    with patch('src.llm_client.subprocess.run', return_value=MagicMock(stdout=stdout, returncode=code)) as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 1
+
+
+@pytest.mark.parametrize('stdout', ['not-json', '[]', '{"type":"result","subtype":"success","is_error":true,"result":"[]"}', '{"type":"result","subtype":"success","is_error":false,"result":""}'])
+def test_ci_bad_result_no_retry(ci_cli_env, stdout):
+    with patch('src.llm_client.subprocess.run', side_effect=[_cli_auth(authMethod='oauth_token'), MagicMock(returncode=0, stdout=stdout)]) as call, patch('src.llm_client.time.sleep') as sleep:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 2
+        sleep.assert_not_called()
+
+
+def test_preinstall_validation_does_not_run_cli(ci_cli_env):
+    from src.llm_client import validate_config
+    with patch('src.llm_client.subprocess.run') as call:
+        validate_config(check_cli_auth=False)
+        call.assert_not_called()
+
+
+def test_preinstall_missing_provider_fails(ci_cli_env, monkeypatch):
+    from src.llm_client import validate_config
+    monkeypatch.delenv('LLM_PROVIDER')
+    with patch('src.llm_client.subprocess.run') as call, pytest.raises(LLMError, match='LLM_PROVIDER'):
+        validate_config(check_cli_auth=False)
+    call.assert_not_called()
+
+@pytest.mark.parametrize('limit', ['', 'bad', '0', '-1'])
+def test_preflight_anthropic_max_tokens_invalid(monkeypatch, limit):
+    from src.llm_client import validate_config
+    monkeypatch.setenv('LLM_PROVIDER', 'anthropic')
+    monkeypatch.setenv('LLM_BASE_URL', 'https://api.anthropic.com')
+    monkeypatch.setenv('LLM_API_KEY', 'mock-key')
+    monkeypatch.setenv('LLM_MODEL', 'mock-model')
+    monkeypatch.setenv('LLM_MAX_TOKENS', limit)
+    with pytest.raises(LLMError, match='LLM_MAX_TOKENS'):
+        validate_config(check_cli_auth=False)

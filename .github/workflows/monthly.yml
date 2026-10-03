@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Branch Protection バイパスには PAT が必要（GITHUB_TOKEN では push が拒否される）
+          # PAT 所有者の権限を使用。branch protection/ruleset の許可が別途必要
           token: ${{ secrets.PAT_TOKEN }}
 
       - uses: astral-sh/setup-uv@v5
@@ -26,6 +26,20 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
+
+      - name: Set up and validate LLM
+        uses: ./.github/actions/setup-llm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
 
       - name: Generate monthly report
         env:
@@ -36,6 +50,9 @@ jobs:
           LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
           LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: uv run python -m src.main --monthly
 
@@ -48,6 +65,9 @@ jobs:
           LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
           LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: uv run python -m src.main --cross-analysis
 
@@ -70,6 +90,9 @@ jobs:
           LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
           LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: uv run python -m src.main --validate
 

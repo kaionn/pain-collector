@@ -7,7 +7,7 @@ pain-collector: SNS やレビューサイトからペイン（ユーザーの課
 ## 技術スタック
 
 - Python 3.12
-- LLM: 明示設定した OpenAI-compatible API または Claude CLI
+- LLM: 明示設定した Anthropic / OpenAI-compatible API または Claude CLI
 - テキスト分析: scikit-learn（TF-IDF）、fugashi（日本語形態素解析）
 - CI/CD: GitHub Actions（日次・週次・月次の定期実行）
 - 通知: Discord（Webhook + Bot API）
@@ -144,3 +144,12 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 
 - 通知は 2 系統: 日次 digest・Issue 通知・パイプラインアラートは `DISCORD_WEBHOOK_URL`（宛先チャンネルは Webhook URL 自体に埋め込み）、週次 MVP 選定（承認ボタン付き）は `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`
 - メンション先の Discord ユーザー ID は `src/discord_notify.py` にハードコードされている。通知が届いているのに気づけない場合はここを疑う
+
+## LLM の Actions 認証
+
+LLMを使用するworkflowは `.github/actions/setup-llm` で収集前に構成・認証を確認する。
+CLIは公式native installerの2.1.288固定版を使用し、更新を無効化する。
+Actionsは `LLM_CLAUDE_AUTH_MODE=ci-oauth`、本人の `CLAUDE_CODE_OAUTH_TOKEN` Secretを使用する。
+ローカルは既定の `local-subscription` と公式CLIログインを使用する。
+repo用PAT/GITHUB_TOKENとAI credentialを分離し、OAuth tokenをAPI keyへ流用しない。
+未設定・認証上書き・非公式endpointはfail-fast。設定手順はREADMEを参照する。

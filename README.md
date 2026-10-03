@@ -496,7 +496,9 @@ OAuth token を抽出して API に流用しません。GitHub hosted runner に
 ログイン済み・`authMethod=claude.ai`・`apiProvider=firstParty`・有料 subscriptionType を
 返すことを推論前に検証します。API credential、cloud provider、OAuth token の環境上書き、
 非公式 `ANTHROPIC_BASE_URL` がある場合は失敗し、別APIへの自動切替はありません。
-未知の状態やCI token認証も本人による利用方法の確認が必要なため失敗します。
+CIでは明示した `LLM_CLAUDE_AUTH_MODE=ci-oauth` と `GITHUB_ACTIONS=true`、
+OAuth Secret が必須で、CLI の `authMethod=oauth_token`・`apiProvider=firstParty` を検証します。
+CI token は subscriptionType を返さない場合があるため、そのフィールドはローカルのみ検証します。
 モデルIDは `--model` で固定し、stdinで投稿を渡します。CLI の JSON result を検証し、
 エラー・空応答・timeout は自動再送せず停止します。組込み/MCP tools は無効化し、
 通常の個人カスタマイズとsession保存を無効化します（managed policy は引き続き適用）。
@@ -508,5 +510,24 @@ OAuth token を抽出して API に流用しません。GitHub hosted runner に
 認証確認に失敗する制限された実行環境では、本人の通常環境で公式 `auth status` と
 `/status` を確認してください。Max等のログイン状態だけでは追加課金OFFは判断できません。
 `Settings > Usage > Usage credits` を本人が確認してください。
-GitHub hosted runner はローカルの個人CLI認証を引き継ぎません。Actions用の認証方法と
-CLIセットアップは別途準備が必要です。この変更はcredentialを作成・登録しません。
+### GitHub Actions の本人設定
+
+1. 個人の公式CLIで `claude setup-token` を実行し、本人がブラウザ認可してください。
+   [公式認証手順](https://code.claude.com/docs/en/authentication) の1年有効サブスクtokenを使います。
+   tokenをコード、ログ、チャットに貼らず、[Actions Secrets](https://github.com/kaionn/pain-collector/settings/secrets/actions) に `CLAUDE_CODE_OAUTH_TOKEN` として登録してください。
+2. [Actions Variables](https://github.com/kaionn/pain-collector/settings/variables/actions) に
+   `LLM_PROVIDER=claude-cli`、`LLM_MODEL=claude-opus-5-5` を設定してください。
+   CLI利用時に `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_EMBED_MODEL`、`LLM_MAX_TOKENS` は不要です。
+   `LLM_CLAUDE_AUTH_MODE=ci-oauth` はworkflowの固定値なのでVariable登録不要です。
+3. 期限切れの `PAT_TOKEN` を本人が更新してください。既存の個人Project更新と
+   `/probe` のworkflow dispatchを同じclassic PATで維持する場合は `repo` と `project` が必要です。
+   通常のレポートpush/dispatchには `workflow` scopeの追加は不要です。
+   PATの所有者権限とdefault branch protection/rulesetが適用され、scope追加だけでは保護を回避できません。
+
+collect/weekly/monthly/learn と `/spec`・`/probe` は、共通actionで構成を検証した後、
+[公式native installer](https://code.claude.com/docs/en/setup) からCLI 2.1.288を導入し、
+認証状態を確認してから処理を開始します。tokenはCLIだけに渡し、API keyに流用しません。
+`/pick`・`/status`等、LLMを使わないコマンドはこのセットアップを要求しません。
+未設定・非公式endpoint・API/cloud認証上書き・異常JSONは失敗として停止します。
+この変更はcredential/Variablesを登録しません。Linux installerとCI OAuth実認証はmockのみ検証し、
+実際のActions実行は未検証です。PRのmerge後にdefault branchでの適用を本人が確認してください。

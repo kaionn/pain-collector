@@ -49,6 +49,21 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Set up and validate LLM
+        if: startsWith(github.event.comment.body, '/spec') || startsWith(github.event.comment.body, '/probe')
+        uses: ./.github/actions/setup-llm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
+
       - name: Sync latest pipeline_state.json from GitHub API
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,6 +86,9 @@ jobs:
           LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
           LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
           # /probe の signal-lab への workflow dispatch にのみ使用（他リポジトリへの
           # dispatch は GITHUB_TOKEN では権限不足なため、その呼び出しだけ GH_TOKEN を上書きする）
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}

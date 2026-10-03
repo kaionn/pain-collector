@@ -199,17 +199,50 @@ def _call_anthropic(token, user_content, *, system, model, max_tokens, timeout):
     return content
 
 
-def _check_claude_subscription() -> None:
-    """CLI 自身の状態だけを検証。token の読出・抽出・流用は行わない。"""
+def _claude_auth_mode() -> str:
+    """公式 CLI の認証経路を明示し、別 provider の上書きを拒否する。"""
     endpoint = os.environ.get("ANTHROPIC_BASE_URL", "")
     if endpoint and endpoint.rstrip("/") != "https://api.anthropic.com":
         raise LLMError("Claude CLI の接続先が公式 Anthropic ではありません。本人が CLI 設定を確認してください")
     overrides = (
-        "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN",
+        "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
         "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
     )
     if any(os.environ.get(name) for name in overrides):
         raise LLMError("Claude CLI に認証/provider の上書きがあります。サブスク利用は本人による確認が必要です")
+    mode = os.environ.get("LLM_CLAUDE_AUTH_MODE", "local-subscription")
+    if mode == "local-subscription":
+        if os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"):
+            raise LLMError("ローカルサブスク認証では OAuth token の環境上書きは使用できません")
+    elif mode == "ci-oauth":
+        if os.environ.get("GITHUB_ACTIONS") != "true":
+            raise LLMError("ci-oauth は GitHub Actions 専用です")
+        if not os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"):
+            raise LLMError("Actions Secret CLAUDE_CODE_OAUTH_TOKEN を本人が設定してください")
+    else:
+        raise LLMError("LLM_CLAUDE_AUTH_MODE が不正です")
+    return mode
+
+
+def validate_config(*, check_cli_auth: bool = True) -> None:
+    """推論やデータ収集前の構成検証。check_cli_auth=False は CLI インストール前に使う。"""
+    provider, _, _, _ = _config()
+    if provider == "anthropic":
+        try:
+            limit = int(os.environ.get("LLM_MAX_TOKENS", ""))
+        except ValueError:
+            raise LLMError("anthropic では LLM_MAX_TOKENS に正の整数を設定してください") from None
+        if limit <= 0:
+            raise LLMError("LLM_MAX_TOKENS は正の整数である必要があります")
+    if provider == "claude-cli":
+        _claude_auth_mode()
+        if check_cli_auth:
+            _check_claude_subscription()
+
+
+def _check_claude_subscription() -> None:
+    """CLI 自身の状態だけを検証。token の抽出・API key への流用は行わない。"""
+    mode = _claude_auth_mode()
     try:
         status = subprocess.run(
             ["claude", "auth", "status", "--json"],
@@ -225,10 +258,12 @@ def _check_claude_subscription() -> None:
         status.returncode != 0
         or not isinstance(auth, dict)
         or auth.get("loggedIn") is not True
-        or auth.get("authMethod") != "claude.ai"
+        or auth.get("authMethod") != ("oauth_token" if mode == "ci-oauth" else "claude.ai")
         or auth.get("apiProvider") != "firstParty"
-        or auth.get("subscriptionType") not in {"pro", "max", "team", "enterprise"}
+        or (mode == "local-subscription" and auth.get("subscriptionType") not in {"pro", "max", "team", "enterprise"})
     ):
+        if mode == "ci-oauth":
+            raise LLMError("Claude CLI の公式 OAuth 認証を確認できません。本人が setup-token と Actions Secret を確認してください")
         raise LLMError("Claude CLI の公式サブスク認証を確認できません。本人が /login と /status を確認してください")
 
 
