@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write
   issues: write
-  models: read
 
 jobs:
   collect:
@@ -29,6 +28,12 @@ jobs:
       - name: Run pain collector
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}

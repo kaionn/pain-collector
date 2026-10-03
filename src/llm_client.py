@@ -1,34 +1,57 @@
-"""LLM 呼び出しの共有クライアント.
-
-バックエンド選択:
-- `GITHUB_TOKEN` あり: GitHub Models (openai SDK)
-- `GITHUB_TOKEN` なし: Claude Code CLI (ローカル実行)
-
-モデル名のハードコードはこのファイルの `DEFAULT_MODEL` の 1 箇所のみに集約する。
-"""
+"""明示設定した LLM provider を使用する共有クライアント。"""
 
 import json
 import logging
 import os
 import subprocess
 import time
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = os.environ.get("LLM_MODEL", "openai/gpt-4o-mini")
-DEFAULT_EMBED_MODEL = os.environ.get("LLM_EMBED_MODEL", "openai/text-embedding-3-small")
-GITHUB_MODELS_BASE_URL = "https://models.github.ai/inference"
+
+class LLMError(RuntimeError):
+    """構成・認証・応答など、抽出を成功扱いしてはいけない障害。"""
+
+
+def _config(model=None, *, embedding=False):
+    provider = os.environ.get("LLM_PROVIDER", "")
+    if provider not in {"openai-compatible", "claude-cli", "anthropic"}:
+        raise LLMError("LLM_PROVIDER を anthropic、openai-compatible または claude-cli に明示設定してください")
+    selected_model = model or os.environ.get("LLM_EMBED_MODEL" if embedding else "LLM_MODEL", "")
+    if provider == "claude-cli":
+        if not embedding and not selected_model:
+            raise LLMError("LLM_MODEL を設定してください")
+        return provider, "", "", selected_model
+    if provider == "anthropic":
+        base_url = os.environ.get("LLM_BASE_URL", "")
+        token = os.environ.get("LLM_API_KEY", "")
+        if base_url != "https://api.anthropic.com":
+            raise LLMError("anthropic は LLM_BASE_URL=https://api.anthropic.com を使用してください")
+        if not token or not selected_model:
+            raise LLMError("LLM_API_KEY と LLM_MODEL を設定してください")
+        return provider, base_url, token, selected_model
+    base_url = os.environ.get("LLM_BASE_URL", "")
+    token = os.environ.get("LLM_API_KEY", "")
+    parsed = urlparse(base_url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise LLMError("LLM_BASE_URL に credential を含まない HTTPS endpoint を設定してください")
+    if parsed.hostname in {"models.github.ai", "models.inference.ai.azure.com"}:
+        raise LLMError("廃止された GitHub Models endpoint は使用できません")
+    if not token or not selected_model:
+        raise LLMError("LLM_API_KEY と LLM_MODEL（embeddings は LLM_EMBED_MODEL）を設定してください")
+    return provider, base_url, token, selected_model
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF_SECONDS = 2.0
 CLAUDE_CLI_TIMEOUT_SECONDS = 180
 
 
-class _RetriableLLMError(Exception):
+class _RetriableLLMError(LLMError):
     """LLM 呼び出しの一時的な失敗（リトライ対象）."""
 
 
-def _call_github_models(
+def _call_api(
     token: str,
     user_content: str,
     *,
@@ -36,13 +59,16 @@ def _call_github_models(
     temperature: float,
     max_tokens: int | None,
     model: str | None,
+    timeout: float,
 ) -> str:
-    """GitHub Models API (openai SDK) を呼び出す."""
+    """明示設定された OpenAI-compatible API (openai SDK) を呼び出す."""
     from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
     client = OpenAI(
-        base_url=GITHUB_MODELS_BASE_URL,
+        base_url=os.environ["LLM_BASE_URL"],
         api_key=token,
+        max_retries=0,
+        timeout=timeout,
     )
 
     messages = []
@@ -51,7 +77,7 @@ def _call_github_models(
     messages.append({"role": "user", "content": user_content})
 
     kwargs: dict = {
-        "model": model or DEFAULT_MODEL,
+        "model": model,
         "messages": messages,
         "temperature": temperature,
     }
@@ -61,66 +87,186 @@ def _call_github_models(
     try:
         response = client.chat.completions.create(**kwargs)
     except RateLimitError as e:
-        raise _RetriableLLMError(str(e)) from e
+        raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
     except APIConnectionError as e:
-        raise _RetriableLLMError(str(e)) from e
+        raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
     except APIStatusError as e:
         if e.status_code >= 500:
-            raise _RetriableLLMError(str(e)) from e
-        raise
+            raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
+        raise LLMError(f"LLM API 障害 (HTTP {e.status_code})") from e
 
-    return response.choices[0].message.content or ""
+    try:
+        content = response.choices[0].message.content
+    except (AttributeError, IndexError, TypeError) as e:
+        raise LLMError("LLM 応答形式が不正: choices/message/content が必要です") from e
+    if not isinstance(content, str) or not content.strip():
+        raise LLMError("LLM 応答が空、またはテキストではありません")
+    return content
 
 
-def _call_github_embeddings(
+def _call_embeddings(
     token: str,
     texts: list[str],
     *,
     model: str | None,
 ) -> list[list[float]]:
-    """GitHub Models の embeddings API (openai SDK) を呼び出す."""
+    """明示設定された embeddings API (openai SDK) を呼び出す."""
     from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
     client = OpenAI(
-        base_url=GITHUB_MODELS_BASE_URL,
+        base_url=os.environ["LLM_BASE_URL"],
         api_key=token,
+        max_retries=0,
     )
 
     try:
         response = client.embeddings.create(
-            model=model or DEFAULT_EMBED_MODEL,
+            model=model,
             input=texts,
         )
     except RateLimitError as e:
-        raise _RetriableLLMError(str(e)) from e
+        raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
     except APIConnectionError as e:
-        raise _RetriableLLMError(str(e)) from e
+        raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
     except APIStatusError as e:
         if e.status_code >= 500:
-            raise _RetriableLLMError(str(e)) from e
-        raise
-
-    return [item.embedding for item in response.data]
-
-
-def _call_claude_cli(user_content: str, *, system: str | None) -> str:
-    """Claude Code CLI を呼び出す（ローカル実行用フォールバック）."""
-    prompt = f"{system}\n\n{user_content}" if system else user_content
+            raise _RetriableLLMError("LLM の一時的な接続/API 障害") from e
+        raise LLMError(f"LLM API 障害 (HTTP {e.status_code})") from e
 
     try:
-        result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "text"],
-            capture_output=True,
-            text=True,
-            timeout=CLAUDE_CLI_TIMEOUT_SECONDS,
+        vectors = [item.embedding for item in response.data]
+        if len(vectors) != len(texts) or any(not v or any(type(x) not in (int, float) for x in v) for v in vectors):
+            raise ValueError
+        return vectors
+    except (AttributeError, TypeError, ValueError) as e:
+        raise LLMError("embeddings 応答形式が不正です") from e
+
+
+def _call_anthropic(token, user_content, *, system, model, max_tokens, timeout):
+    """Anthropic 直 API。credential/body はエラーログへ出さない。"""
+    import requests
+
+    try:
+        limit = max_tokens if max_tokens is not None else int(os.environ.get("LLM_MAX_TOKENS", ""))
+    except ValueError:
+        raise LLMError("anthropic では LLM_MAX_TOKENS に正の整数を設定してください") from None
+    if type(limit) is not int or limit <= 0:
+        raise LLMError("max_tokens は正の整数である必要があります")
+    payload = {
+        "model": model,
+        "max_tokens": limit,
+        "messages": [{"role": "user", "content": user_content}],
+    }
+    if system:
+        payload["system"] = system
+    # Opus 5.5: sampling parameters unsupported; thinking stays enabled.
+    with requests.Session() as session:
+        session.trust_env = False
+        try:
+            response = session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": token, "anthropic-version": "2023-06-01"},
+                json=payload,
+                timeout=(min(10, timeout), timeout),
+                allow_redirects=False,
+            )
+        except (requests.ConnectionError, requests.Timeout):
+            raise _RetriableLLMError("Anthropic の一時的な接続障害") from None
+        if response.status_code == 429 or response.status_code >= 500:
+            raise _RetriableLLMError(f"Anthropic API 一時障害 (HTTP {response.status_code})")
+        if response.status_code != 200:
+            raise LLMError(f"Anthropic API 障害 (HTTP {response.status_code})")
+        try:
+            data = response.json()
+        except ValueError:
+            raise LLMError("Anthropic 応答が JSON ではありません") from None
+    if not isinstance(data, dict) or data.get("type") != "message" or data.get("role") != "assistant" or data.get("stop_reason") != "end_turn":
+        raise LLMError("Anthropic 応答が不正、拒否、または生成未完了です")
+    blocks = data.get("content")
+    if not isinstance(blocks, list) or any(not isinstance(block, dict) for block in blocks):
+        raise LLMError("Anthropic content 形式が不正です")
+    texts = []
+    for block in blocks:
+        if block.get("type") == "text":
+            if not isinstance(block.get("text"), str):
+                raise LLMError("Anthropic text 形式が不正です")
+            texts.append(block["text"])
+        elif block.get("type") not in {"thinking", "redacted_thinking"}:
+            raise LLMError("Anthropic 応答に予期しない content block があります")
+    content = "".join(texts)
+    if not content.strip():
+        raise LLMError("Anthropic のテキスト応答が空です")
+    return content
+
+
+def _check_claude_subscription() -> None:
+    """CLI 自身の状態だけを検証。token の読出・抽出・流用は行わない。"""
+    endpoint = os.environ.get("ANTHROPIC_BASE_URL", "")
+    if endpoint and endpoint.rstrip("/") != "https://api.anthropic.com":
+        raise LLMError("Claude CLI の接続先が公式 Anthropic ではありません。本人が CLI 設定を確認してください")
+    overrides = (
+        "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN",
+        "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
+    )
+    if any(os.environ.get(name) for name in overrides):
+        raise LLMError("Claude CLI に認証/provider の上書きがあります。サブスク利用は本人による確認が必要です")
+    try:
+        status = subprocess.run(
+            ["claude", "auth", "status", "--json"],
+            capture_output=True, text=True, timeout=20,
         )
-    except subprocess.TimeoutExpired as e:
-        raise _RetriableLLMError(str(e)) from e
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        raise LLMError("Claude CLI の認証状態を確認できません") from None
+    try:
+        auth = json.loads(status.stdout)
+    except (ValueError, TypeError):
+        raise LLMError("Claude CLI の認証状態応答が不正です") from None
+    if (
+        status.returncode != 0
+        or not isinstance(auth, dict)
+        or auth.get("loggedIn") is not True
+        or auth.get("authMethod") != "claude.ai"
+        or auth.get("apiProvider") != "firstParty"
+        or auth.get("subscriptionType") not in {"pro", "max", "team", "enterprise"}
+    ):
+        raise LLMError("Claude CLI の公式サブスク認証を確認できません。本人が /login と /status を確認してください")
 
+
+def _call_claude_cli(user_content: str, *, system: str | None, model: str, timeout: float) -> str:
+    """確認できた公式サブスク CLI を使用し、API/gateway に切り替えない。"""
+    _check_claude_subscription()
+    command = [
+        "claude", "-p", "--model", model, "--output-format", "json",
+        "--tools", "", "--disallowedTools", "mcp__*",
+        "--safe-mode", "--no-session-persistence",
+    ]
+    if system:
+        command.extend(["--system-prompt", system])
+    try:
+        result = subprocess.run(
+            command, input=user_content, capture_output=True, text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        raise LLMError("Claude CLI がインストールされていません") from None
+    except subprocess.TimeoutExpired:
+        raise LLMError("Claude CLI がタイムアウトしました。自動再送は行いません") from None
     if result.returncode != 0:
-        raise _RetriableLLMError(result.stderr[:200])
-
-    return result.stdout.strip()
+        raise LLMError("Claude CLI が失敗しました（認証・設定・利用枠を確認してください）")
+    try:
+        response = json.loads(result.stdout)
+    except (ValueError, TypeError):
+        raise LLMError("Claude CLI 応答が JSON ではありません") from None
+    if (
+        not isinstance(response, dict)
+        or response.get("type") != "result"
+        or response.get("subtype") != "success"
+        or response.get("is_error") is not False
+        or not isinstance(response.get("result"), str)
+        or not response["result"].strip()
+    ):
+        raise LLMError("Claude CLI 応答が失敗、空、または不正な形式です")
+    return response["result"].strip()
 
 
 def chat(
@@ -130,28 +276,32 @@ def chat(
     temperature: float = 0.0,
     max_tokens: int | None = None,
     model: str | None = None,
+    timeout: float = CLAUDE_CLI_TIMEOUT_SECONDS,
 ) -> str:
     """LLM 呼び出しの単一入口.
 
-    `GITHUB_TOKEN` があれば GitHub Models、なければ Claude Code CLI を使う。
-    一時的な失敗（レート制限・接続エラー・5xx・subprocess 失敗）は
-    指数バックオフで最大 `MAX_RETRIES` 回リトライする。
+    LLM_PROVIDER とモデルを明示設定する。一時的な障害のみ最大3回リトライする。
     """
-    token = os.environ.get("GITHUB_TOKEN", "")
+    if timeout <= 0:
+        raise LLMError("timeout は正の値である必要があります")
+    provider, base_url, token, model = _config(model)
 
     last_exc: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            if token:
-                return _call_github_models(
+            if provider == "anthropic":
+                return _call_anthropic(token, user_content, system=system, model=model, max_tokens=max_tokens, timeout=timeout)
+            if provider == "openai-compatible":
+                return _call_api(
                     token,
                     user_content,
                     system=system,
                     temperature=temperature,
                     max_tokens=max_tokens,
                     model=model,
+                    timeout=timeout,
                 )
-            return _call_claude_cli(user_content, system=system)
+            return _call_claude_cli(user_content, system=system, model=model, timeout=timeout)
         except _RetriableLLMError as e:
             last_exc = e
             if attempt < MAX_RETRIES:
@@ -174,40 +324,29 @@ def embed(
 ) -> list[list[float]] | None:
     """テキスト群を埋め込みベクトル化する（GummySearch / BERTopic 方式の dedup 用）.
 
-    GitHub Models の embeddings API のみに対応する。`GITHUB_TOKEN` が無い
-    （Claude CLI バックエンド）場合、または API 呼び出しが最終的に失敗した場合は
-    None を返す。呼び出し側は TF-IDF 等へのフォールバックを行うこと。
+    API provider の構成・応答障害は伝播する。Claude CLI は None を返し、
+    呼び出し側が TF-IDF にフォールバックする。
     """
-    token = os.environ.get("GITHUB_TOKEN", "")
-    if not token:
-        logger.info("GITHUB_TOKEN 未設定のため embeddings をスキップ")
+    if os.environ.get("LLM_PROVIDER") in {"claude-cli", "anthropic"}:
         return None
-
-    last_exc: Exception | None = None
+    provider, base_url, token, model = _config(model, embedding=True)
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            return _call_github_embeddings(token, texts, model=model)
-        except _RetriableLLMError as e:
-            last_exc = e
-            if attempt < MAX_RETRIES:
-                wait = INITIAL_BACKOFF_SECONDS * (2 ** (attempt - 1))
-                logger.warning(
-                    f"embeddings 呼び出し失敗 ({attempt}/{MAX_RETRIES}): {e}. "
-                    f"{wait}秒後にリトライ"
-                )
-                time.sleep(wait)
-        except Exception as e:
-            logger.warning(f"embeddings 呼び出し失敗（リトライ対象外）: {e}")
-            return None
-
-    logger.error(f"embeddings 呼び出しが{MAX_RETRIES}回失敗: {last_exc}")
-    return None
+            return _call_embeddings(token, texts, model=model)
+        except _RetriableLLMError:
+            if attempt == MAX_RETRIES:
+                raise
+            time.sleep(INITIAL_BACKOFF_SECONDS * (2 ** (attempt - 1)))
 
 
 def _strip_code_fence(content: str) -> str:
     """LLM レスポンスの Markdown コードフェンスを除去する."""
+    if not isinstance(content, str):
+        raise LLMError("LLM 応答はテキストである必要があります")
     content = content.strip()
     if content.startswith("```"):
+        if "\n" not in content or not content.endswith("```"):
+            raise LLMError("LLM 応答のコードフェンスが不正です")
         content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
     return content
 
@@ -217,9 +356,15 @@ def parse_json_response(content: str) -> list[dict]:
     content = _strip_code_fence(content)
     start = content.find("[")
     end = content.rfind("]")
-    if start != -1 and end != -1:
+    if start != -1 and end != -1 and (content.find("{") == -1 or start < content.find("{")):
         content = content[start : end + 1]
-    return json.loads(content)
+    try:
+        result = json.loads(content)
+    except (json.JSONDecodeError, TypeError) as e:
+        raise LLMError("LLM 応答が有効な JSON ではありません") from e
+    if not isinstance(result, list) or any(not isinstance(item, dict) for item in result):
+        raise LLMError("LLM 応答には JSON object の配列が必要です")
+    return result
 
 
 def parse_json_object(content: str) -> dict:
@@ -227,6 +372,12 @@ def parse_json_object(content: str) -> dict:
     content = _strip_code_fence(content)
     start = content.find("{")
     end = content.rfind("}")
-    if start != -1 and end != -1:
+    if start != -1 and end != -1 and (content.find("[") == -1 or start < content.find("[")):
         content = content[start : end + 1]
-    return json.loads(content)
+    try:
+        result = json.loads(content)
+    except (json.JSONDecodeError, TypeError) as e:
+        raise LLMError("LLM 応答が有効な JSON ではありません") from e
+    if not isinstance(result, dict):
+        raise LLMError("LLM 応答には JSON object が必要です")
+    return result

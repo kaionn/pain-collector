@@ -271,6 +271,8 @@ def _generate_report(target: dict, date_str: str) -> None:
     logger.info("LLM でレポート生成中...")
     try:
         llm_content = _call_llm(DEEP_DIVE_PROMPT, user_prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"LLM 呼び出しに失敗しました: {e}")
         return

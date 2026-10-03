@@ -102,142 +102,21 @@ class TestGenerate:
         assert gpn.generate("Uber Eats 返金", issue_number=104) == "food-delivery-refund"
 
 
-class TestCallLlmFallbackCli:
-    """GITHUB_TOKEN が無い環境で claude CLI にフォールバックする経路のテスト."""
+class TestCallLlmExplicitProvider:
+    def test_uses_shared_client(self, monkeypatch):
+        from unittest.mock import Mock
+        call = Mock(return_value="  subscription-cancel-tracker  ")
+        monkeypatch.setattr(gpn.llm_client, "chat", call)
+        assert gpn._call_llm("synthetic", timeout=15) == "subscription-cancel-tracker"
+        call.assert_called_once()
+        assert call.call_args.kwargs["timeout"] == 15
 
-    @pytest.fixture(autouse=True)
-    def clear_token(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-
-    def test_returncode_non_zero_returns_none(self, monkeypatch):
-        class FakeResult:
-            returncode = 1
-            stdout = ""
-            stderr = "auth error"
-
-        monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
-        assert gpn._call_llm("title") is None
-
-    def test_empty_stdout_returns_none(self, monkeypatch):
-        class FakeResult:
-            returncode = 0
-            stdout = "   \n"
-            stderr = ""
-
-        monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
-        assert gpn._call_llm("title") is None
-
-    def test_timeout_returns_none(self, monkeypatch):
-        def raise_timeout(*args, **kwargs):
-            raise gpn.subprocess.TimeoutExpired(cmd="claude", timeout=30)
-
-        monkeypatch.setattr(gpn.subprocess, "run", raise_timeout)
-        assert gpn._call_llm("title") is None
-
-    def test_cli_not_found_returns_none(self, monkeypatch):
-        def raise_fnf(*args, **kwargs):
-            raise FileNotFoundError("claude")
-
-        monkeypatch.setattr(gpn.subprocess, "run", raise_fnf)
-        assert gpn._call_llm("title") is None
-
-    def test_success_returns_stdout_stripped(self, monkeypatch):
-        class FakeResult:
-            returncode = 0
-            stdout = "  food-delivery-refund  \n"
-            stderr = ""
-
-        monkeypatch.setattr(gpn.subprocess, "run", lambda *a, **kw: FakeResult())
-        assert gpn._call_llm("title") == "food-delivery-refund"
-
-
-class TestCallLlmGitHubModels:
-    """GITHUB_TOKEN がある環境で GitHub Models Inference API を使う経路のテスト."""
-
-    @pytest.fixture(autouse=True)
-    def set_token(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
-
-    def test_success_returns_content(self, monkeypatch):
-        class FakeMessage:
-            content = "  subscription-cancel-tracker  "
-
-        class FakeChoice:
-            message = FakeMessage()
-
-        class FakeResponse:
-            choices = [FakeChoice()]
-
-        class FakeCompletions:
-            def create(self, **kwargs):
-                return FakeResponse()
-
-        class FakeChat:
-            completions = FakeCompletions()
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = FakeChat()
-
-        import sys
-        import types
-
-        fake_openai = types.ModuleType("openai")
-        fake_openai.OpenAI = FakeClient
-        monkeypatch.setitem(sys.modules, "openai", fake_openai)
-
-        assert gpn._call_llm("解約管理") == "subscription-cancel-tracker"
-
-    def test_empty_content_returns_none(self, monkeypatch):
-        class FakeMessage:
-            content = ""
-
-        class FakeChoice:
-            message = FakeMessage()
-
-        class FakeResponse:
-            choices = [FakeChoice()]
-
-        class FakeCompletions:
-            def create(self, **kwargs):
-                return FakeResponse()
-
-        class FakeChat:
-            completions = FakeCompletions()
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = FakeChat()
-
-        import sys
-        import types
-
-        fake_openai = types.ModuleType("openai")
-        fake_openai.OpenAI = FakeClient
-        monkeypatch.setitem(sys.modules, "openai", fake_openai)
-
-        assert gpn._call_llm("title") is None
-
-    def test_api_error_returns_none(self, monkeypatch):
-        class FakeCompletions:
-            def create(self, **kwargs):
-                raise RuntimeError("API down")
-
-        class FakeChat:
-            completions = FakeCompletions()
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = FakeChat()
-
-        import sys
-        import types
-
-        fake_openai = types.ModuleType("openai")
-        fake_openai.OpenAI = FakeClient
-        monkeypatch.setitem(sys.modules, "openai", fake_openai)
-
-        assert gpn._call_llm("title") is None
+    def test_provider_failure_propagates(self, monkeypatch):
+        from unittest.mock import Mock
+        from src.llm_client import LLMError
+        monkeypatch.setattr(gpn.llm_client, "chat", Mock(side_effect=LLMError("configuration")))
+        with pytest.raises(LLMError):
+            gpn._call_llm("synthetic")
 
 
 class TestCli:

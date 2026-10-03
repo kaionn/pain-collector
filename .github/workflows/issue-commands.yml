@@ -7,7 +7,6 @@ on:
 permissions:
   contents: write
   issues: write
-  models: read
 
 jobs:
   dispatch:
@@ -66,6 +65,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           # /probe の signal-lab への workflow dispatch にのみ使用（他リポジトリへの
           # dispatch は GITHUB_TOKEN では権限不足なため、その呼び出しだけ GH_TOKEN を上書きする）
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}

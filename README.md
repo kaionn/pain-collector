@@ -4,7 +4,7 @@ SNS と開発者コミュニティから「日常のペイン（困りごと・�
 
 ## 概要
 
-毎日 Reddit、はてなブックマーク、Zenn から最新の投稿を収集し、AI（GitHub Models / Claude）を使ってペインを自動抽出。市場調査（App Store 検索）と組み合わせ、既存ソリューションの有無や競合状況を分析します。抽出されたペインは GitHub Issues として自動作成され、フィードバックループにより抽出ロジックを継続改善できます。
+毎日 Reddit、はてなブックマーク、Zenn から最新の投稿を収集し、AI（明示設定した LLM / Claude CLI）を使ってペインを自動抽出。市場調査（App Store 検索）と組み合わせ、既存ソリューションの有無や競合状況を分析します。抽出されたペインは GitHub Issues として自動作成され、フィードバックループにより抽出ロジックを継続改善できます。
 
 ## アーキテクチャ
 
@@ -22,7 +22,7 @@ SNS と開発者コミュニティから「日常のペイン（困りごと・�
                         │
         ┌───────────────▼──────────────────┐
         │     LLM ペイン抽出               │
-        │  (GitHub Models / Claude)       │
+        │  (明示設定した LLM / Claude CLI)       │
         └───────────────┬──────────────────┘
                         │
         ┌───────────────▼──────────────────┐
@@ -83,7 +83,7 @@ SNS と開発者コミュニティから「日常のペイン（困りごと・�
 
 - Python 3.12+
 - GitHub リポジトリ（Issues、Actions の実行権限）
-- GitHub Token（GitHub Models API を使う場合）
+- ユーザーが選択した LLM provider とモデル（API または Claude CLI）
 - インターネット接続
 
 ### クイックスタート
@@ -107,10 +107,24 @@ GitHub の Settings > Secrets and variables > Actions に以下を追加:
 
 - `GITHUB_TOKEN`: GitHub API アクセストークン（デフォルトで利用可能）
 
-GitHub Models を使う場合は、トークンに以下のパーミッションを許可:
+LLM は GitHub repo token から独立して設定します。provider 未設定はエラーです。
+GitHub Models は廃止済みのため使用しません。別サービスへの自動切替はありません。
 
-- `repo` （Issues 作成）
-- `models` （GitHub Models API）
+- Actions Variables: `LLM_PROVIDER=openai-compatible`、`LLM_BASE_URL`（選択した provider の HTTPS API endpoint）、`LLM_MODEL`、`LLM_EMBED_MODEL`（embeddings 利用時）
+- Actions Secret: `LLM_API_KEY`（選択した AI provider の credential）
+- ローカル Claude CLI: `LLM_PROVIDER=claude-cli` と `LLM_MODEL` を明示設定。既存 CLI 認証を使用し、embeddings は TF-IDF にフォールバックします。
+- `GITHUB_TOKEN` は repo API 用、`PAT_TOKEN` は protected-main push・個人 Project 等の既存用途を維持します。期限切れ PAT はユーザー自身で更新してください。
+
+ユーザー選択の Claude Opus 5.5 は `LLM_PROVIDER=anthropic`、`LLM_BASE_URL=https://api.anthropic.com`、`LLM_MODEL=claude-opus-5-5` を使用します。
+`LLM_MAX_TOKENS` はユーザーが決める正の出力トークン上限（予算上限そのものではありません）を Variables に設定してください。
+Anthropic 直 Messages API を使い、第三者 gateway、自動 provider 切替、temperature 送信は行いません。
+Anthropic は embeddings を提供しないため、別サービスに送らず既存 TF-IDF を使用します。
+[公式 model 資料](https://platform.claude.com/docs/en/models/opus-5-5/overview) と
+[Messages 形式](https://platform.claude.com/docs/en/build-with-claude/working-with-messages) を 2026-10-03 に確認しました。
+入力 $4 / 出力 $20 per million tokens。利用可能性・権限は実接続で未検証です。
+
+provider、endpoint、モデル、料金・データ送信条件を選んでから設定してください。設定だけでなくパイプライン実行も外部データ送信を伴います。
+API の構成/auth/応答形式障害は失敗として伝播し、正常な JSON `[]` だけを抽出0件として扱います。
 
 4. 手動実行（テスト）
 
@@ -382,19 +396,10 @@ Zenn:
 
 ## トラブルシューティング
 
-### GitHub Models API 呼び出しエラー
+### LLM 呼び出しエラー
 
-GitHub Token が設定されていないか、パーミッションが不足している可能性:
-
-```bash
-# Token の確認
-echo $GITHUB_TOKEN
-
-# または GitHub CLI 経由
-gh auth status
-```
-
-その場合、自動的に Claude Code CLI にフォールバックします。
+`LLM_PROVIDER`、endpoint、モデルと provider credential の設定を確認してください。
+秘密値を表示しないでください。401/403 等や不正な応答は即時失敗、接続障害・429・5xx は最大3回のリトライ後に失敗します。
 
 ### ペイン抽出が 0 件
 
@@ -469,3 +474,39 @@ MIT License
 - [Claude Documentation](https://claude.ai/login)
 - [iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/)
 - [Reddit API](https://www.reddit.com/dev/api/)
+
+
+### Claude CLI とサブスクリプションの確認
+
+ローカルでは既存の公式 `claude -p` バックエンドを `LLM_PROVIDER=claude-cli` と
+`LLM_MODEL=claude-opus-5-5` で明示選択できます。CLI 自身の正式なログインを使い、
+OAuth token を抽出して API に流用しません。GitHub hosted runner にはローカルの CLI 認証は引き継がれません。
+
+2026-10-03 に確認した [公式案内](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan) の先頭には、6月15日の料金変更を停止し、現状 `claude -p` はサブスク利用枠を消費するとあります。
+下部の別クレジット説明は停止前の参考情報です。ただし、実際の課金経路と追加利用の設定は未確認です。
+[公式認証資料](https://code.claude.com/docs/en/authentication) によれば、非対話モードは `ANTHROPIC_API_KEY` があると必ず使用します。
+`ANTHROPIC_BASE_URL` や managed settings によっても接続経路が変わるため、CLI があるだけでは直接続・追加課金なしと判断できません。
+ユーザー自身が CLI の `/status` で接続・認証方法を確認してから実行してください。
+
+
+### このユーザーのローカル利用方針
+
+サブスク経路は `LLM_PROVIDER=claude-cli` と `LLM_MODEL=claude-opus-5-5` を指定します。
+この経路では `LLM_API_KEY` を使用しません。CLI の公式 `auth status --json` が
+ログイン済み・`authMethod=claude.ai`・`apiProvider=firstParty`・有料 subscriptionType を
+返すことを推論前に検証します。API credential、cloud provider、OAuth token の環境上書き、
+非公式 `ANTHROPIC_BASE_URL` がある場合は失敗し、別APIへの自動切替はありません。
+未知の状態やCI token認証も本人による利用方法の確認が必要なため失敗します。
+モデルIDは `--model` で固定し、stdinで投稿を渡します。CLI の JSON result を検証し、
+エラー・空応答・timeout は自動再送せず停止します。組込み/MCP tools は無効化し、
+通常の個人カスタマイズとsession保存を無効化します（managed policy は引き続き適用）。
+正常な `[]` は抽出0件として扱います。
+
+個人用の公式CLIを使用する場合は、通常のTerminalで `claude --model claude-opus-5-5`
+を使います。別providerの環境変数を継承しているshellでは、本人が意図した接続先を
+確認し、必要に応じてそのプロセスだけで provider override を外してください。
+認証確認に失敗する制限された実行環境では、本人の通常環境で公式 `auth status` と
+`/status` を確認してください。Max等のログイン状態だけでは追加課金OFFは判断できません。
+`Settings > Usage > Usage credits` を本人が確認してください。
+GitHub hosted runner はローカルの個人CLI認証を引き継ぎません。Actions用の認証方法と
+CLIセットアップは別途準備が必要です。この変更はcredentialを作成・登録しません。
