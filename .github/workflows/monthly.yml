@@ -20,7 +20,7 @@ jobs:
           # PAT 所有者の権限を使用。branch protection/ruleset の許可が別途必要
           token: ${{ secrets.PAT_TOKEN }}
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
 
