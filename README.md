@@ -529,5 +529,16 @@ collect/weekly/monthly/learn と `/spec`・`/probe` は、共通actionで構成�
 認証状態を確認してから処理を開始します。tokenはCLIだけに渡し、API keyに流用しません。
 `/pick`・`/status`等、LLMを使わないコマンドはこのセットアップを要求しません。
 未設定・非公式endpoint・API/cloud認証上書き・異常JSONは失敗として停止します。
-この変更はcredential/Variablesを登録しません。Linux installerとCI OAuth実認証はmockのみ検証し、
-実際のActions実行は未検証です。PRのmerge後にdefault branchでの適用を本人が確認してください。
+この変更はcredential/Variablesを登録しません。PRのmerge後にdefault branchでの適用を本人が確認してください。
+
+### 合成入力だけの認証・モデル検証
+
+`Claude Subscription Smoke` workflowはCLI導入と公式OAuth認証を確認した後、
+一時ディレクトリで合成入力1件だけを実行します。要求モデルとCLI応答の `modelUsage` が
+`claude-opus-5-5` で一致し、正常JSON `[]` が得られることを確認します。
+credentialやCLI生応答をログに出さず、結果の固定メタデータだけを出力します。
+収集・通知・Issue/Project更新・pushは含まず、GitHub権限は `contents: read` のみです。
+追加課金のAPI key経路や別providerへの切替はありません。Usage credits設定は本人が確認してください。
+PR #250では同一repo・所有者・指定branchの `synchronize` イベントでmerge前に実行します。
+このPRへpushするたびsmokeが実行されるため、合成入力1件のサブスク利用枠を消費します。
+merge後は本人による専用workflowの手動実行を使用できます。実行結果はPR Checks／runログで確認してください。
