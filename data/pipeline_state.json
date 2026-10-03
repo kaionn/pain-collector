@@ -168,6 +168,15 @@
       "deep_dive": null,
       "product_name": null,
       "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 235,
+      "title": "[テクノロジー] CodexとClaude Codeの設定ファイルを同期させるツールが不足しており、変更が片方にしか適用されないため、作業が非効率的で困っている。",
+      "picked_at": "2026-10-04T07:44:08.119888+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
