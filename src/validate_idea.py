@@ -50,6 +50,8 @@ def _fetch_top_ideas(top_n: int = 3) -> list[dict]:
                 for issue in issues:
                     issue["score_label"] = label
                 all_issues.extend(issues)
+        except llm_client.LLMError:
+            raise
         except Exception:
             continue
 
@@ -85,6 +87,8 @@ def validate_issue(issue: dict) -> None:
 
     try:
         content = _call_llm(prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"#{number} LLM 呼び出し失敗: {e}")
         return
@@ -107,6 +111,8 @@ def validate_issue(issue: dict) -> None:
             timeout=30,
         )
         logger.info(f"#{number} に検証結果を追加")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"#{number} コメント失敗: {e}")
 

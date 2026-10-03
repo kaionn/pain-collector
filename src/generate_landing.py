@@ -161,6 +161,8 @@ def generate_landing(deep_dive_path: str) -> str | None:
 
     try:
         raw_html = _call_llm(LANDING_PROMPT, user_prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"LLM 呼び出しに失敗しました: {e}")
         return None

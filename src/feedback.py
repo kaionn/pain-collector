@@ -51,6 +51,8 @@ def collect_feedback() -> dict:
                         "labels": labels,
                         "number": issue.get("number"),
                     })
+        except llm_client.LLMError:
+            raise
         except Exception as e:
             logger.warning(f"{rating} の取得に失敗: {e}")
 
@@ -139,6 +141,8 @@ def _generalize_patterns_with_llm(titles: list[str], pattern_type: str) -> list[
     try:
         content = llm_client.chat(prompt, temperature=0)
         return llm_client.parse_json_response(content or "[]")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"LLM パターン汎化に失敗、フォールバック: {e}")
         return titles
@@ -158,6 +162,8 @@ def learn_rules() -> dict:
                 existing = json.load(f)
             existing_exclude = _migrate_patterns(existing.get("exclude_patterns", []))
             existing_priority = _migrate_patterns(existing.get("priority_patterns", []))
+        except llm_client.LLMError:
+            raise
         except Exception:
             pass
 

@@ -303,6 +303,8 @@ def _fetch_scored_issues() -> list[dict]:
                 for issue in issues:
                     issue["score_label"] = label
                 all_issues.extend(issues)
+        except llm_client.LLMError:
+            raise
         except Exception:
             continue
 
@@ -423,6 +425,8 @@ def _notify_picked_issues(picked: list[dict], today: str) -> None:
                 timeout=30,
             )
             logger.info(f"Issue #{number} に通知コメントを投稿")
+        except llm_client.LLMError:
+            raise
         except Exception as e:
             logger.warning(f"Issue #{number} へのコメント投稿失敗: {e}")
 
@@ -489,6 +493,8 @@ def run() -> None:
 
     try:
         content = _call_llm(prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"LLM 呼び出し失敗: {e}")
         return
@@ -571,5 +577,7 @@ def run() -> None:
         from . import discord_notify
         repo_url = "https://github.com/kaionn/pain-collector"
         discord_notify.notify_mvp_picked(picked, today, repo_url)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"Discord 通知失敗（続行）: {e}")

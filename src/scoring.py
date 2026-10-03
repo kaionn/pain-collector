@@ -142,6 +142,8 @@ def score_pain(pain: dict) -> dict | None:
         scores["community_validation"] = normalize_engagement(engagement)
         scores["total_score"] = calculate_total_score(scores)
         return scores
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"スコアリング失敗: {e}")
         return None
@@ -177,6 +179,8 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
             timeout=30,
         )
         logger.info(f"#{issue_number} にスコア {total}/60 を追加")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"#{issue_number} コメント失敗: {e}")
 
@@ -203,6 +207,8 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
             logger.warning(
                 f"#{issue_number} スコアラベル '{label}' の付与に失敗: {result.stderr.strip()}"
             )
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"#{issue_number} スコアラベル付与で例外: {e}")
 
@@ -226,6 +232,8 @@ def score_open_issues() -> None:
             logger.warning("Issue 取得失敗")
             return
         issues = json.loads(result.stdout)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"Issue 取得失敗: {e}")
         return
