@@ -34,7 +34,7 @@ def safe_text(value):
     return value.strip()
 
 
-def render(payload, category, repo):
+def render(payload, category, repo, include_run=True):
     sections = [safe_text(payload.get("content", ""))]
     for embed in payload.get("embeds", []):
         title = safe_text(embed.get("title", ""))
@@ -59,7 +59,7 @@ def render(payload, category, repo):
                 if number.isdigit():
                     sections.append(f"{repo}/issues/{number}: GitHub Issueで /{action} をコメント")
     run_id = os.environ.get("GITHUB_RUN_ID", "")
-    if run_id:
+    if run_id and include_run:
         sections.append(f"https://github.com/{repo}/actions/runs/{run_id}")
     body = "\n\n".join(s for s in sections if s)
     # Keep content complete; chunk at message boundaries rather than truncating.
@@ -124,19 +124,56 @@ def _mirror(payload, category="reports", event="notification", file=None):
     file_path = Path(file) if file else None
     file_bytes = file_path.read_bytes() if file_path else None
     # Timestamp/avatar/color fields are transport decoration, not event identity.
-    identity = {"repo": repo, "event": event, "category": category, "run": os.environ.get("GITHUB_RUN_ID", "local"), "body": chunks,
+    durable = os.environ.get("NOTIFY_DURABLE_LEDGER") == "true"
+    # Runtime links are diagnostics, not logical event identity. Same generated
+    # artifact/content revision has one key across runs, including catch-up.
+    stable_chunks = render(payload, category, repo, include_run=False)
+    identity = {"repo": repo, "event": event, "category": category, "run": "durable-v1" if durable else os.environ.get("GITHUB_RUN_ID", "local"), "body": stable_chunks if durable else chunks,
                 "file": hashlib.sha256(file_bytes).hexdigest() if file_bytes is not None else None}
     key = hashlib.sha256(json.dumps(identity, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
     state_path = directory / (key + ".json")
+    if durable:
+        # Original rendered content enables notification-only recovery; credentials
+        # and unsanitized Discord payloads never enter the outbox or Git ledger.
+        outbox = Path(".notification-outbox") / key
+        write_json(outbox / "event.json", {"key": key, "category": category, "event": event, "rendered_chunks": chunks, "stable_chunks": stable_chunks, "file_name": file_path.name if file_path else None})
+        if file_path:
+            import shutil
+            shutil.copyfile(file_path, outbox / file_path.name)
+    ledger = None
+    if durable:
+        try:
+            from notify_ledger import GitLedger
+            ledger = GitLedger(repo, key)
+            prior = ledger.load()
+        except Exception:
+            print("::warning::Durable notification ledger unavailable; no Slack send; Discord retained.", file=sys.stderr)
+            return {"status": "ledger_unavailable", "key": key}
+        if prior:
+            write_json(state_path, prior)
+            if prior.get("status") == "sent":
+                return {"status": "already_sent", "key": key}
+            # Never take over an unfinished claim, even from an earlier run.
+            return {"status": "needs_reconciliation", "key": key}
     state = json.loads(state_path.read_text()) if state_path.exists() else {"key": key, "channel": expected, "repo": repo, "event": event, "parts": [], "status": "pending"}
     if state.get("status") == "sent":
         return {"status": "already_sent", "key": key}
     if state.get("status") == "needs_reconciliation":
         return {"status": "needs_reconciliation", "key": key}
+    if ledger:
+        state.update(schema=1, status="sending", stage="reserved", run_id=os.environ.get("GITHUB_RUN_ID", ""), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", "1"), mode=os.environ.get("NOTIFICATION_MODE", "discord"))
+    def persist():
+        # Durable acknowledgement must precede any subsequent Slack mutation.
+        if ledger:
+            ledger.save(state)
+        write_json(state_path, state)
     # Persist only identifiers/progress. Payloads may contain private content;
     # rerun the notification-only fixture to reconcile, never upload credentials.
-    write_json(state_path, state)
+    try:
+        persist()  # CAS claim; concurrent loser never reaches Slack.
+    except Exception:
+        return {"status": "ledger_unavailable" if ledger else "adapter_failed", "key": key}
     try:
         for index, chunk in enumerate(chunks):
             if index < len(state["parts"]):
@@ -144,14 +181,18 @@ def _mirror(payload, category="reports", event="notification", file=None):
             data = {"channel": expected, "text": "[SHADOW TEST] " + chunk, "unfurl_links": False, "unfurl_media": False}
             if state["parts"]:
                 data["thread_ts"] = state["parts"][0]
+            state["stage"] = "text:" + str(index)
+            persist()
             response = api("chat.postMessage", data, token)
             ts = response.get("ts")
             if not ts:
                 raise DeliveryError("Slack acknowledgement missing timestamp")
             state["parts"].append(ts)
-            write_json(state_path, state)
+            persist()
         if file_path and not state.get("file_sent"):
             if not state.get("file_id"):
+                state["stage"] = "get_upload_url"
+                persist()
                 upload = api("files.getUploadURLExternal", {"filename": file_path.name, "length": len(file_bytes)}, token)
                 url = upload.get("upload_url", "")
                 from urllib.parse import urlparse
@@ -160,23 +201,26 @@ def _mirror(payload, category="reports", event="notification", file=None):
                     raise DeliveryError("Slack upload URL rejected")
                 state["file_id"] = upload["file_id"]
                 state["stage"] = "upload_bytes"
-                write_json(state_path, state)
+                persist()
                 request(url, data=file_bytes, binary=True)
                 state["file_uploaded"] = True
-                write_json(state_path, state)
+                persist()
             if not state.get("file_uploaded"):
                 raise DeliveryError("File transport state is unconfirmed")
             state["stage"] = "complete_upload"
-            write_json(state_path, state)
+            persist()
             api("files.completeUploadExternal", {"files": [{"id": state["file_id"], "title": file_path.name}], "channel_id": expected, "thread_ts": state["parts"][0]}, token)
             state["file_sent"] = True
-            write_json(state_path, state)
+            persist()
         state["status"] = "sent"
-        write_json(state_path, state)
+        persist()
         return {"status": "sent", "key": key}
     except Exception:
         state["status"] = "needs_reconciliation"
-        write_json(state_path, state)
+        try:
+            persist()
+        except Exception:
+            write_json(state_path, state)
         print("::warning::Slack shadow delivery incomplete; Discord retained. Check notification delivery artifact.", file=sys.stderr)
         return {"status": "needs_reconciliation", "key": key}
 

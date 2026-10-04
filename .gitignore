@@ -16,3 +16,5 @@ raw/
 
 # Ephemeral Slack shadow receipts (uploaded separately by Actions)
 .notification-state/
+
+.notification-outbox/
