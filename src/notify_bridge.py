@@ -115,7 +115,7 @@ def write_json(path, value):
 
 
 def _mirror(payload, category="reports", event="notification", file=None):
-    """Best effort shadow delivery; failure never changes Discord/primary behavior."""
+    """Send with durable acknowledgement; Slack-only failures are audited after business work."""
     if os.environ.get("NOTIFICATION_MODE", "discord") not in {"shadow", "slack"}:
         return {"status": "disabled"}
     primary_without_ledger = os.environ.get("NOTIFICATION_MODE") == "slack" and os.environ.get("NOTIFY_DURABLE_LEDGER") != "true"
@@ -152,20 +152,27 @@ def _mirror(payload, category="reports", event="notification", file=None):
     ledger = None
     if durable:
         try:
-            from notify_ledger import GitLedger
+            try:
+                from .notify_ledger import GitLedger
+            except ImportError:
+                from notify_ledger import GitLedger
             ledger = GitLedger(repo, key)
             prior = ledger.load()
         except Exception:
-            print("::warning::Durable notification ledger unavailable; no Slack send; Discord retained.", file=sys.stderr)
+            print("::warning::Durable notification ledger unavailable; no send; inspect recovery outbox.", file=sys.stderr)
             return {"status": "ledger_unavailable", "key": key}
         if prior:
             write_json(state_path, prior)
-            if prior.get("status") in {"sent", "fallback_sent"}:
+            if prior.get("status") == "fallback_sent":
+                return {"status": "needs_reconciliation", "key": key}
+            if prior.get("status") == "sent":
                 return {"status": "already_sent", "key": key}
             # Never take over an unfinished claim, even from an earlier run.
             return {"status": "needs_reconciliation", "key": key}
     state = json.loads(state_path.read_text()) if state_path.exists() else {"key": key, "channel": expected, "repo": repo, "event": event, "parts": [], "status": "pending"}
-    if state.get("status") in {"sent", "fallback_sent"}:
+    if state.get("status") == "fallback_sent":
+        return {"status": "needs_reconciliation", "key": key}
+    if state.get("status") == "sent":
         return {"status": "already_sent", "key": key}
     if state.get("status") in {"needs_reconciliation", "rejected", "fallback_sending"}:
         return {"status": "needs_reconciliation", "key": key}
@@ -261,57 +268,23 @@ def mirror(payload, category="reports", event="notification", file=None):
             write_json(Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state")) / "last-result.json", result)
         except Exception:
             flag_primary_error()
-    if result.get("status") not in {"sent", "already_sent", "known_rejected", "disabled"}:
+    if result.get("status") not in {"sent", "already_sent", "disabled"}:
         flag_primary_error()
     return result
 
 
 def discord_gate(result=None):
-    """Reserve a Discord fallback only after a confirmed empty Slack rejection.
+    """Discord is available only through an explicit legacy rollback mode.
 
-    Unknown Slack or ledger outcomes NEVER trigger a second provider. A crash
-    after fallback reservation also requires manual reconciliation.
+    Slack-only never falls back, even after a known rejection. Uncertain
+    deliveries remain durable and require independent manual reconciliation.
     """
-    if os.environ.get("NOTIFICATION_MODE", "discord") != "slack":
-        return True
-    try:
-        directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
-        result = result if result is not None else json.loads((directory / "last-result.json").read_text())
-        if result.get("status") != "known_rejected":
-            return False
-        from notify_ledger import GitLedger
-        store = GitLedger(os.environ.get("GITHUB_REPOSITORY", ""), result["key"])
-        state = store.load()
-        if not state or state.get("status") != "rejected" or state.get("parts") or state.get("file_id") or state.get("run_id") != os.environ.get("GITHUB_RUN_ID") or state.get("run_attempt") != os.environ.get("GITHUB_RUN_ATTEMPT", "1"):
-            return False
-        state.update(status="fallback_sending", stage="discord_fallback")
-        store.save(state)
-        write_json(directory / (result["key"] + ".json"), state)
-        return True
-    except Exception:
-        print("::warning::Fallback reservation unavailable; no blind Discord send.", file=sys.stderr)
-        return False
+    return os.environ.get("NOTIFICATION_MODE", "discord") in {"discord", "shadow"}
 
 
 def discord_ack(http_status, result=None):
-    if os.environ.get("NOTIFICATION_MODE", "discord") != "slack":
-        return
-    try:
-        directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
-        result = result if result is not None else json.loads((directory / "last-result.json").read_text())
-        if result.get("status") != "known_rejected":
-            return
-        from notify_ledger import GitLedger
-        store = GitLedger(os.environ.get("GITHUB_REPOSITORY", ""), result["key"])
-        state = store.load()
-        if not state or state.get("status") != "fallback_sending" or state.get("run_id") != os.environ.get("GITHUB_RUN_ID") or state.get("run_attempt") != os.environ.get("GITHUB_RUN_ATTEMPT", "1"):
-            return
-        success = str(http_status).isdigit() and 200 <= int(http_status) < 300
-        state.update(status="fallback_sent" if success else "needs_reconciliation", stage="discord_acknowledged" if success else "discord_unconfirmed")
-        store.save(state)
-        write_json(directory / (result["key"] + ".json"), state)
-    except Exception:
-        print("::warning::Discord fallback acknowledgement unconfirmed; reconcile manually.", file=sys.stderr)
+    """Compatibility no-op: Slack-only cannot acknowledge a Discord delivery."""
+    return
 
 
 def delivery_http(result=None):
@@ -324,27 +297,35 @@ def delivery_http(result=None):
         return 503
 
 
+def audit_summary(failed):
+    text = "Slack-only delivery: " + ("INCOMPLETE — inspect durable receipts and recovery outbox; no Discord fallback, no automatic retry." if failed else "verified for emitted events; an empty run is not delivery evidence.")
+    print(("::error::" if failed else "") + text)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        try:
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as output:
+                output.write("\n### Notification delivery\n" + text + "\n")
+        except OSError:
+            print("::warning::Notification summary unavailable; see job error and receipts.")
+    return 1 if failed else 0
+
+
 def audit_delivery():
     if os.environ.get("NOTIFICATION_MODE") != "slack":
         return 0
     if os.environ.get("NOTIFY_DELIVERY_ERROR") == "true":
         print("::error::Primary notification delivery needs reconciliation; business work retained.")
-        return 1
+        return audit_summary(True)
     directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
     for path in directory.glob("*.json"):
         if path.name != "last-result.json" and not re.fullmatch(r"[0-9a-f]{64}\.json", path.name):
             continue
         data = json.loads(path.read_text())
         # Marker tracks blocked/preflight outcomes without a persisted claim.
-        valid = {"sent", "already_sent"} if path.name == "last-result.json" else {"sent", "fallback_sent"}
-        if path.name == "last-result.json" and data.get("status") == "known_rejected":
-            state_path = directory / (data.get("key", "") + ".json")
-            if state_path.exists() and json.loads(state_path.read_text()).get("status") == "fallback_sent":
-                continue
+        valid = {"sent", "already_sent"} if path.name == "last-result.json" else {"sent"}
         if data.get("status") not in valid:
             print("::error::Notification delivery pending reconciliation; business work retained.")
-            return 1
-    return 0
+            return audit_summary(True)
+    return audit_summary(False)
 
 
 def main():

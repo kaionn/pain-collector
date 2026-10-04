@@ -8,9 +8,9 @@ permissions:
   contents: write
   issues: write
 
-# Safe default retains Discord. Enable only after bot installation and channel verification.
+# Slack-only default. Explicit discord/shadow values are retained for rollback.
 env:
-  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'discord' }}
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'slack' }}
   NOTIFY_DURABLE_LEDGER: ${{ vars.NOTIFY_DURABLE_LEDGER || 'false' }}
   SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
   SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
@@ -101,7 +101,7 @@ jobs:
           # /probe の signal-lab への workflow dispatch にのみ使用（他リポジトリへの
           # dispatch は GITHUB_TOKEN では権限不足なため、その呼び出しだけ GH_TOKEN を上書きする）
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |

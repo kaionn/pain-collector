@@ -10,7 +10,7 @@ from notify_bridge import mirror, write_json, discord_gate, audit_delivery
 from notify_ledger import GitLedger
 spec=importlib.util.spec_from_file_location("smoke",Path(__file__).with_name("slack-smoke.py"))
 smoke=importlib.util.module_from_spec(spec);spec.loader.exec_module(smoke)
-TEST="durable-synthetic-20261004-v1"
+TEST="slack-only-synthetic-20261004-v1" if os.environ.get("LEDGER_TEST_PHASE") in {"slack-only-seed","slack-only-replay"} else "durable-synthetic-20261004-v1"
 
 def main():
     phase=os.environ.get("LEDGER_TEST_PHASE","storage")
@@ -18,10 +18,15 @@ def main():
     dest=Path(".notification-state/ledger-smoke-result.json")
     write_json(dest,result)
     try:
-        if phase not in {"storage","seed","replay","primary-replay"} or os.environ.get("GITHUB_RUN_ATTEMPT")!="1":
+        if phase not in {"storage","seed","replay","primary-replay","slack-only-seed","slack-only-replay","recover-monitor-37184445078"} or os.environ.get("GITHUB_RUN_ATTEMPT")!="1":
             raise RuntimeError("invalid_phase_or_rerun")
         result["identity"]=smoke.identity()
         repo=os.environ.get("GITHUB_REPOSITORY","")
+        if phase=="recover-monitor-37184445078":
+            assert repo=="kaionn/pain-collector"
+            import subprocess
+            subprocess.run([sys.executable,str(Path(__file__).with_name("recover-monitor-notification.py"))],check=True)
+            result["status"]="verified";write_json(dest,result);return 0
         key=hashlib.sha256((repo+":storage-probe-v1").encode()).hexdigest()
         store=GitLedger(repo,key);prior=store.load()
         if prior and prior.get("status")!="storage_verified":
@@ -36,19 +41,19 @@ def main():
         write_json(dest,result)
         if phase!="storage":
             assert repo=="kaionn/lazy-product-lab"
-            os.environ["NOTIFICATION_MODE"]="slack" if phase=="primary-replay" else "shadow"
+            os.environ["NOTIFICATION_MODE"]="slack" if phase in {"primary-replay","slack-only-seed","slack-only-replay"} else "shadow"
             os.environ["NOTIFY_DURABLE_LEDGER"]="true"
             image=Path(".notification-state/durable-test.png");smoke.synthetic_png(image)
-            expected="sent" if phase=="seed" else "already_sent"
+            expected="sent" if phase in {"seed","slack-only-seed"} else "already_sent"
             report=mirror({"content":f"[SYNTHETIC DURABLE LEDGER TEST {TEST}] Cross-run report and generated image only; no business processing or private data."},"reports",TEST,str(image))
             result["report"]=report;write_json(dest,result)
-            if phase=="primary-replay":
+            if phase in {"primary-replay","slack-only-seed","slack-only-replay"}:
                 result["report_discord_gate"]=discord_gate(report)
                 assert result["report_discord_gate"] is False
             if report["status"]!=expected:raise RuntimeError("report_not_expected")
             alert=mirror({"content":f"[SYNTHETIC DURABLE LEDGER TEST {TEST}] Cross-run alert transport only; not a real failure."},"alerts",TEST)
             result["alert"]=alert;write_json(dest,result)
-            if phase=="primary-replay":
+            if phase in {"primary-replay","slack-only-seed","slack-only-replay"}:
                 result["alert_discord_gate"]=discord_gate(alert)
                 assert result["alert_discord_gate"] is False
                 assert audit_delivery()==0
