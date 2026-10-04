@@ -8,6 +8,7 @@ import logging
 import os
 
 from .http_utils import create_retry_session
+from .notify_bridge import mirror
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +36,10 @@ def _severity_color(severity: int) -> int:
     return _SEVERITY_COLORS.get(severity, 0x95A5A6)
 
 
-def _post_webhook(payload: dict) -> None:
+def _post_webhook(payload: dict, *, category: str = "reports", event: str = "pipeline", shadow: bool = True) -> None:
     """Discord Webhook にペイロードを POST する."""
+    if shadow:
+        mirror(payload, category, event)
     url = os.environ.get("DISCORD_WEBHOOK_URL", "")
     if not url:
         return
@@ -205,6 +208,10 @@ def notify_mvp_picked(
     )
 
     rank_emoji = ["🥇", "🥈", "🥉"]
+    mirror({
+        "content": "🏆 MVP候補: GitHub Issueで /approve（Spec Readyのみ）または /reject をコメントしてください。",
+        "embeds": [_build_mvp_embed(item, i, rank_emoji, today, repo_url) for i, item in enumerate(picked[:3])],
+    }, "reports", "mvp-picked")
 
     if bot_available:
         try:
@@ -226,7 +233,7 @@ def notify_mvp_picked(
     }
 
     try:
-        _post_webhook(payload)
+        _post_webhook(payload, shadow=False)
         logger.info(f"Discord MVP 選定通知送信（Webhook）: {len(picked)} 件")
     except Exception as e:
         logger.warning(f"Discord MVP 選定通知失敗: {e}")
@@ -254,7 +261,7 @@ def notify_pipeline_alert(problems: list[str]) -> None:
     }
 
     try:
-        _post_webhook(payload)
+        _post_webhook(payload, category="alerts", event="pipeline-alert")
         logger.info(f"Discord パイプラインアラート送信: {len(problems)} 件")
     except Exception as e:
         logger.warning(f"Discord パイプラインアラート送信失敗: {e}")

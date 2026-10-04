@@ -9,6 +9,12 @@ permissions:
   contents: write
   issues: write
 
+# Safe default retains Discord. Enable only after bot installation and channel verification.
+env:
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'discord' }}
+  SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+  SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -77,6 +83,7 @@ jobs:
 
       - name: Pick idea
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
           LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
@@ -124,3 +131,13 @@ jobs:
             git commit -m "$(date -u +%Y-%m-%d) の週次トレンドレポートを追加"
             git push
           fi
+
+      - name: Preserve Slack shadow delivery receipts
+        if: ${{ always() && vars.NOTIFICATION_MODE == 'shadow' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          path: .notification-state/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
