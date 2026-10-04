@@ -117,7 +117,7 @@
       "spec": null,
       "deep_dive": null,
       "product_name": "ssl-certificate-docker-issues",
-      "status": "probing",
+      "status": "stalled",
       "source": "issue-command",
       "events": [
         {
@@ -132,6 +132,13 @@
           "at": "2026-07-05T15:48:02.186217+09:00",
           "payload": {
             "product_name": "ssl-certificate-docker-issues"
+          }
+        },
+        {
+          "action": "stalled",
+          "at": "2026-10-04T07:00:08.529728+00:00",
+          "payload": {
+            "reason": "probing が閾値時間を超過（成否未確認）"
           }
         }
       ]
