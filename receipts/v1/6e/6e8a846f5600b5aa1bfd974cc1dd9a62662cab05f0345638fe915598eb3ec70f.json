@@ -1,1 +1,1 @@
-{"channel": "C0C6CBVA5TM", "event": "pipeline-alert", "key": "6e8a846f5600b5aa1bfd974cc1dd9a62662cab05f0345638fe915598eb3ec70f", "mode": "slack", "parts": [], "repo": "kaionn/pain-collector", "run_attempt": "1", "run_id": "37241723195", "schema": 1, "stage": "reserved", "status": "sending"}
+{"channel": "C0C6CBVA5TM", "event": "pipeline-alert", "key": "6e8a846f5600b5aa1bfd974cc1dd9a62662cab05f0345638fe915598eb3ec70f", "mode": "slack", "parts": [], "repo": "kaionn/pain-collector", "run_attempt": "1", "run_id": "37241723195", "schema": 1, "stage": "text:0", "status": "sending"}
