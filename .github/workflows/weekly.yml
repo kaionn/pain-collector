@@ -135,7 +135,7 @@ jobs:
           fi
 
       - name: Preserve notification delivery receipts and sanitized recovery outbox
-        if: ${{ always() && (vars.NOTIFICATION_MODE == 'shadow' || vars.NOTIFICATION_MODE == 'slack') }}
+        if: ${{ always() && (env.NOTIFICATION_MODE == 'shadow' || env.NOTIFICATION_MODE == 'slack') }}
         uses: actions/upload-artifact@v4
         with:
           name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
@@ -147,5 +147,5 @@ jobs:
           retention-days: 90
 
       - name: Audit primary notification completion after business work
-        if: ${{ always() && vars.NOTIFICATION_MODE == 'slack' }}
+        if: ${{ always() && env.NOTIFICATION_MODE == 'slack' }}
         run: python3 src/notify_bridge.py --audit

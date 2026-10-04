@@ -59,7 +59,8 @@ def render(payload, category, repo, include_run=True):
             elif component.get("custom_id", "").startswith(("approve:", "reject:")):
                 action, number = component["custom_id"].split(":", 1)
                 if number.isdigit():
-                    sections.append(f"{repo}/issues/{number}: GitHub Issueで /{action} をコメント")
+                    guidance = "承認ボタンは廃止。証拠・build contractを確認してローカル試作を判断" if action == "approve" else "GitHub Issueで /reject をコメント"
+                    sections.append(f"https://github.com/{repo}/issues/{number}: {guidance}")
     run_id = os.environ.get("GITHUB_RUN_ID", "")
     if run_id and include_run:
         sections.append(f"https://github.com/{repo}/actions/runs/{run_id}")

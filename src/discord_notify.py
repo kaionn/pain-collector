@@ -295,7 +295,7 @@ def _build_mvp_embed(
         fields.append({"name": "選定理由", "value": reason, "inline": False})
 
     footer_text = (
-        "Spec Ready → Approve ボタンで自動実装を開始"
+        "Spec Ready → 証拠・build contractを確認してローカル試作を判断"
         if spec
         else "Spec 未生成 → Deep Dive 完了後に再選定"
     )

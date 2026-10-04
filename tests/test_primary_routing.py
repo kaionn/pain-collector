@@ -73,4 +73,21 @@ class PrimaryRoutingTests(unittest.TestCase):
             self.assertTrue(bridge.discord_gate({'status':status}))
         self.assertEqual(bridge.audit_delivery(),0)
 
+    def test_only_explicit_pre_delivery_api_rejections_allow_fallback(self):
+        for code,expected in [("invalid_auth",True),("channel_not_found",True),("internal_error",False),("unrecognized_error",False)]:
+            with self.subTest(code=code),patch.object(bridge,"request",return_value=('{"ok":false,"error":"'+code+'"}').encode()):
+                with self.assertRaises(bridge.DeliveryError) as caught:
+                    bridge.api("chat.postMessage",{},"synthetic-only")
+                self.assertEqual(caught.exception.known_rejection,expected)
+
+    def test_unwritable_local_receipt_flags_the_final_runner_audit(self):
+        command_file=Path(self.tmp.name)/"runner-env"
+        os.environ["GITHUB_ENV"]=str(command_file)
+        with patch.object(bridge,"write_json",side_effect=OSError("unwritable")):
+            result=bridge.mirror({"content":"synthetic"})
+        self.assertEqual(result["status"],"adapter_failed")
+        self.assertEqual(os.environ["NOTIFY_DELIVERY_ERROR"],"true")
+        self.assertIn("NOTIFY_DELIVERY_ERROR=true",command_file.read_text())
+        self.assertEqual(bridge.audit_delivery(),1)
+
 if __name__=='__main__':unittest.main()

@@ -10,6 +10,7 @@ on:
       - 'tests/test_slack_smoke.py'
       - 'tests/test_notify_ledger.py'
       - 'tests/test_primary_routing.py'
+      - 'tests/test_primary_call_sites.py'
   workflow_dispatch:
     inputs:
       test_id:
@@ -37,12 +38,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install original Python call-site dependency
+        run: python3 -m pip install requests==2.32.5
       - name: Run mocked delivery checks (no secrets or live requests)
         run: |
           python3 tests/test_notify_bridge.py
           python3 tests/test_slack_smoke.py
           python3 tests/test_notify_ledger.py
           python3 tests/test_primary_routing.py
+          python3 -m unittest discover -s tests -p test_primary_call_sites.py
 
   owner-smoke:
     needs: mock-tests

@@ -120,7 +120,7 @@ class BridgeTests(unittest.TestCase):
 
     def test_custom_discord_actions_become_github_guidance(self):
         rendered = "".join(bridge.render({"components": [{"components": [{"custom_id": "approve:12"}, {"custom_id": "reject:12"}, {"label": "View", "url": "https://github.com/kaionn/pain-collector/issues/12"}]}]}, "reports", "kaionn/pain-collector"))
-        self.assertIn("/approve", rendered); self.assertIn("/reject", rendered)
+        self.assertNotIn("で /approve をコメント", rendered); self.assertIn("承認ボタンは廃止", rendered); self.assertIn("/reject", rendered)
         self.assertIn("https://github.com/kaionn/pain-collector/issues/12", rendered)
 
 
