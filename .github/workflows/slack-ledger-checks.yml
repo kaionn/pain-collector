@@ -1,0 +1,45 @@
+name: Durable Slack ledger checks
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'storage sends nothing; seed/replay are pinned to one lazy-product-lab synthetic event'
+        required: true
+        default: storage
+        type: choice
+        options: [storage, seed, replay]
+permissions:
+  contents: read
+concurrency:
+  group: slack-durable-ledger-check
+  cancel-in-progress: false
+jobs:
+  owner-check:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify durable storage and optional fixed synthetic seed/replay
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+          SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
+          NOTIFY_LEDGER_TOKEN: ${{ github.token }}
+          LEDGER_TEST_PHASE: ${{ inputs.phase }}
+        run: python3 scripts/slack-ledger-smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slack-ledger-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .notification-state/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 90
