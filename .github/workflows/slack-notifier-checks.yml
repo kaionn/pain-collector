@@ -9,6 +9,7 @@ on:
       - 'tests/test_notify_bridge.py'
       - 'tests/test_slack_smoke.py'
       - 'tests/test_notify_ledger.py'
+      - 'tests/test_primary_routing.py'
   workflow_dispatch:
     inputs:
       test_id:
@@ -41,6 +42,7 @@ jobs:
           python3 tests/test_notify_bridge.py
           python3 tests/test_slack_smoke.py
           python3 tests/test_notify_ledger.py
+          python3 tests/test_primary_routing.py
 
   owner-smoke:
     needs: mock-tests

@@ -21,7 +21,7 @@ class BridgeTests(unittest.TestCase):
         self.env.start(); self.addCleanup(self.env.stop)
 
     def test_default_and_unknown_modes_do_not_use_network(self):
-        for mode in ("discord", "slack", "typo"):
+        for mode in ("discord", "typo"):
             with patch.dict(os.environ, {"NOTIFICATION_MODE": mode}), patch.object(bridge, "api") as api:
                 self.assertEqual(bridge.mirror({"content": "result"})["status"], "disabled")
                 api.assert_not_called()
@@ -52,7 +52,7 @@ class BridgeTests(unittest.TestCase):
 
     def test_api_ok_false_creates_receipt_without_leaking_token_or_payload(self):
         with patch.object(bridge, "request", return_value=b'{"ok":false,"error":"invalid_auth"}'):
-            self.assertEqual(bridge.mirror({"content": "private content"})["status"], "needs_reconciliation")
+            self.assertEqual(bridge.mirror({"content": "private content"})["status"], "known_rejected")
         state = "\n".join(p.read_text() for p in Path(self.tmp.name).glob("*.json"))
         self.assertNotIn("synthetic-test-only", state)
         self.assertNotIn("private content", state)

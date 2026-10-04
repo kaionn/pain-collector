@@ -8,7 +8,7 @@ import logging
 import os
 
 from .http_utils import create_retry_session
-from .notify_bridge import mirror
+from .notify_bridge import mirror, discord_gate, discord_ack
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +40,15 @@ def _post_webhook(payload: dict, *, category: str = "reports", event: str = "pip
     """Discord Webhook にペイロードを POST する."""
     if shadow:
         mirror(payload, category, event)
+    if not discord_gate():
+        return
     url = os.environ.get("DISCORD_WEBHOOK_URL", "")
     if not url:
         return
 
-    session = create_retry_session()
+    session = create_retry_session(retries=0) if os.environ.get("NOTIFICATION_MODE") == "slack" else create_retry_session()
     resp = session.post(url, json=payload, timeout=10)
+    discord_ack(resp.status_code)
     resp.raise_for_status()
 
 
@@ -213,6 +216,9 @@ def notify_mvp_picked(
         "embeds": [_build_mvp_embed(item, i, rank_emoji, today, repo_url) for i, item in enumerate(picked[:3])],
     }, "reports", "mvp-picked")
 
+    # Slack-primary fallback is one aggregate webhook, not multiple bot cards.
+    if os.environ.get("NOTIFICATION_MODE") == "slack":
+        bot_available = False
     if bot_available:
         try:
             for i, item in enumerate(picked[:3]):
