@@ -1,7 +1,7 @@
-"""Vendored Slack shadow notifier v1. Discord delivery remains authoritative.
+"""Vendored durable notifier. Default Discord, shadow, or prepared Slack primary.
 
-NOTIFICATION_MODE=discord (default) or shadow. No cutover switch is exposed until
-real Slack delivery, audience, image upload and rollback have been verified.
+Slack primary is enabled only after real cycle evidence, provider gates and
+rollback have been verified. Unknown outcomes require operator reconciliation.
 Secrets are read from environment only and are never logged or persisted.
 """
 from __future__ import annotations
@@ -231,7 +231,7 @@ def _mirror(payload, category="reports", event="notification", file=None):
             persist()
         except Exception:
             write_json(state_path, state)
-        print("::warning::Slack shadow delivery incomplete; Discord retained. Check notification delivery artifact.", file=sys.stderr)
+        print("::warning::Notification delivery incomplete; inspect durable receipt/outbox.", file=sys.stderr)
         return {"status": "known_rejected" if rejected else "needs_reconciliation", "key": key}
 
 
@@ -293,12 +293,12 @@ def discord_gate(result=None):
         return False
 
 
-def discord_ack(http_status):
+def discord_ack(http_status, result=None):
     if os.environ.get("NOTIFICATION_MODE", "discord") != "slack":
         return
     try:
         directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
-        result = json.loads((directory / "last-result.json").read_text())
+        result = result if result is not None else json.loads((directory / "last-result.json").read_text())
         if result.get("status") != "known_rejected":
             return
         from notify_ledger import GitLedger
@@ -314,11 +314,11 @@ def discord_ack(http_status):
         print("::warning::Discord fallback acknowledgement unconfirmed; reconcile manually.", file=sys.stderr)
 
 
-def delivery_http():
+def delivery_http(result=None):
     """Compatibility status for existing diary notification-state handling."""
     try:
         directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
-        result = json.loads((directory / "last-result.json").read_text())
+        result = result if result is not None else json.loads((directory / "last-result.json").read_text())
         return 204 if result.get("status") in {"sent", "already_sent"} else 503
     except Exception:
         return 503
@@ -354,15 +354,28 @@ def main():
     parser.add_argument("--file")
     parser.add_argument("--discord-gate", action="store_true")
     parser.add_argument("--discord-ack-status")
+    parser.add_argument("--discord-result")
+    parser.add_argument("--flag-primary-error", action="store_true")
     parser.add_argument("--delivery-http", action="store_true")
     parser.add_argument("--audit", action="store_true")
     args = parser.parse_args()
+    result = None
+    if args.discord_result is not None:
+        try:
+            result = json.loads(args.discord_result)
+            if not isinstance(result, dict):
+                raise ValueError()
+        except (ValueError, TypeError):
+            result = {"status": "adapter_failed"}
+            flag_primary_error()
+    if args.flag_primary_error:
+        flag_primary_error(); return 0
     if args.discord_gate:
-        return 0 if discord_gate() else 10
+        return 0 if discord_gate(result) else 10
     if args.discord_ack_status is not None:
-        discord_ack(args.discord_ack_status); return 0
+        discord_ack(args.discord_ack_status, result); return 0
     if args.delivery_http:
-        print(delivery_http()); return 0
+        print(delivery_http(result)); return 0
     if args.audit:
         return audit_delivery()
     try:
@@ -370,7 +383,12 @@ def main():
         print(json.dumps(result))
     except Exception:
         # Fail open to the existing Discord send. Do not print payload/credential.
-        print("::warning::Slack shadow adapter failed; Discord retained.", file=sys.stderr)
+        flag_primary_error()
+        try:
+            write_json(Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state")) / "last-result.json", {"status": "adapter_failed"})
+        except Exception:
+            pass
+        print("::warning::Notification input/adapter failed; inspect delivery audit.", file=sys.stderr)
     return 0
 
 

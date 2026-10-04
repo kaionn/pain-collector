@@ -13,7 +13,7 @@ class PrimaryCallSites(unittest.TestCase):
     def test_mvp_primary_fallback_is_one_aggregate_without_bot_cards(self):
         session=MagicMock();session.post.return_value.status_code=204
         with patch.object(discord_notify,'mirror') as mirror,patch.object(discord_notify,'discord_gate',return_value=True),patch.object(discord_notify,'discord_ack') as ack,patch.object(discord_notify,'create_retry_session',return_value=session) as factory,patch.object(discord_notify,'_send_mvp_bot_message') as bot:
-            discord_notify.notify_mvp_picked([{'number':1,'title':'synthetic1'},{'number':2,'title':'synthetic2'}],'2026-10-04','https://github.com/kaionn/pain-collector');mirror.assert_called_once();factory.assert_called_once_with(retries=0);bot.assert_not_called();session.post.assert_called_once();ack.assert_called_once_with(204)
+            discord_notify.notify_mvp_picked([{'number':1,'title':'synthetic1'},{'number':2,'title':'synthetic2'}],'2026-10-04','https://github.com/kaionn/pain-collector');mirror.assert_called_once();factory.assert_called_once_with(retries=0);bot.assert_not_called();session.post.assert_called_once();self.assertEqual(ack.call_args.args[0],204);self.assertIs(ack.call_args.args[1],mirror.return_value)
             self.assertEqual(len(session.post.call_args.kwargs['json']['embeds']),2)
     def test_stalled_primary_success_skips_original_webhook(self):
         summary={'stalled':[{'title':'synthetic','issue_number':1,'hours_since_last_event':25}]}
