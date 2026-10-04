@@ -103,6 +103,21 @@ class BridgeTests(unittest.TestCase):
             sleep.assert_called_once_with(2)
             self.assertEqual(urlopen.call_count, 2)
 
+    def test_file_endpoints_use_encoded_form_arguments(self):
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def read(self): return b'{"ok":true}'
+        from urllib.parse import parse_qs
+        with patch.object(bridge.urllib.request, "urlopen", return_value=Response()) as http:
+            bridge.api("files.getUploadURLExternal", {"filename":"a b.png", "length":123}, "synthetic-test-only")
+            req = http.call_args.args[0]
+            self.assertEqual(req.get_header("Content-type"), "application/x-www-form-urlencoded")
+            self.assertEqual(parse_qs(req.data.decode()), {"filename":["a b.png"], "length":["123"]})
+            bridge.api("files.completeUploadExternal", {"files":[{"id":"F1"}], "channel_id":"C1", "thread_ts":"1.2"}, "synthetic-test-only")
+            req = http.call_args.args[0]
+            self.assertEqual(json.loads(parse_qs(req.data.decode())["files"][0]), [{"id":"F1"}])
+
     def test_custom_discord_actions_become_github_guidance(self):
         rendered = "".join(bridge.render({"components": [{"components": [{"custom_id": "approve:12"}, {"custom_id": "reject:12"}, {"label": "View", "url": "https://github.com/kaionn/pain-collector/issues/12"}]}]}, "reports", "kaionn/pain-collector"))
         self.assertIn("/approve", rendered); self.assertIn("/reject", rendered)

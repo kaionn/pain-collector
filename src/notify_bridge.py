@@ -66,11 +66,12 @@ def render(payload, category, repo):
     return [body[i:i + 3500] for i in range(0, len(body), 3500)] or ["通知"]
 
 
-def request(url, *, data, token=None, binary=False):
-    headers = {"Content-Type": "application/octet-stream" if binary else "application/json; charset=utf-8"}
+def request(url, *, data, token=None, binary=False, form=False):
+    headers = {"Content-Type": "application/octet-stream" if binary else ("application/x-www-form-urlencoded" if form else "application/json; charset=utf-8")}
     if token:
         headers["Authorization"] = "Bearer " + token
-    raw = data if binary else json.dumps(data, ensure_ascii=False).encode()
+    from urllib.parse import urlencode
+    raw = data if binary else (urlencode(data).encode() if form else json.dumps(data, ensure_ascii=False).encode())
     req = urllib.request.Request(url, data=raw, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=15) as response:
@@ -91,7 +92,10 @@ def request(url, *, data, token=None, binary=False):
 
 
 def api(method, data, token):
-    response = json.loads(request(API + method, data=data, token=token))
+    form = method in {"files.getUploadURLExternal", "files.completeUploadExternal"}
+    if form:
+        data = {k: json.dumps(v) if isinstance(v, (list, dict)) else v for k, v in data.items()}
+    response = json.loads(request(API + method, data=data, token=token, form=form))
     if response.get("ok") is not True:
         raise DeliveryError("Slack API rejected delivery")
     return response
@@ -154,9 +158,16 @@ def _mirror(payload, category="reports", event="notification", file=None):
                 parsed = urlparse(url)
                 if parsed.scheme != "https" or not (parsed.hostname or "").endswith(".slack.com"):
                     raise DeliveryError("Slack upload URL rejected")
-                request(url, data=file_bytes, binary=True)
                 state["file_id"] = upload["file_id"]
+                state["stage"] = "upload_bytes"
                 write_json(state_path, state)
+                request(url, data=file_bytes, binary=True)
+                state["file_uploaded"] = True
+                write_json(state_path, state)
+            if not state.get("file_uploaded"):
+                raise DeliveryError("File transport state is unconfirmed")
+            state["stage"] = "complete_upload"
+            write_json(state_path, state)
             api("files.completeUploadExternal", {"files": [{"id": state["file_id"], "title": file_path.name}], "channel_id": expected, "thread_ts": state["parts"][0]}, token)
             state["file_sent"] = True
             write_json(state_path, state)
