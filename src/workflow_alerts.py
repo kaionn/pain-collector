@@ -65,9 +65,12 @@ def notify_discord_stalled(summary: dict) -> bool:
         lines.append(f"- #{item['issue_number']}: {title} ({hours:.1f}h 停滞)")
 
     payload = {"content": "\n".join(lines)}
-    discord_notify.mirror(payload, "alerts", "stalled-builds")
-    session = create_retry_session()
+    slack_result = discord_notify.mirror(payload, "alerts", "stalled-builds")
+    if not discord_notify.discord_gate(slack_result):
+        return True  # Primary receipt/audit determines delivery, not this compatibility return.
+    session = create_retry_session(retries=0) if os.environ.get("NOTIFICATION_MODE") == "slack" else create_retry_session()
     resp = session.post(webhook_url, json=payload, timeout=10)
+    discord_notify.discord_ack(resp.status_code, slack_result)
     resp.raise_for_status()
     logger.info("Discord 通知を送信しました")
     return True

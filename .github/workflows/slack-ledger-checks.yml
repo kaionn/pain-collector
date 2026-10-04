@@ -7,7 +7,7 @@ on:
         required: true
         default: storage
         type: choice
-        options: [storage, seed, replay]
+        options: [storage, seed, replay, primary-replay]
 permissions:
   contents: read
 concurrency:
