@@ -209,7 +209,7 @@ def notify_mvp_picked(
 
     rank_emoji = ["🥇", "🥈", "🥉"]
     mirror({
-        "content": "🏆 MVP候補: GitHub Issueで /approve（Spec Readyのみ）または /reject をコメントしてください。",
+        "content": "🏆 MVP候補: 証拠とbuild contractを確認しローカル試作を承認、またはIssueで /reject。/approve は廃止です。",
         "embeds": [_build_mvp_embed(item, i, rank_emoji, today, repo_url) for i, item in enumerate(picked[:3])],
     }, "reports", "mvp-picked")
 
@@ -228,7 +228,7 @@ def notify_mvp_picked(
         embeds.append(_build_mvp_embed(item, i, rank_emoji, today, repo_url))
 
     payload = {
-        "content": f"{_MENTION} 🏆 MVP 候補が選定されました！承認するには Issue で `/approve` とコメントしてください。",
+        "content": f"{_MENTION} 🏆 MVP 候補が選定されました！docs/opportunity-workflow.md の契約を確認してローカル試作を承認してください。",
         "embeds": embeds,
     }
 

@@ -103,7 +103,7 @@ jobs:
       - name: Notify and update state
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
         env:
-          # contents API PUT は Branch Protection をバイパスするため PAT_TOKEN が必要
+          # contents API PUT は repository rulesetに従った更新のため PAT_TOKEN が必要
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
         run: |
@@ -115,15 +115,15 @@ jobs:
             --output stalled.json \
             --apply
 
-          # 各 stalled Issue に対してラベル変更とコメント
-          uv run python -m src.workflow_alerts stalled-issues --summary stalled.json
-
           # GitHub API 経由で pipeline_state.json を更新（branch protection バイパス）
           uv run python -m src.state_sync push \
             --repo "${{ github.repository }}" \
             --remote-path data/pipeline_state.json \
             --local-path data/pipeline_state.json \
             --message "pipeline: stalled 検出による status 更新"
+
+          # CAS成功後だけ通知。競合時は再fetch・再検出する。
+          uv run python -m src.workflow_alerts stalled-issues --summary stalled.json
 
       - name: Notify Discord
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'

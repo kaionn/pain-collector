@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_THRESHOLD_HOURS = 24
 TARGET_STATUS = "building"
+TARGET_STATUSES = {"building", "probing"}
 NEW_STATUS = "stalled"
 
 
@@ -61,7 +62,7 @@ def detect_stalled(
     stalled: list[StalledItem] = []
 
     for item in state.get("picked", []):
-        if item.get("status") != TARGET_STATUS:
+        if item.get("status") not in TARGET_STATUSES:
             continue
 
         last_at_str = _last_event_at(item)
@@ -110,15 +111,16 @@ def mark_stalled(
     for item in new_state.get("picked", []):
         if int(item.get("issue_number", 0)) not in issue_numbers:
             continue
-        if item.get("status") != TARGET_STATUS:
+        if item.get("status") not in TARGET_STATUSES:
             continue
+        previous_status = item["status"]
         item["status"] = NEW_STATUS
         events = item.setdefault("events", [])
         events.append(
             {
                 "action": "stalled",
                 "at": current_iso,
-                "payload": {"reason": "building が閾値時間を超過"},
+                "payload": {"reason": f"{previous_status} が閾値時間を超過（成否未確認）"},
             }
         )
     return new_state

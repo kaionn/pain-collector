@@ -390,7 +390,7 @@ def _generate_report(picked: list[dict], total_candidates: int, today: str) -> s
         lines.append("")
 
     lines.append("---")
-    lines.append("👉 承認するには、対象 Issue に `/approve` とコメントしてください。")
+    lines.append("👉 docs/opportunity-workflow.md に従い証拠とローカル build contract を確認し、試作を承認してください（/approve は廃止）。")
     lines.append("")
 
     return "\n".join(lines)
@@ -412,8 +412,8 @@ def _notify_picked_issues(picked: list[dict], today: str) -> None:
             f"選定レポート: picks/{today}.md\n"
             f"{spec_status}\n\n"
             f"**次のステップ:**\n"
-            f"- Spec が生成済み → `/approve` とコメントすると自動実装が開始されます\n"
-            f"- Spec が未生成 → Deep Dive 完了後に自動生成されます\n\n"
+            f"- docs/opportunity-workflow.md の build contract を作り、ユーザー承認後にローカル Codex へ引き渡してください\n"
+            f"- `/probe` は互換のLP生成経路です。外部公開は別の明示承認が必要です\n\n"
             f"選定理由:\n{item.get('reason', '')}\n"
         )
 

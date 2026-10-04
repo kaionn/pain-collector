@@ -1,129 +1,64 @@
-"""state_sync.py のユニットテスト.
-
-`gh` 呼び出しは subprocess.run をモックし、ファイル I/O のみ実ファイルシステムで検証する。
-"""
-
-from __future__ import annotations
-
+"""Offline CAS probes: auth/network failure and lost updates must fail closed."""
 import base64
 import json
-import os
 import subprocess
 from unittest.mock import patch
-
 import pytest
-
 from src import state_sync
 
 
-def _completed(returncode: int = 0, stdout: str = "", stderr: str = "") -> subprocess.CompletedProcess:
-    return subprocess.CompletedProcess(args=[], returncode=returncode, stdout=stdout, stderr=stderr)
+def completed(code=0,stdout=''):
+    return subprocess.CompletedProcess([],code,stdout,'failure')
 
 
-class TestFetch:
-    def test_writes_decoded_content_when_remote_exists(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        remote_json = json.dumps({"picked": [{"issue_number": 1}]})
-        encoded = base64.b64encode(remote_json.encode("utf-8")).decode("ascii")
-
-        with patch.object(state_sync, "_run_gh", return_value=_completed(0, encoded)) as mock_run:
-            state_sync.fetch("owner/repo", "data/pipeline_state.json", local_path)
-
-        with open(local_path, encoding="utf-8") as f:
-            assert json.load(f) == {"picked": [{"issue_number": 1}]}
-        mock_run.assert_called_once_with(
-            ["api", "repos/owner/repo/contents/data/pipeline_state.json", "--jq", ".content"]
-        )
-
-    def test_writes_default_state_when_remote_missing(self, tmp_path):
-        local_path = os.path.join(tmp_path, "nested", "pipeline_state.json")
-
-        with patch.object(state_sync, "_run_gh", return_value=_completed(1, "", "not found")):
-            state_sync.fetch("owner/repo", "data/pipeline_state.json", local_path)
-
-        with open(local_path, encoding="utf-8") as f:
-            assert json.load(f) == {"picked": []}
-
-    def test_creates_parent_directory(self, tmp_path):
-        local_path = os.path.join(tmp_path, "deep", "nested", "pipeline_state.json")
-        with patch.object(state_sync, "_run_gh", return_value=_completed(1)):
-            state_sync.fetch("owner/repo", "data/pipeline_state.json", local_path)
-        assert os.path.exists(local_path)
+def fetched(sha='base'):
+    return completed(stdout=json.dumps({'sha':sha,'content':base64.b64encode(b'{"picked": []}').decode()}))
 
 
-class TestPush:
-    def test_skips_when_no_sha_and_create_if_missing_false(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with open(local_path, "w", encoding="utf-8") as f:
-            f.write('{"picked": []}')
-
-        with patch.object(state_sync, "_run_gh", return_value=_completed(0, "")) as mock_run:
-            state_sync.push("owner/repo", "data/pipeline_state.json", local_path, "msg")
-
-        # SHA 取得の 1 回だけ呼ばれ、PUT は呼ばれない
-        mock_run.assert_called_once()
-
-    def test_creates_when_no_sha_and_create_if_missing_true(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with open(local_path, "w", encoding="utf-8") as f:
-            f.write('{"picked": []}')
-
-        with patch.object(state_sync, "_run_gh", return_value=_completed(0, "")) as mock_run:
-            state_sync.push(
-                "owner/repo", "data/pipeline_state.json", local_path, "msg",
-                create_if_missing=True,
-            )
-
-        assert mock_run.call_count == 2
-        put_call_args = mock_run.call_args_list[1][0][0]
-        assert "-X" in put_call_args and "PUT" in put_call_args
-        assert not any(arg.startswith("sha=") for arg in put_call_args)
-
-    def test_updates_with_sha_when_remote_exists(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with open(local_path, "w", encoding="utf-8") as f:
-            f.write('{"picked": []}')
-
-        with patch.object(state_sync, "_run_gh", return_value=_completed(0, "abc123")) as mock_run:
-            state_sync.push("owner/repo", "data/pipeline_state.json", local_path, "msg")
-
-        assert mock_run.call_count == 2
-        put_call_args = mock_run.call_args_list[1][0][0]
-        assert "sha=abc123" in put_call_args
-
-    def test_raises_when_put_fails(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with open(local_path, "w", encoding="utf-8") as f:
-            f.write('{"picked": []}')
-
-        responses = [_completed(0, "abc123"), _completed(1, "", "boom")]
-        with patch.object(state_sync, "_run_gh", side_effect=responses):
-            with pytest.raises(RuntimeError, match="boom"):
-                state_sync.push("owner/repo", "data/pipeline_state.json", local_path, "msg")
+def test_fetch_content_and_sha_together(tmp_path):
+    p=str(tmp_path/'state.json')
+    with patch.object(state_sync,'_run_gh',return_value=fetched()) as gh:state_sync.fetch('o/r','state.json',p)
+    assert json.load(open(p))=={'picked':[]}
+    assert json.load(open(p+'.base.json'))['sha']=='base'
+    gh.assert_called_once_with(['api','repos/o/r/contents/state.json'])
 
 
-class TestCli:
-    def test_fetch_command_dispatches(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with patch.object(state_sync, "fetch") as mock_fetch:
-            state_sync.main([
-                "fetch", "--repo", "owner/repo",
-                "--remote-path", "data/pipeline_state.json",
-                "--local-path", local_path,
-            ])
-        mock_fetch.assert_called_once_with("owner/repo", "data/pipeline_state.json", local_path)
+def test_failed_fetch_preserves_local_state(tmp_path):
+    p=tmp_path/'state.json';p.write_text('{"picked":[1]}')
+    with patch.object(state_sync,'_run_gh',return_value=completed(1)):
+        with pytest.raises(RuntimeError):state_sync.fetch('o/r','state.json',str(p))
+    assert p.read_text()=='{"picked":[1]}'
+    assert not (tmp_path/'state.json.base.json').exists()
 
-    def test_push_command_dispatches_with_create_if_missing(self, tmp_path):
-        local_path = os.path.join(tmp_path, "pipeline_state.json")
-        with patch.object(state_sync, "push") as mock_push:
-            state_sync.main([
-                "push", "--repo", "owner/repo",
-                "--remote-path", "data/pipeline_state.json",
-                "--local-path", local_path,
-                "--message", "hello",
-                "--create-if-missing",
-            ])
-        mock_push.assert_called_once_with(
-            "owner/repo", "data/pipeline_state.json", local_path, "hello",
-            create_if_missing=True,
-        )
+
+def test_push_uses_fetched_sha_not_current_remote_sha(tmp_path):
+    p=str(tmp_path/'state.json')
+    with patch.object(state_sync,'_run_gh',return_value=fetched()):state_sync.fetch('o/r','state.json',p)
+    with patch.object(state_sync,'_run_gh',return_value=completed()) as gh:state_sync.push('o/r','state.json',p,'message')
+    assert gh.call_count==1
+    assert 'sha=base' in gh.call_args.args[0]
+    with pytest.raises(ValueError):state_sync.push('o/r','state.json',p,'message')
+
+
+def test_cas_conflict_stops_without_retrying_with_latest_sha(tmp_path):
+    p=str(tmp_path/'state.json')
+    with patch.object(state_sync,'_run_gh',return_value=fetched()):state_sync.fetch('o/r','state.json',p)
+    with patch.object(state_sync,'_run_gh',return_value=completed(1)) as gh:
+        with pytest.raises(RuntimeError,match='conflicted'):state_sync.push('o/r','state.json',p,'message')
+    assert gh.call_count==1
+    assert json.load(open(p+'.base.json'))['sha']=='base'
+
+
+def test_destination_mismatch_no_write(tmp_path):
+    p=str(tmp_path/'state.json')
+    with patch.object(state_sync,'_run_gh',return_value=fetched()):state_sync.fetch('o/r','state.json',p)
+    with patch.object(state_sync,'_run_gh') as gh:
+        with pytest.raises(ValueError):state_sync.push('other/r','state.json',p,'message')
+    gh.assert_not_called()
+
+
+def test_explicit_create_has_no_sha_and_never_reads_latest(tmp_path):
+    p=tmp_path/'state.json';p.write_text('{"picked":[]}')
+    with patch.object(state_sync,'_run_gh',return_value=completed()) as gh:state_sync.push('o/r','state.json',str(p),'message',create_if_missing=True)
+    assert gh.call_count==1
+    assert not any(x.startswith('sha=') for x in gh.call_args.args[0])
