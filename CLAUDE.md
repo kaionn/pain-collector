@@ -58,7 +58,7 @@ python -m src.main --pick-idea
 3. 市場チェック（market_check.py）: App Store で競合調査
 4. スコアリング（scoring.py）: GitHub Issue にスコアラベル付与
 5. 選定（pick_idea.py）: スコア上位から MVP 候補を選定、pipeline_state.json で状態管理
-6. 承認（approve.yml）: Issue に `/approve` コメントで自動ビルドをトリガー
+6. 承認: 新しいローカルbuild contractをレビューし明示承認。旧/approveは廃止（互換LP経路は/probe）
 
 ## 開発ルール
 
@@ -153,3 +153,7 @@ Actionsは `LLM_CLAUDE_AUTH_MODE=ci-oauth`、本人の `CLAUDE_CODE_OAUTH_TOKEN`
 ローカルは既定の `local-subscription` と公式CLIログインを使用する。
 repo用PAT/GITHUB_TOKENとAI credentialを分離し、OAuth tokenをAPI keyへ流用しない。
 未設定・認証上書き・非公式endpointはfail-fast。設定手順はREADMEを参照する。
+
+## 証拠から試作への新導線
+
+[docs/opportunity-workflow.md](docs/opportunity-workflow.md) を読む。新しいcontractを正とし、tool/LPを分け、user build承認→test/preview→user release承認を維持する。旧/approveは廃止。/probeはLP生成の互換経路で新contractとは別。main mergeが公開に繋がるため、ローカル試作の許可を公開許可に拡張しない。

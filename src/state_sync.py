@@ -1,6 +1,6 @@
 """pipeline_state.json を GitHub Contents API 経由で取得・更新する.
 
-Branch Protection をバイパスして ``data/pipeline_state.json`` を読み書きするため、
+Branch Protection / ruleset と token 権限が適用される環境で ``data/pipeline_state.json`` を読み書きするため、
 `gh api` で Contents API（SHA 付き PUT）を直接叩く。monitor.yml / approve.yml の
 ワークフローから呼び出される（旧 `python3 - <<'PY'` heredoc / bash 直書きの移植先）。
 """
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import json
 import logging
 import os
 import subprocess
@@ -26,68 +27,49 @@ def _run_gh(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def fetch(repo: str, remote_path: str, local_path: str) -> None:
-    """Contents API から最新の state を取得し local_path に書き込む.
+    """Fetch content and base SHA together; failed reads never invent empty state."""
+    result = _run_gh(["api", f"repos/{repo}/contents/{remote_path}"])
+    if result.returncode != 0:
+        raise RuntimeError("state fetch failed; local state preserved")
+    payload = json.loads(result.stdout)
+    sha = payload.get("sha")
+    if not isinstance(sha, str) or not sha:
+        raise ValueError("state response lacks base SHA")
+    content = base64.b64decode(payload["content"]).decode("utf-8")
+    json.loads(content)  # Invalid data must not replace a valid local snapshot.
+    from .opportunity_pipeline import atomic_write
+    os.makedirs(os.path.dirname(local_path) or ".", exist_ok=True)
+    # Sidecar is the fetched revision, not a newly read remote SHA at push time.
+    atomic_write(local_path, json.loads(content))
+    atomic_write(local_path + ".base.json", {"repo": repo, "path": remote_path, "sha": sha})
 
-    リモートに存在しない場合（未作成・取得失敗）は DEFAULT_STATE を書き込む。
-    """
-    dirname = os.path.dirname(local_path)
-    if dirname:
-        os.makedirs(dirname, exist_ok=True)
 
-    result = _run_gh(["api", f"repos/{repo}/contents/{remote_path}", "--jq", ".content"])
-    if result.returncode == 0 and result.stdout.strip():
-        content = base64.b64decode(result.stdout.strip()).decode("utf-8")
+def push(repo: str, remote_path: str, local_path: str, message: str, *, create_if_missing: bool = False) -> None:
+    """CAS the fetched snapshot; 409 conflicts require refetch + recomputation."""
+    sidecar = local_path + ".base.json"
+    if os.path.exists(sidecar):
+        with open(sidecar, encoding="utf-8") as f:
+            base = json.load(f)
+        if base.get("repo") != repo or base.get("path") != remote_path or not base.get("sha"):
+            raise ValueError("base revision does not match state destination")
+        sha = base["sha"]
+    elif create_if_missing:
+        sha = None  # GitHub rejects creation if a file already exists; never use latest SHA.
     else:
-        content = DEFAULT_STATE
-
-    with open(local_path, "w", encoding="utf-8") as f:
-        f.write(content)
-
-
-def push(
-    repo: str,
-    remote_path: str,
-    local_path: str,
-    message: str,
-    *,
-    create_if_missing: bool = False,
-) -> None:
-    """local_path の内容を Contents API 経由で repo/remote_path に PUT する（SHA 付き）.
-
-    リモートに既存ファイルが無い場合、``create_if_missing=False``（既定）なら
-    何もせず戻る。``create_if_missing=True`` なら SHA なしで新規作成する。
-    """
-    sha_result = _run_gh(["api", f"repos/{repo}/contents/{remote_path}", "--jq", ".sha"])
-    sha = sha_result.stdout.strip() if sha_result.returncode == 0 else ""
-
-    if not sha and not create_if_missing:
-        logger.info("リモートに %s が存在しないため更新をスキップします", remote_path)
-        return
-
+        raise ValueError("fetched base SHA required; fetch before push")
     with open(local_path, "rb") as f:
-        encoded_content = base64.b64encode(f.read()).decode("ascii")
-
-    cmd = [
-        "api",
-        f"repos/{repo}/contents/{remote_path}",
-        "-X",
-        "PUT",
-        "-f",
-        f"message={message}",
-        "-f",
-        f"content={encoded_content}",
-    ]
+        raw = f.read()
+    json.loads(raw)
+    cmd = ["api", f"repos/{repo}/contents/{remote_path}", "-X", "PUT", "-f", f"message={message}",
+           "-f", "content=" + base64.b64encode(raw).decode("ascii")]
     if sha:
         cmd.extend(["-f", f"sha={sha}"])
-
     result = _run_gh(cmd)
     if result.returncode != 0:
-        raise RuntimeError(f"{remote_path} の更新に失敗しました: {result.stderr.strip()[:300]}")
-
-    if sha:
-        logger.info("%s を更新しました", remote_path)
-    else:
-        logger.info("%s を作成しました", remote_path)
+        raise RuntimeError("state push failed or conflicted; refetch and recompute before retry")
+    # Consume base once: another mutation must start with a new snapshot.
+    if os.path.exists(sidecar):
+        os.unlink(sidecar)
 
 
 def _build_cli_parser() -> argparse.ArgumentParser:
