@@ -65,6 +65,7 @@ def notify_discord_stalled(summary: dict) -> bool:
         lines.append(f"- #{item['issue_number']}: {title} ({hours:.1f}h 停滞)")
 
     payload = {"content": "\n".join(lines)}
+    discord_notify.mirror(payload, "alerts", "stalled-builds")
     session = create_retry_session()
     resp = session.post(webhook_url, json=payload, timeout=10)
     resp.raise_for_status()

@@ -27,6 +27,12 @@ permissions:
   issues: write
   actions: read
 
+# Safe default retains Discord. Enable only after bot installation and channel verification.
+env:
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'discord' }}
+  SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+  SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
+
 jobs:
   detect-stalled:
     runs-on: ubuntu-latest
@@ -48,6 +54,7 @@ jobs:
       - name: Check PAT expiry
         continue-on-error: true
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -60,6 +67,7 @@ jobs:
       - name: Check failed workflow runs
         continue-on-error: true
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -120,6 +128,7 @@ jobs:
       - name: Notify Discord
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           set -euo pipefail
@@ -128,3 +137,13 @@ jobs:
             exit 0
           fi
           uv run python -m src.workflow_alerts discord --summary stalled.json
+
+      - name: Preserve Slack shadow delivery receipts
+        if: ${{ always() && vars.NOTIFICATION_MODE == 'shadow' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          path: .notification-state/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

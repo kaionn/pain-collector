@@ -13,3 +13,6 @@ data/*
 !data/pipeline_state.json
 !data/schemas/
 raw/
+
+# Ephemeral Slack shadow receipts (uploaded separately by Actions)
+.notification-state/

@@ -1,0 +1,90 @@
+name: Slack notifier checks
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'src/**'
+      - 'tests/test_notify_bridge.py'
+      - 'tests/test_slack_smoke.py'
+  workflow_dispatch:
+    inputs:
+      test_id:
+        description: 'Unique safe test ID; do not reuse after uncertain delivery'
+        required: true
+        type: string
+      send_synthetic:
+        description: 'Send exactly one report + generated image and one synthetic alert'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slack-notifier-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  mock-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run mocked delivery checks (no secrets or live requests)
+        run: |
+          python3 tests/test_notify_bridge.py
+          python3 tests/test_slack_smoke.py
+
+  owner-smoke:
+    needs: mock-tests
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate bounded test ID before receipt lookup
+        env:
+          TEST_ID: ${{ inputs.test_id }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          if not re.fullmatch(r'[A-Za-z0-9_-]{1,60}', os.environ['TEST_ID']):
+              raise SystemExit('Invalid test ID')
+          PY
+      - name: Restore any prior receipt for this test ID
+        id: receipt
+        uses: actions/cache/restore@v4
+        with:
+          path: .notification-state
+          key: slack-synthetic-${{ inputs.test_id }}
+      - name: Verify sender and optionally send bounded synthetic content
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+          SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
+          SLACK_TEST_ID: ${{ inputs.test_id }}
+          SLACK_SEND_SYNTHETIC: ${{ inputs.send_synthetic }}
+        run: python3 scripts/slack-smoke.py
+      - name: Preserve receipt even if delivery is uncertain
+        if: always() && steps.receipt.outcome == 'success' && steps.receipt.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .notification-state
+          key: slack-synthetic-${{ inputs.test_id }}
+      - name: Upload safe delivery receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .notification-state/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
