@@ -9,9 +9,9 @@ permissions:
   contents: write
   issues: write
 
-# Safe default retains Discord. Enable only after bot installation and channel verification.
+# Slack-only default. Explicit discord/shadow values are retained for rollback.
 env:
-  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'discord' }}
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'slack' }}
   NOTIFY_DURABLE_LEDGER: ${{ vars.NOTIFY_DURABLE_LEDGER || 'false' }}
   SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
   SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
@@ -61,7 +61,7 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
           DISABLE_AUTOUPDATER: "1"
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
           BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}

@@ -54,7 +54,7 @@ def notify_stalled_issues(summary: dict) -> None:
 def notify_discord_stalled(summary: dict) -> bool:
     """stalled サマリーを Discord Webhook に送信する. 送信したら True."""
     webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
-    if not webhook_url:
+    if not webhook_url and os.environ.get("NOTIFICATION_MODE") != "slack":
         logger.info("DISCORD_WEBHOOK_URL 未設定のため Discord 通知をスキップします")
         return False
 

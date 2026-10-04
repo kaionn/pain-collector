@@ -19,20 +19,22 @@ class PrimaryRoutingTests(unittest.TestCase):
             self.assertEqual(api.call_args.args[1]['text'],'real report\n\nhttps://github.com/kaionn/lazy-product-lab/actions/runs/100')
             self.assertEqual(bridge.audit_delivery(),0)
 
-    def test_known_rejection_reserves_one_fallback_and_ack_survives_new_run(self):
+    def test_known_rejection_is_durable_failure_with_no_discord_or_retry(self):
+        summary=Path(self.tmp.name)/"summary"
+        os.environ['GITHUB_STEP_SUMMARY']=str(summary)
         with patch.object(bridge,'api',side_effect=bridge.DeliveryError('rejected',known_rejection=True)):
             result=bridge.mirror({'content':'result'})
         self.assertEqual(result['status'],'known_rejected')
-        self.assertTrue(bridge.discord_gate(result))
-        self.assertEqual(next(iter(MemoryLedger.records.values()))['status'],'fallback_sending')
         self.assertFalse(bridge.discord_gate(result))
-        bridge.discord_ack(204)
-        self.assertEqual(next(iter(MemoryLedger.records.values()))['status'],'fallback_sent')
-        self.assertEqual(bridge.audit_delivery(),0)
+        self.assertEqual(next(iter(MemoryLedger.records.values()))['status'],'rejected')
+        bridge.discord_ack(204,result)
+        self.assertEqual(next(iter(MemoryLedger.records.values()))['status'],'rejected')
+        self.assertEqual(bridge.audit_delivery(),1)
+        self.assertIn('no Discord fallback',summary.read_text())
         os.environ['GITHUB_RUN_ID']='newrun'
         with patch.object(bridge,'api') as api:
             replay=bridge.mirror({'content':'result'})
-            self.assertEqual(replay['status'],'already_sent');self.assertFalse(bridge.discord_gate(replay));api.assert_not_called()
+            self.assertEqual(replay['status'],'needs_reconciliation');self.assertFalse(bridge.discord_gate(replay));api.assert_not_called()
 
     def test_uncertain_slack_or_ledger_outcome_sends_no_second_provider(self):
         with patch.object(bridge,'api',side_effect=TimeoutError):result=bridge.mirror({'content':'result'})
@@ -46,10 +48,10 @@ class PrimaryRoutingTests(unittest.TestCase):
             result=bridge.mirror({'content':'x'*5000})
         self.assertEqual(result['status'],'needs_reconciliation');self.assertFalse(bridge.discord_gate(result))
 
-    def test_fallback_timeout_is_not_retried(self):
-        with patch.object(bridge,'api',side_effect=bridge.DeliveryError('rejected',known_rejection=True)):
+    def test_unknown_slack_is_never_retried_and_never_uses_discord(self):
+        with patch.object(bridge,'api',side_effect=TimeoutError):
             result=bridge.mirror({'content':'result'})
-        self.assertTrue(bridge.discord_gate(result));bridge.discord_ack('000')
+        self.assertFalse(bridge.discord_gate(result));bridge.discord_ack('000',result)
         os.environ['GITHUB_RUN_ID']='newrun'
         with patch.object(bridge,'api') as api:
             self.assertEqual(bridge.mirror({'content':'result'})['status'],'needs_reconciliation');api.assert_not_called()
@@ -73,7 +75,7 @@ class PrimaryRoutingTests(unittest.TestCase):
             self.assertTrue(bridge.discord_gate({'status':status}))
         self.assertEqual(bridge.audit_delivery(),0)
 
-    def test_only_explicit_pre_delivery_api_rejections_allow_fallback(self):
+    def test_only_explicit_pre_delivery_api_rejections_are_classified_known(self):
         for code,expected in [("invalid_auth",True),("channel_not_found",True),("internal_error",False),("unrecognized_error",False)]:
             with self.subTest(code=code),patch.object(bridge,"request",return_value=('{"ok":false,"error":"'+code+'"}').encode()):
                 with self.assertRaises(bridge.DeliveryError) as caught:

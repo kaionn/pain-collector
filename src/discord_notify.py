@@ -54,6 +54,8 @@ def _post_webhook(payload: dict, *, category: str = "reports", event: str = "pip
 
 def _post_bot_message(payload: dict) -> None:
     """Discord Bot API でチャンネルにメッセージを送信する."""
+    if os.environ.get("NOTIFICATION_MODE") == "slack":
+        return
     token = os.environ.get("DISCORD_BOT_TOKEN", "")
     channel_id = os.environ.get("DISCORD_CHANNEL_ID", "")
     if not token or not channel_id:
