@@ -18,6 +18,16 @@ import urllib.error
 import urllib.request
 
 ALLOWED_CHANNELS = {"alerts": "C0C6CBVA5TM", "reports": "C0C6LGRJ30R"}
+
+# Both destinations are explicitly approved in the same workspace. Keep the old
+# report destination available for a staged variable-only cutover and rollback.
+PRODUCT_REPORT_CHANNELS = {
+    "kaionn/lazy-product-lab": "C0C6GSL6H7Z",
+    "kaionn/pain-collector": "C0C6GSL6H7Z",
+    "kaionn/signal-lab": "C0C6GSL6H7Z",
+    "kaionn/a0ba-diary-blog": "C0C706J486M",
+    "kaionn/life": "C0C6Y3U6UF4",
+}
 API = "https://slack.com/api/"
 
 
@@ -125,6 +135,10 @@ def _mirror(payload, category="reports", event="notification", file=None):
     expected = ALLOWED_CHANNELS.get(category)
     configured = os.environ.get("SLACK_ALERT_CHANNEL_ID" if category == "alerts" else "SLACK_REPORT_CHANNEL_ID", "")
     token = os.environ.get("SLACK_BOT_TOKEN", "")
+    if category == "reports" and configured in {
+        ALLOWED_CHANNELS["reports"], PRODUCT_REPORT_CHANNELS.get(repo)
+    }:
+        expected = configured
     config_missing = not expected or configured != expected or not token
     chunks = render(payload, category, repo)
     file_path = Path(file) if file else None
@@ -137,6 +151,10 @@ def _mirror(payload, category="reports", event="notification", file=None):
     identity = {"repo": repo, "event": event, "category": category, "run": "durable-v1" if durable or os.environ.get("NOTIFICATION_MODE") == "slack" else os.environ.get("GITHUB_RUN_ID", "local"), "body": stable_chunks if durable else chunks,
                 "file": hashlib.sha256(file_bytes).hexdigest() if file_bytes is not None else None}
     key = hashlib.sha256(json.dumps(identity, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    # Presentation is added after identity calculation: existing ledger keys and
+    # receipts remain valid when the destination or display label changes.
+    label = f"*[{safe_text(repo.split('/')[-1])} / {safe_text(event[:120])} / {'障害' if category == 'alerts' else '通知'}]*\n"
+    chunks = [label + chunk for chunk in chunks]
     directory = Path(os.environ.get("NOTIFY_STATE_DIR", ".notification-state"))
     state_path = directory / (key + ".json")
     if durable or os.environ.get("NOTIFICATION_MODE") == "slack":
