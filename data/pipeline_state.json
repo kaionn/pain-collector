@@ -184,6 +184,33 @@
       "deep_dive": null,
       "product_name": null,
       "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 265,
+      "title": "[子育て・育児] 子どもが不登校になると、登校付き添いや日中の見守り、学校との連絡が母親に偏る。仕事との両立ができずに退職に追い込まれる。",
+      "picked_at": "2026-10-11T08:21:18.113931+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 263,
+      "title": "[住まい・暮らし] 住まい選びの希望条件を整理して中古マンションを購入したのに、実際に住むと暮らしのイメージと合わなかった。購入からわずか1ヶ月で売却し、賃貸に戻ることになった。購",
+      "picked_at": "2026-10-11T08:21:18.113946+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 266,
+      "title": "[人間関係] 何年も5chで粘着的な誹謗中傷やアンチスレ乱立の被害を受けている。警察や弁護士に相談しても解決せず、精神的に限界に近い。",
+      "picked_at": "2026-10-11T08:21:18.113949+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
