@@ -303,6 +303,8 @@ def _fetch_scored_issues() -> list[dict]:
                 for issue in issues:
                     issue["score_label"] = label
                 all_issues.extend(issues)
+        except llm_client.LLMError:
+            raise
         except Exception:
             continue
 
@@ -388,7 +390,7 @@ def _generate_report(picked: list[dict], total_candidates: int, today: str) -> s
         lines.append("")
 
     lines.append("---")
-    lines.append("👉 承認するには、対象 Issue に `/approve` とコメントしてください。")
+    lines.append("👉 docs/opportunity-workflow.md に従い証拠とローカル build contract を確認し、試作を承認してください（/approve は廃止）。")
     lines.append("")
 
     return "\n".join(lines)
@@ -410,8 +412,8 @@ def _notify_picked_issues(picked: list[dict], today: str) -> None:
             f"選定レポート: picks/{today}.md\n"
             f"{spec_status}\n\n"
             f"**次のステップ:**\n"
-            f"- Spec が生成済み → `/approve` とコメントすると自動実装が開始されます\n"
-            f"- Spec が未生成 → Deep Dive 完了後に自動生成されます\n\n"
+            f"- docs/opportunity-workflow.md の build contract を作り、ユーザー承認後にローカル Codex へ引き渡してください\n"
+            f"- `/probe` は互換のLP生成経路です。外部公開は別の明示承認が必要です\n\n"
             f"選定理由:\n{item.get('reason', '')}\n"
         )
 
@@ -423,6 +425,8 @@ def _notify_picked_issues(picked: list[dict], today: str) -> None:
                 timeout=30,
             )
             logger.info(f"Issue #{number} に通知コメントを投稿")
+        except llm_client.LLMError:
+            raise
         except Exception as e:
             logger.warning(f"Issue #{number} へのコメント投稿失敗: {e}")
 
@@ -489,6 +493,8 @@ def run() -> None:
 
     try:
         content = _call_llm(prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"LLM 呼び出し失敗: {e}")
         return
@@ -571,5 +577,7 @@ def run() -> None:
         from . import discord_notify
         repo_url = "https://github.com/kaionn/pain-collector"
         discord_notify.notify_mvp_picked(picked, today, repo_url)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"Discord 通知失敗（続行）: {e}")

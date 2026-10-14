@@ -140,7 +140,7 @@ def run(
         )
         return 0
 
-    _post_webhook({"content": message})
+    _post_webhook({"content": message}, category="alerts", event="pat-expiry")
     logger.info("Discord に PAT 失効チェック結果を送信しました")
     return 0
 

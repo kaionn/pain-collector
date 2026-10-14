@@ -1,0 +1,55 @@
+name: Claude Subscription Smoke
+
+on:
+  # PR #250 only: run before merge, without enabling any production pipeline.
+  pull_request:
+    types: [synchronize]
+    paths:
+      - .github/workflows/llm-smoke.yml
+      - src/llm_smoke.py
+      - .github/actions/setup-llm/action.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-subscription-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: >-
+      github.actor == 'kaionn' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.pull_request.number == 250 &&
+        github.event.pull_request.head.repo.full_name == 'kaionn/pain-collector' &&
+        github.event.pull_request.head.ref == 'fix/explicit-llm-provider'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: uv sync
+      - name: Set up and verify official subscription CLI
+        uses: ./.github/actions/setup-llm
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          DISABLE_AUTOUPDATER: "1"
+      - name: One synthetic inference; no collection or publication
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          DISABLE_AUTOUPDATER: "1"
+        run: uv run python -m src.llm_smoke
