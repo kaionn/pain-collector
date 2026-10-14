@@ -51,7 +51,7 @@ def test_invalid_response_fails_once(configured, response):
 
 @pytest.mark.parametrize("status", [400, 401, 403, 404])
 def test_auth_and_configuration_fail_once(configured, status):
-    import httpx
+    import httpx2 as httpx
     from openai import APIStatusError
     error = APIStatusError("synthetic", response=httpx.Response(status, request=httpx.Request("POST", "https://provider.example")), body=None)
     with patch("openai.OpenAI") as factory:
@@ -355,3 +355,56 @@ def test_preflight_anthropic_max_tokens_invalid(monkeypatch, limit):
     monkeypatch.setenv('LLM_MAX_TOKENS', limit)
     with pytest.raises(LLMError, match='LLM_MAX_TOKENS'):
         validate_config(check_cli_auth=False)
+
+
+def test_real_sdk_chat_and_embeddings_offline(monkeypatch):
+    import json
+    import httpx2
+    import openai
+    from src import llm_client
+
+    monkeypatch.setenv('LLM_BASE_URL', 'https://provider.example/v1')
+    requests = []
+
+    def respond(request):
+        requests.append((request.url.path, json.loads(request.content)))
+        assert request.headers['authorization'] == 'Bearer synthetic-token'
+        if request.url.path == '/v1/chat/completions':
+            return httpx2.Response(200, json={
+                'id': 'fixture', 'object': 'chat.completion', 'created': 0,
+                'model': 'fixture-model', 'choices': [
+                    {'index': 0, 'message': {'role': 'assistant', 'content': 'fixture answer'},
+                     'finish_reason': 'stop'}]})
+        assert request.url.path == '/v1/embeddings'
+        return httpx2.Response(200, json={
+            'object': 'list', 'model': 'fixture-model',
+            'data': [{'object': 'embedding', 'index': 0, 'embedding': [0.25, 0.75]}],
+            'usage': {'prompt_tokens': 1, 'total_tokens': 1}})
+
+    real_openai = openai.OpenAI
+    with httpx2.Client(transport=httpx2.MockTransport(respond), trust_env=False) as http:
+        monkeypatch.setattr(openai, 'OpenAI', lambda **kwargs: real_openai(http_client=http, **kwargs))
+        assert llm_client._call_api('synthetic-token', 'fixture input', system='fixture system',
+            temperature=0.2, max_tokens=12, model='fixture-model', timeout=3) == 'fixture answer'
+        assert llm_client._call_embeddings('synthetic-token', ['fixture input'], model='fixture-model') == [[0.25, 0.75]]
+    assert requests[0][1] == {'model': 'fixture-model', 'messages': [
+        {'role': 'system', 'content': 'fixture system'}, {'role': 'user', 'content': 'fixture input'}],
+        'temperature': 0.2, 'max_tokens': 12}
+    assert requests[1][1]['input'] == ['fixture input']
+
+
+@pytest.mark.parametrize('status', [401, 429, 500])
+def test_real_sdk_http_error_offline(monkeypatch, status):
+    import httpx2
+    import openai
+    from src import llm_client
+
+    monkeypatch.setenv('LLM_BASE_URL', 'https://provider.example/v1')
+    real_openai = openai.OpenAI
+    with httpx2.Client(transport=httpx2.MockTransport(lambda request: httpx2.Response(
+            status, json={'error': {'message': 'synthetic', 'type': 'fixture'}})), trust_env=False) as http:
+        monkeypatch.setattr(openai, 'OpenAI', lambda **kwargs: real_openai(http_client=http, **kwargs))
+        expected = llm_client.LLMError if status == 401 else llm_client._RetriableLLMError
+        with pytest.raises(expected):
+            llm_client._call_api('synthetic-token', 'fixture', system=None, temperature=0.2,
+                max_tokens=12, model='fixture-model', timeout=3)
