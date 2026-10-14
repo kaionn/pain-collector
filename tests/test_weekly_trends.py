@@ -62,3 +62,15 @@ def test_build_trend_corpus_drops_tail_when_over_limit():
 
 def test_build_trend_corpus_empty_list():
     assert _build_trend_corpus([], max_chars=4000) == ("", 0)
+
+
+
+def test_weekly_provider_failure_propagates(monkeypatch):
+    import pytest
+    from datetime import date
+    from unittest.mock import Mock
+    from src import weekly_trends, llm_client
+    monkeypatch.setattr(weekly_trends, "load_extracted_pains", lambda *a, **k: [{"pain": "synthetic", "language": "en"}] * 3)
+    monkeypatch.setattr(weekly_trends.extract_pains, "_make_call_fn", lambda *a, **k: Mock(side_effect=llm_client.LLMError("auth")))
+    with pytest.raises(llm_client.LLMError):
+        weekly_trends.analyze_trends(date(2026, 10, 3))

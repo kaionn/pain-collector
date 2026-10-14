@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kaionn/pain-collector/blob/main/contracts/opportunity-v1.schema.json",
+  "title": "Opportunity build contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_user": {
+      "type": "string",
+      "minLength": 1
+    },
+    "problem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "solution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "tool",
+        "landing_page"
+      ]
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "classification": {
+          "enum": [
+            "hypothesis",
+            "pain"
+          ]
+        }
+      },
+      "required": [
+        "repo",
+        "locator",
+        "url",
+        "observed_at",
+        "classification"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "signal": {
+            "enum": [
+              "pain",
+              "demand",
+              "alternative",
+              "distribution"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "checked_at",
+          "summary",
+          "signal"
+        ]
+      },
+      "minItems": 0
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "core_flow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "demo_input": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "check": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "check",
+              "expected"
+            ]
+          },
+          "minItems": 0
+        },
+        "non_goals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "max_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 480
+        },
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "allowed_tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "core_flow",
+        "demo_input",
+        "acceptance",
+        "non_goals",
+        "max_minutes",
+        "max_iterations",
+        "allowed_tools"
+      ]
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "audience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "channel",
+        "audience",
+        "rationale"
+      ]
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary_event": {
+          "enum": [
+            "tool_use",
+            "signup"
+          ]
+        },
+        "graduate_threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "observation_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "minimum_exposures": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stop_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kill_below": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "primary_event",
+        "graduate_threshold",
+        "observation_days",
+        "minimum_exposures",
+        "stop_rule",
+        "kill_below"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "target_user",
+    "problem",
+    "solution",
+    "kind",
+    "origin",
+    "evidence",
+    "build",
+    "distribution",
+    "measurement"
+  ]
+}

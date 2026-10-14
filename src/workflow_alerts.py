@@ -30,10 +30,10 @@ def notify_stalled_issues(summary: dict) -> None:
         hours = item["hours_since_last_event"]
         last_at = item["last_event_at"]
         comment = (
-            f"⚠️ build が {hours:.1f} 時間進捗していないため stalled に遷移したのだ。\n\n"
+            f"⚠️ build / probe が {hours:.1f} 時間進捗していないため stalled に遷移したのだ。\n\n"
             f"- 最終イベント: {last_at}\n"
-            f"- mvp-factory 側のログを確認してほしいのだ\n"
-            f"- 再開する場合は `/approve` を再実行するのだ"
+            f"- 元runとSignal Lab PRの実際の結果を確認してください\n"
+            f"- 再開前に証拠とbuild contractを確認し新しい試作承認を記録してください"
         )
         subprocess.run(
             [
@@ -54,7 +54,7 @@ def notify_stalled_issues(summary: dict) -> None:
 def notify_discord_stalled(summary: dict) -> bool:
     """stalled サマリーを Discord Webhook に送信する. 送信したら True."""
     webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
-    if not webhook_url:
+    if not webhook_url and os.environ.get("NOTIFICATION_MODE") != "slack":
         logger.info("DISCORD_WEBHOOK_URL 未設定のため Discord 通知をスキップします")
         return False
 
@@ -65,8 +65,12 @@ def notify_discord_stalled(summary: dict) -> bool:
         lines.append(f"- #{item['issue_number']}: {title} ({hours:.1f}h 停滞)")
 
     payload = {"content": "\n".join(lines)}
-    session = create_retry_session()
+    slack_result = discord_notify.mirror(payload, "alerts", "stalled-builds")
+    if not discord_notify.discord_gate(slack_result):
+        return True  # Primary receipt/audit determines delivery, not this compatibility return.
+    session = create_retry_session(retries=0) if os.environ.get("NOTIFICATION_MODE") == "slack" else create_retry_session()
     resp = session.post(webhook_url, json=payload, timeout=10)
+    discord_notify.discord_ack(resp.status_code, slack_result)
     resp.raise_for_status()
     logger.info("Discord 通知を送信しました")
     return True

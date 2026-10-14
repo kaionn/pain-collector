@@ -1,7 +1,6 @@
 """LLM でペイン抽出・構造化する.
 
-- GitHub Actions: GitHub Models (GPT-4o-mini)
-- ローカル: Claude Code CLI
+- 明示設定された LLM provider とモデルを使用
 """
 
 import json
@@ -183,7 +182,7 @@ def extract(posts: list[dict]) -> list[dict]:
         logger.info("投稿が0件のためスキップ")
         return []
 
-    base_label = "GitHub Models" if os.environ.get("GITHUB_TOKEN") else "Claude Code"
+    base_label = os.environ.get("LLM_PROVIDER", "未設定")
 
     lifestyle_posts = [p for p in posts if p.get("source") in LIFESTYLE_SOURCES]
     standard_posts = [p for p in posts if p.get("source") not in LIFESTYLE_SOURCES]
@@ -288,31 +287,14 @@ def _extract_batch_with_retry(
     try:
         content = call_fn(batch_text)
         pains = _parse_json_response(content)
+        if any(not isinstance(pain.get("pain"), str) or not pain["pain"].strip() for pain in pains):
+            raise llm_client.LLMError("抽出応答の各項目には空でない pain 文字列が必要です")
         logger.info(f"[{label}] {batch_label}: {len(pains)} 件のペインを抽出")
         return pains
-    except Exception as e:
-        logger.warning(f"[{label}] {batch_label} の処理に失敗 ({len(batch)}件): {e}")
-
-    # 1件以下なら分割不可 → 最終失敗
-    if len(batch) <= 1:
-        failed_posts.extend(batch)
-        return []
-
-    # 半分に分割してリトライ
-    mid = len(batch) // 2
-    retry_stats["total_retries"] += 1
-    logger.info(f"[{label}] {batch_label} を {mid}件 + {len(batch) - mid}件 に分割してリトライ")
-
-    pains_a = _extract_batch_with_retry(
-        batch[:mid], call_fn, label, f"{batch_label}a", failed_posts, retry_stats,
-    )
-    pains_b = _extract_batch_with_retry(
-        batch[mid:], call_fn, label, f"{batch_label}b", failed_posts, retry_stats,
-    )
-
-    recovered = len(pains_a) + len(pains_b)
-    retry_stats["recovered"] += recovered
-    return pains_a + pains_b
+    except Exception:
+        # API 障害や不正応答を「正常な抽出0件」に変換しない。
+        # バッチ分割は全体障害の呼び出し増幅になるため行わない。
+        raise
 
 
 def _save_failed_posts(posts: list[dict]) -> None:
@@ -344,7 +326,7 @@ def _save_failed_posts(posts: list[dict]) -> None:
 
 
 def _make_call_fn(variant: str = "default") -> Callable[[str], str]:
-    """LLM 呼び出しコールバックを返す（バックエンドは llm_client が自動選択）."""
+    """LLM 呼び出しコールバックを返す（バックエンドは llm_client の明示設定）."""
     system_prompt = _build_system_prompt(variant)
 
     def call(batch_text: str) -> str:
@@ -353,7 +335,7 @@ def _make_call_fn(variant: str = "default") -> Callable[[str], str]:
             system=system_prompt,
             temperature=0.3,
         )
-        return content or "[]"
+        return content
 
     return call
 
@@ -361,9 +343,7 @@ def _make_call_fn(variant: str = "default") -> Callable[[str], str]:
 def _call_github_models(token: str, variant: str = "default") -> Callable[[str], str]:
     """LLM 呼び出しコールバックを返す（後方互換用エイリアス）.
 
-    `token` はバックエンド選択に使わない。llm_client が呼び出し時点の
-    `GITHUB_TOKEN` を見て自動判定するため、weekly_trends.py 等の既存の
-    トークン有無チェックと結果が一致する。シグネチャのみ維持している。
+    `token` は使用せず、LLM_PROVIDER の明示設定に従う。
     """
     return _make_call_fn(variant)
 
