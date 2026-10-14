@@ -381,6 +381,16 @@ def main() -> None:
         help="stale Issue の整理と自動クローズを実行する",
     )
     parser.add_argument(
+        "--regate",
+        action="store_true",
+        help="既存 open Issue を actionability ゲートで再評価する（dry-run）",
+    )
+    parser.add_argument(
+        "--regate-apply",
+        action="store_true",
+        help="既存 open Issue を actionability ゲートで再評価し、reject 分をクローズする",
+    )
+    parser.add_argument(
         "--score-issues",
         action="store_true",
         help="未スコアの Issue にスコアを付与する",
@@ -433,6 +443,14 @@ def main() -> None:
 
     if args.cleanup:
         issue_lifecycle.cleanup()
+        return
+
+    if args.regate_apply:
+        issue_lifecycle.regate(apply=True)
+        return
+
+    if args.regate:
+        issue_lifecycle.regate(apply=False)
         return
 
     if args.score_issues:

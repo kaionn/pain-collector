@@ -7,17 +7,24 @@ on:
 permissions:
   contents: write
   issues: write
-  models: read
+
+# Slack-only default. Explicit discord/shadow values are retained for rollback.
+env:
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'slack' }}
+  NOTIFY_DURABLE_LEDGER: ${{ vars.NOTIFY_DURABLE_LEDGER || 'false' }}
+  SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+  SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
 
 jobs:
   dispatch:
-    # /pick /spec /status /reject /help いずれかで開始 + pain-report ラベル付き Issue のみ
+    # /pick /spec /status /probe /reject /help いずれかで開始 + pain-report ラベル付き Issue のみ
     if: |
       contains(github.event.issue.labels.*.name, 'pain-report') &&
       (
         startsWith(github.event.comment.body, '/pick') ||
         startsWith(github.event.comment.body, '/spec') ||
         startsWith(github.event.comment.body, '/status') ||
+        startsWith(github.event.comment.body, '/probe') ||
         startsWith(github.event.comment.body, '/reject') ||
         startsWith(github.event.comment.body, '/help')
       )
@@ -49,6 +56,21 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Set up and validate LLM
+        if: startsWith(github.event.comment.body, '/spec') || startsWith(github.event.comment.body, '/probe')
+        uses: ./.github/actions/setup-llm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
+
       - name: Sync latest pipeline_state.json from GitHub API
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,9 +85,23 @@ jobs:
       - name: Execute command
         id: exec
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTIFY_LEDGER_TOKEN: ${{ github.token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS }}
+          LLM_EMBED_MODEL: ${{ vars.LLM_EMBED_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_CLAUDE_AUTH_MODE: ci-oauth
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ vars.LLM_PROVIDER == 'claude-cli' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          DISABLE_AUTOUPDATER: "1"
+          # /probe の signal-lab への workflow dispatch にのみ使用（他リポジトリへの
+          # dispatch は GITHUB_TOKEN では権限不足なため、その呼び出しだけ GH_TOKEN を上書きする）
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
@@ -124,3 +160,19 @@ jobs:
             fi
             echo "✅ $SPEC_FILE コミット完了"
           fi
+
+      - name: Preserve notification delivery receipts and sanitized recovery outbox
+        if: ${{ always() && (env.NOTIFICATION_MODE == 'shadow' || env.NOTIFICATION_MODE == 'slack') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          path: |
+            .notification-state/*.json
+            .notification-outbox/**
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Audit primary notification completion after business work
+        if: ${{ always() && env.NOTIFICATION_MODE == 'slack' }}
+        run: python3 src/notify_bridge.py --audit

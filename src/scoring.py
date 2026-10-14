@@ -14,15 +14,45 @@ logger = logging.getLogger(__name__)
 SCORING_PROMPT = """\
 以下のペイン（課題）を個人開発の MVP 候補として評価してください。
 
+あなた自身がエンジニアであることに起因して、開発者向けツールを過大評価する自己バイアスがあります。
+一般生活者のペインも、開発者向けペインと同じ厳しさで評価してください。
+
+全項目を 3〜4 に寄せた採点は禁止します。軸ごとに 1〜5 の全域を使い、明確に差を付けてください。
+判断に迷った場合は低い方に倒してください（保守的評価）。
+
 各項目を 1〜5 で採点し、JSON で返してください:
 
 {
-  "technical_simplicity": 1-5（技術的にシンプルか。5=1人で2週間で作れる）,
-  "scope": 1-5（スコープが明確で小さいか。5=機能を絞りやすい）,
+  "technical_simplicity": 1-5（技術的にシンプルか。5=単機能CRUD+1画面で1人で2週間で作れる。1=外部システムの内部変更が必要・実現手段が存在しない）,
+  "scope": 1-5（スコープが明確で小さいか。5=機能を1つに絞りやすく境界が明確。1=対象範囲が広すぎる・スコープ不定）,
   "differentiation": 1-5（差別化できるか。5=競合が少なく独自性がある）,
   "pain_intensity": 1-5（ペインが強いか。5=深刻で頻繁に発生する）,
   "revenue_potential": 1-5（収益化できるか。5=「お金を払ってでも解決したい」と明言、具体的な金額に言及。4=課金意欲が高い。3=有料なら検討する。2=無料なら使う。1=課金意欲なし）,
   "reasoning": "スコアの根拠を1-2文で"
+}
+
+## 採点例
+
+高評価例（合計 50 点級）:
+ペイン: 「平日夜の献立決めに毎日30分悩む共働き家庭。有料でも使いたいという声が複数」
+{
+  "technical_simplicity": 5,
+  "scope": 5,
+  "differentiation": 3,
+  "pain_intensity": 4,
+  "revenue_potential": 4,
+  "reasoning": "献立提案は単機能CRUDで完結しスコープも明確。頻度が高く課金意欲も具体的に示されている。"
+}
+
+低評価例（合計 20 点級）:
+ペイン: 「PayPay がログインできず決済できない」
+{
+  "technical_simplicity": 1,
+  "scope": 1,
+  "differentiation": 1,
+  "pain_intensity": 4,
+  "revenue_potential": 1,
+  "reasoning": "他社アプリ内部の不具合であり自作では解決手段がなく、代替アプリとしての差別化も収益化も見込めない。"
 }
 
 JSON のみ出力してください。
@@ -112,6 +142,8 @@ def score_pain(pain: dict) -> dict | None:
         scores["community_validation"] = normalize_engagement(engagement)
         scores["total_score"] = calculate_total_score(scores)
         return scores
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"スコアリング失敗: {e}")
         return None
@@ -147,6 +179,8 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
             timeout=30,
         )
         logger.info(f"#{issue_number} にスコア {total}/60 を追加")
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"#{issue_number} コメント失敗: {e}")
 
@@ -160,15 +194,23 @@ def score_and_update_issue(pain: dict, issue_number: int) -> None:
     else:
         label = "🥉score-C"
 
+    # ラベルが repo に未定義だと gh は失敗する。ここが黙って落ちると
+    # pick_idea が候補を見つけられず選定が空振りする（17 週無検出の実績あり）
     try:
-        subprocess.run(
+        result = subprocess.run(
             ["gh", "issue", "edit", str(issue_number), "--add-label", label],
             capture_output=True,
             text=True,
             timeout=30,
         )
-    except Exception:
-        pass
+        if result.returncode != 0:
+            logger.warning(
+                f"#{issue_number} スコアラベル '{label}' の付与に失敗: {result.stderr.strip()}"
+            )
+    except llm_client.LLMError:
+        raise
+    except Exception as e:
+        logger.warning(f"#{issue_number} スコアラベル付与で例外: {e}")
 
 
 def score_open_issues() -> None:
@@ -190,6 +232,8 @@ def score_open_issues() -> None:
             logger.warning("Issue 取得失敗")
             return
         issues = json.loads(result.stdout)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"Issue 取得失敗: {e}")
         return

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,8 @@ HELP_BLOCK = f"""{HELP_MARKER}
 | `/spec` | Issue 本文から Spec を生成（未 pick なら自動 pick） |
 | `/spec --force` | 既存 Spec を上書き再生成 |
 | `/status` | picked / spec / deep_dive の現状と履歴を返答 |
-| `/approve` | Spec 生成後、mvp-factory で自動実装を開始 |
+| `/probe` | Signal Lab で検証用 LP を生成し需要シグナルを計測（未 pick なら自動 pick） |
+| `/approve` | (廃止・`/probe` へ) |
 | `/reject` | picked から削除 |
 | `/help` | このヘルプを Issue 本文に追加・更新 |
 
@@ -119,6 +121,37 @@ def remove_labels(issue_number: int, labels: list[str]) -> bool:
         return True
     except Exception as e:
         logger.warning(f"ラベル削除失敗 #{issue_number}: {e}")
+        return False
+
+
+def trigger_workflow(
+    repo: str,
+    workflow: str,
+    inputs: dict[str, str],
+    *,
+    token: str | None = None,
+) -> bool:
+    """他リポジトリの workflow_dispatch をトリガーする. 成功なら True.
+
+    既定の ``GITHUB_TOKEN`` は他リポジトリへの dispatch を許可しないため、
+    ``token``（PAT_TOKEN 等）を渡すとその値で GH_TOKEN を上書きして実行する。
+    """
+    cmd = ["gh", "workflow", "run", workflow, "--repo", repo]
+    for key, value in inputs.items():
+        cmd.extend(["-f", f"{key}={value}"])
+
+    env = {**os.environ, "GH_TOKEN": token} if token else None
+
+    try:
+        subprocess.run(
+            cmd, capture_output=True, text=True, timeout=30, check=True, env=env,
+        )
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"workflow dispatch 失敗 ({workflow} @ {repo}): {e.stderr[:200] if e.stderr else e}")
+        return False
+    except Exception as e:
+        logger.warning(f"workflow dispatch 失敗 ({workflow} @ {repo}): {e}")
         return False
 
 

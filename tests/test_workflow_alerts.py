@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -82,6 +84,83 @@ class TestNotifyDiscordStalled:
 
         with pytest.raises(Exception):
             workflow_alerts.notify_discord_stalled(_summary())
+
+
+def _run_list_output(
+    conclusion: str,
+    updated_at: str,
+    url: str = "https://github.com/kaionn/pain-collector/actions/runs/1",
+    title: str = "Weekly trends",
+) -> str:
+    return json.dumps(
+        [
+            {
+                "conclusion": conclusion,
+                "updatedAt": updated_at,
+                "url": url,
+                "displayTitle": title,
+            }
+        ]
+    )
+
+
+class TestCheckFailedRuns:
+    def test_detects_failure_within_window(self):
+        recent = (datetime.now(timezone.utc) - timedelta(minutes=10)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+        mock_result = MagicMock(
+            returncode=0, stdout=_run_list_output("failure", recent), stderr=""
+        )
+        with patch.object(workflow_alerts.subprocess, "run", return_value=mock_result):
+            problems = workflow_alerts.check_failed_runs(
+                "kaionn/pain-collector", window_minutes=65, workflows=["weekly.yml"]
+            )
+
+        assert len(problems) == 1
+        assert "weekly.yml" in problems[0]
+        assert "https://github.com/kaionn/pain-collector/actions/runs/1" in problems[0]
+
+    def test_ignores_failure_outside_window(self):
+        old = (datetime.now(timezone.utc) - timedelta(hours=2)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+        mock_result = MagicMock(
+            returncode=0, stdout=_run_list_output("failure", old), stderr=""
+        )
+        with patch.object(workflow_alerts.subprocess, "run", return_value=mock_result):
+            problems = workflow_alerts.check_failed_runs(
+                "kaionn/pain-collector", window_minutes=65, workflows=["weekly.yml"]
+            )
+
+        assert problems == []
+
+    def test_returns_empty_list_when_gh_command_fails(self):
+        mock_result = MagicMock(returncode=1, stdout="", stderr="boom")
+        with patch.object(workflow_alerts.subprocess, "run", return_value=mock_result):
+            problems = workflow_alerts.check_failed_runs(
+                "kaionn/pain-collector", window_minutes=65, workflows=["weekly.yml"]
+            )
+
+        assert problems == []
+
+
+class TestFailedRunsCli:
+    def test_notifies_discord_when_problems_found(self):
+        with (
+            patch.object(
+                workflow_alerts,
+                "check_failed_runs",
+                return_value=["weekly.yml が失敗: Weekly trends https://example/1"],
+            ) as mock_check,
+            patch.object(workflow_alerts.discord_notify, "notify_pipeline_alert") as mock_notify,
+        ):
+            workflow_alerts.main(["failed-runs", "--repo", "kaionn/pain-collector"])
+
+        mock_check.assert_called_once()
+        mock_notify.assert_called_once_with(
+            ["weekly.yml が失敗: Weekly trends https://example/1"]
+        )
 
 
 class TestCli:

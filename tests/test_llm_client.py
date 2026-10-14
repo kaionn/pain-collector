@@ -1,213 +1,93 @@
-"""llm_client.py のユニットテスト（ネットワークには一切出ない）."""
-
-import subprocess
+"""LLM tests: all provider calls mocked."""
 from unittest.mock import MagicMock, patch
-
 import pytest
+from src.llm_client import LLMError, _RetriableLLMError, chat, embed, parse_json_object, parse_json_response
 
-from src.llm_client import (
-    _RetriableLLMError,
-    chat,
-    embed,
-    parse_json_object,
-    parse_json_response,
-)
-
-
-class TestBackendSelection:
-    """GITHUB_TOKEN の有無によるバックエンド選択のテスト."""
-
-    def test_uses_github_models_when_token_present(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with (
-            patch(
-                "src.llm_client._call_github_models", return_value="from github models"
-            ) as mock_gh,
-            patch("src.llm_client._call_claude_cli") as mock_claude,
-        ):
-            result = chat("こんにちは")
-
-        assert result == "from github models"
-        mock_gh.assert_called_once()
-        mock_claude.assert_not_called()
-
-    def test_uses_claude_cli_when_no_token(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-        with (
-            patch("src.llm_client._call_github_models") as mock_gh,
-            patch(
-                "src.llm_client._call_claude_cli", return_value="from claude cli"
-            ) as mock_claude,
-        ):
-            result = chat("こんにちは")
-
-        assert result == "from claude cli"
-        mock_claude.assert_called_once()
-        mock_gh.assert_not_called()
-
-    def test_passes_params_to_github_models(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with patch("src.llm_client._call_github_models", return_value="ok") as mock_gh:
-            chat(
-                "本文",
-                system="システム指示",
-                temperature=0.5,
-                max_tokens=100,
-                model="openai/gpt-4o",
-            )
-
-        kwargs = mock_gh.call_args.kwargs
-        assert kwargs["system"] == "システム指示"
-        assert kwargs["temperature"] == 0.5
-        assert kwargs["max_tokens"] == 100
-        assert kwargs["model"] == "openai/gpt-4o"
+@pytest.fixture
+def configured(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openai-compatible")
+    monkeypatch.setenv("LLM_BASE_URL", "https://provider.example/v1")
+    monkeypatch.setenv("LLM_API_KEY", "fake-ai-key")
+    monkeypatch.setenv("LLM_MODEL", "chosen-model")
+    monkeypatch.setenv("LLM_EMBED_MODEL", "chosen-embedding")
+    monkeypatch.setenv("GITHUB_TOKEN", "fake-repo-token")
 
 
-class TestRetry:
-    """指数バックオフによるリトライ動作のテスト."""
+def test_repo_token_does_not_select_provider(monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.setenv("GITHUB_TOKEN", "fake-repo-token")
+    with patch("openai.OpenAI") as client, pytest.raises(LLMError, match="LLM_PROVIDER"):
+        chat("synthetic")
+    client.assert_not_called()
 
-    def test_retries_then_succeeds(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        side_effects = [
-            _RetriableLLMError("一時的エラー"),
-            _RetriableLLMError("一時的エラー"),
-            "成功",
-        ]
+@pytest.mark.parametrize("missing", ["LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL"])
+def test_missing_config(configured, monkeypatch, missing):
+    monkeypatch.delenv(missing)
+    with patch("openai.OpenAI") as client, pytest.raises(LLMError):
+        chat("synthetic")
+    client.assert_not_called()
 
-        def fake_call(*args, **kwargs):
-            effect = side_effects.pop(0)
-            if isinstance(effect, Exception):
-                raise effect
-            return effect
-
-        with (
-            patch("src.llm_client._call_github_models", side_effect=fake_call),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            result = chat("リトライ対象")
-
-        assert result == "成功"
-        assert mock_sleep.call_count == 2
-
-    def test_raises_after_max_retries(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with (
-            patch(
-                "src.llm_client._call_github_models",
-                side_effect=_RetriableLLMError("常に失敗"),
-            ),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            with pytest.raises(_RetriableLLMError):
-                chat("失敗し続ける")
-
-        assert mock_sleep.call_count == 2  # MAX_RETRIES(3) - 1
-
-    def test_non_retriable_exception_propagates_immediately(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with (
-            patch(
-                "src.llm_client._call_github_models",
-                side_effect=ValueError("致命的エラー"),
-            ),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            with pytest.raises(ValueError):
-                chat("非リトライ対象")
-
-        mock_sleep.assert_not_called()
-
-    def test_claude_cli_nonzero_exit_is_retriable(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-        fake_result = MagicMock(returncode=1, stdout="", stderr="claude cli エラー")
-        with (
-            patch("src.llm_client.subprocess.run", return_value=fake_result),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            with pytest.raises(_RetriableLLMError):
-                chat("失敗する CLI 呼び出し")
-
-        assert mock_sleep.call_count == 2
-
-    def test_claude_cli_timeout_is_retriable(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-        with (
-            patch(
-                "src.llm_client.subprocess.run",
-                side_effect=subprocess.TimeoutExpired(cmd=["claude"], timeout=180),
-            ),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            with pytest.raises(_RetriableLLMError):
-                chat("タイムアウトする CLI 呼び出し")
-
-        assert mock_sleep.call_count == 2
-
-    def test_claude_cli_success(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-        fake_result = MagicMock(returncode=0, stdout="  成功しました  \n", stderr="")
-        with patch("src.llm_client.subprocess.run", return_value=fake_result):
-            result = chat("CLI 呼び出し", system="システム指示")
-
-        assert result == "成功しました"
+@pytest.mark.parametrize("url", ["https://models.github.ai/inference", "http://provider.example", "https://user:secret@provider.example"])
+def test_invalid_endpoint(configured, monkeypatch, url):
+    monkeypatch.setenv("LLM_BASE_URL", url)
+    with pytest.raises(LLMError):
+        chat("synthetic")
 
 
-class TestEmbed:
-    """embed() のテスト（ネットワークには一切出ない）."""
+def test_explicit_api_config(configured):
+    with patch("openai.OpenAI") as factory:
+        factory.return_value.chat.completions.create.return_value = MagicMock(choices=[MagicMock(message=MagicMock(content="[]"))])
+        assert chat("synthetic") == "[]"
+        factory.assert_called_once_with(base_url="https://provider.example/v1", api_key="fake-ai-key", max_retries=0, timeout=180)
+        assert factory.return_value.chat.completions.create.call_args.kwargs["model"] == "chosen-model"
 
-    def test_no_token_returns_none(self, monkeypatch):
-        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-        with patch("src.llm_client._call_github_embeddings") as mock_embed:
-            result = embed(["テキスト"])
+@pytest.mark.parametrize("response", ["retired", MagicMock(choices=[]), MagicMock(choices=[MagicMock(message=MagicMock(content=None))])])
+def test_invalid_response_fails_once(configured, response):
+    with patch("openai.OpenAI") as factory:
+        factory.return_value.chat.completions.create.return_value = response
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert factory.return_value.chat.completions.create.call_count == 1
 
-        assert result is None
-        mock_embed.assert_not_called()
+@pytest.mark.parametrize("status", [400, 401, 403, 404])
+def test_auth_and_configuration_fail_once(configured, status):
+    import httpx
+    from openai import APIStatusError
+    error = APIStatusError("synthetic", response=httpx.Response(status, request=httpx.Request("POST", "https://provider.example")), body=None)
+    with patch("openai.OpenAI") as factory:
+        factory.return_value.chat.completions.create.side_effect = error
+        with pytest.raises(LLMError, match=str(status)):
+            chat("synthetic")
+        assert factory.return_value.chat.completions.create.call_count == 1
 
-    def test_success_returns_vectors(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with patch(
-            "src.llm_client._call_github_embeddings",
-            return_value=[[0.1, 0.2], [0.3, 0.4]],
-        ) as mock_embed:
-            result = embed(["テキスト1", "テキスト2"])
 
-        assert result == [[0.1, 0.2], [0.3, 0.4]]
-        mock_embed.assert_called_once()
+def test_transient_retry_bounded(configured):
+    with patch("src.llm_client._call_api", side_effect=_RetriableLLMError("temporary")) as call, patch("src.llm_client.time.sleep"):
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert call.call_count == 3
 
-    def test_retriable_failure_returns_none_after_max_retries(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with (
-            patch(
-                "src.llm_client._call_github_embeddings",
-                side_effect=_RetriableLLMError("常に失敗"),
-            ),
-            patch("src.llm_client.time.sleep") as mock_sleep,
-        ):
-            result = embed(["テキスト"])
 
-        assert result is None
-        assert mock_sleep.call_count == 2
+def test_cli_explicit_model(configured, monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "claude-cli")
+    with patch("src.llm_client._check_claude_subscription"), patch("src.llm_client.subprocess.run", return_value=MagicMock(returncode=0, stdout='{"type":"result","subtype":"success","is_error":false,"result":"[]"}')) as call:
+        assert chat("synthetic") == "[]"
+        assert "chosen-model" in call.call_args.args[0]
+        assert "--tools" in call.call_args.args[0]
+        assert call.call_args.kwargs["input"] == "synthetic"
+    assert embed(["synthetic"]) is None
 
-    def test_non_retriable_exception_returns_none(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with patch(
-            "src.llm_client._call_github_embeddings",
-            side_effect=ValueError("致命的エラー"),
-        ):
-            result = embed(["テキスト"])
+@pytest.mark.parametrize("content", ["{}", "null", "[1]", "", "oops"])
+def test_wrong_json_shape(content):
+    with pytest.raises(LLMError):
+        parse_json_response(content)
 
-        assert result is None
 
-    def test_passes_model_override(self, monkeypatch):
-        monkeypatch.setenv("GITHUB_TOKEN", "gh-token")
-        with patch(
-            "src.llm_client._call_github_embeddings", return_value=[[0.1]]
-        ) as mock_embed:
-            embed(["テキスト"], model="openai/text-embedding-3-large")
-
-        kwargs = mock_embed.call_args.kwargs
-        assert kwargs["model"] == "openai/text-embedding-3-large"
-
+def test_embeddings_bad_shape(configured):
+    with patch("openai.OpenAI") as factory:
+        factory.return_value.embeddings.create.return_value = "retired"
+        with pytest.raises(LLMError):
+            embed(["synthetic"])
 
 class TestParseJsonResponse:
     """parse_json_response のエッジケーステスト."""
@@ -260,3 +140,218 @@ class TestParseJsonObject:
     def test_broken_json_raises(self):
         with pytest.raises(Exception):
             parse_json_object("{broken")
+
+
+@pytest.mark.parametrize("content", ["null", "[]", "[1]", "oops", "```"])
+def test_invalid_json_object_is_typed_failure(content):
+    with pytest.raises(LLMError):
+        parse_json_object(content)
+
+@pytest.fixture
+def anthropic_config(configured, monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.anthropic.com")
+    monkeypatch.setenv("LLM_MODEL", "claude-opus-5-5")
+    monkeypatch.setenv("LLM_MAX_TOKENS", "4096")
+
+
+def _anthropic_response(content=None, stop="end_turn", status=200):
+    return MagicMock(status_code=status, json=MagicMock(return_value={
+        "type": "message", "role": "assistant", "stop_reason": stop,
+        "content": content if content is not None else [{"type": "text", "text": "[]"}],
+    }))
+
+
+def test_anthropic_direct_request(anthropic_config):
+    with patch("requests.Session") as session:
+        client = session.return_value.__enter__.return_value
+        client.post.return_value = _anthropic_response([{"type": "thinking", "thinking": "hidden"}, {"type": "text", "text": "[]"}])
+        assert chat("synthetic", system="system", temperature=0.3) == "[]"
+        args, kwargs = client.post.call_args
+        assert args == ("https://api.anthropic.com/v1/messages",)
+        assert kwargs["json"] == {"model": "claude-opus-5-5", "max_tokens": 4096, "messages": [{"role": "user", "content": "synthetic"}], "system": "system"}
+        assert kwargs["headers"]["x-api-key"] == "fake-ai-key"
+        assert kwargs["allow_redirects"] is False
+        assert client.trust_env is False
+    assert embed(["synthetic"]) is None
+
+@pytest.mark.parametrize("status", [302, 400, 401, 403, 404])
+def test_anthropic_fatal_status_once(anthropic_config, status):
+    with patch("requests.Session") as session:
+        client = session.return_value.__enter__.return_value
+        client.post.return_value = _anthropic_response(status=status)
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert client.post.call_count == 1
+
+@pytest.mark.parametrize("stop", ["max_tokens", "refusal", "tool_use", None])
+def test_anthropic_incomplete_or_refused(anthropic_config, stop):
+    with patch("requests.Session") as session:
+        session.return_value.__enter__.return_value.post.return_value = _anthropic_response(stop=stop)
+        with pytest.raises(LLMError):
+            chat("synthetic")
+
+@pytest.mark.parametrize("content", [[], "text", [{"type": "text", "text": None}], [{"type": "thinking"}]])
+def test_anthropic_invalid_content(anthropic_config, content):
+    with patch("requests.Session") as session:
+        session.return_value.__enter__.return_value.post.return_value = _anthropic_response(content=content)
+        with pytest.raises(LLMError):
+            chat("synthetic")
+
+
+def test_anthropic_no_output_limit_fails_before_request(anthropic_config, monkeypatch):
+    monkeypatch.delenv("LLM_MAX_TOKENS")
+    with patch("requests.Session") as session, pytest.raises(LLMError):
+        chat("synthetic")
+    session.assert_not_called()
+
+
+def test_anthropic_retries_are_bounded(anthropic_config):
+    with patch("requests.Session") as session, patch("src.llm_client.time.sleep"):
+        client = session.return_value.__enter__.return_value
+        client.post.return_value = _anthropic_response(status=529)
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert client.post.call_count == 3
+
+
+@pytest.mark.parametrize("content", ['{"error": []}', '{"error": "bad", "details": []}'])
+def test_error_object_not_mistaken_for_empty_array(content):
+    with pytest.raises(LLMError):
+        parse_json_response(content)
+
+
+def test_array_not_mistaken_for_object():
+    with pytest.raises(LLMError):
+        parse_json_object('[{"a": 1}]')
+
+
+@pytest.fixture
+def clean_cli_env(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "claude-cli")
+    monkeypatch.setenv("LLM_MODEL", "claude-opus-5-5")
+    for key in ("LLM_CLAUDE_AUTH_MODE", "GITHUB_ACTIONS", "ANTHROPIC_BASE_URL", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"):
+        monkeypatch.delenv(key, raising=False)
+
+
+def _cli_auth(**changes):
+    import json
+    status = {"loggedIn": True, "authMethod": "claude.ai", "apiProvider": "firstParty", "subscriptionType": "max"}
+    status.update(changes)
+    return MagicMock(returncode=0, stdout=json.dumps(status))
+
+
+def test_subscription_cli_success_zero(clean_cli_env):
+    result = MagicMock(returncode=0, stdout='{"type":"result","subtype":"success","is_error":false,"result":"[]"}')
+    with patch("src.llm_client.subprocess.run", side_effect=[_cli_auth(), result]) as call:
+        assert chat("synthetic") == "[]"
+        assert call.call_count == 2
+        assert call.call_args_list[0].args[0] == ["claude", "auth", "status", "--json"]
+        assert "claude-opus-5-5" in call.call_args_list[1].args[0]
+
+@pytest.mark.parametrize("changes", [{"loggedIn": False}, {"authMethod": "api_key"}, {"authMethod": "third_party"}, {"apiProvider": "thirdParty"}, {"subscriptionType": None}])
+def test_cli_unverified_auth_stops_before_inference(clean_cli_env, changes):
+    with patch("src.llm_client.subprocess.run", return_value=_cli_auth(**changes)) as call:
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert call.call_count == 1
+
+@pytest.mark.parametrize("key,value", [("ANTHROPIC_BASE_URL", "https://gateway.example"), ("ANTHROPIC_API_KEY", "fake"), ("CLAUDE_CODE_USE_VERTEX", "1"), ("CLAUDE_CODE_OAUTH_TOKEN", "fake")])
+def test_cli_override_stops_before_any_command(clean_cli_env, monkeypatch, key, value):
+    monkeypatch.setenv(key, value)
+    with patch("src.llm_client.subprocess.run") as call, pytest.raises(LLMError):
+        chat("synthetic")
+    call.assert_not_called()
+
+@pytest.mark.parametrize("stdout,code", [('not json', 0), ('{"type":"result","subtype":"error_max_turns","is_error":true,"result":"[]"}', 0), ('{"type":"result","subtype":"success","is_error":false,"result":""}', 0), ('{}', 1)])
+def test_cli_error_no_retry(clean_cli_env, stdout, code):
+    with patch("src.llm_client.subprocess.run", side_effect=[_cli_auth(), MagicMock(returncode=code, stdout=stdout)]) as call, patch("src.llm_client.time.sleep") as sleep:
+        with pytest.raises(LLMError):
+            chat("synthetic")
+        assert call.call_count == 2
+        sleep.assert_not_called()
+
+
+
+def test_cli_timeout_respects_caller(clean_cli_env):
+    import subprocess
+    with patch("src.llm_client.subprocess.run", side_effect=[_cli_auth(), subprocess.TimeoutExpired("claude", 30)]) as call:
+        with pytest.raises(LLMError, match="タイムアウト"):
+            chat("synthetic", timeout=30)
+        assert call.call_count == 2
+        assert call.call_args.kwargs["timeout"] == 30
+
+@pytest.fixture
+def ci_cli_env(clean_cli_env, monkeypatch):
+    monkeypatch.setenv('LLM_CLAUDE_AUTH_MODE', 'ci-oauth')
+    monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('CLAUDE_CODE_OAUTH_TOKEN', 'mock-subscription-token')
+
+
+def test_ci_oauth_success_uses_only_cli(ci_cli_env):
+    result = MagicMock(returncode=0, stdout='{"type":"result","subtype":"success","is_error":false,"result":"[]"}')
+    with patch('src.llm_client.subprocess.run', side_effect=[_cli_auth(authMethod='oauth_token', subscriptionType=None), result]) as call, patch('src.llm_client._call_api') as api:
+        assert chat('synthetic') == '[]'
+        assert call.call_count == 2
+        assert 'mock-subscription-token' not in str(call.call_args_list)
+        api.assert_not_called()
+
+
+@pytest.mark.parametrize('changes', [{'authMethod': 'claude.ai'}, {'authMethod': 'api_key'}, {'authMethod': 'third_party'}, {'apiProvider': 'thirdParty'}, {'loggedIn': False}])
+def test_ci_oauth_rejects_other_auth(ci_cli_env, changes):
+    with patch('src.llm_client.subprocess.run', return_value=_cli_auth(authMethod='oauth_token', **changes) if 'authMethod' not in changes else _cli_auth(**changes)) as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 1
+
+
+@pytest.mark.parametrize('key,value', [('CLAUDE_CODE_OAUTH_TOKEN', ''), ('GITHUB_ACTIONS', ''), ('LLM_CLAUDE_AUTH_MODE', 'unknown'), ('ANTHROPIC_BASE_URL', 'https://company.example'), ('ANTHROPIC_API_KEY', 'mock-api-key'), ('ANTHROPIC_AUTH_TOKEN', 'mock-auth'), ('CLAUDE_CODE_USE_BEDROCK', '1')])
+def test_ci_bad_configuration_fails_before_cli(ci_cli_env, monkeypatch, key, value):
+    monkeypatch.setenv(key, value)
+    with patch('src.llm_client.subprocess.run') as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        call.assert_not_called()
+
+
+@pytest.mark.parametrize('stdout,code', [('not-json', 0), ('[]', 0), ('{}', 1)])
+def test_ci_bad_auth_json_fails_without_inference(ci_cli_env, stdout, code):
+    with patch('src.llm_client.subprocess.run', return_value=MagicMock(stdout=stdout, returncode=code)) as call:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 1
+
+
+@pytest.mark.parametrize('stdout', ['not-json', '[]', '{"type":"result","subtype":"success","is_error":true,"result":"[]"}', '{"type":"result","subtype":"success","is_error":false,"result":""}'])
+def test_ci_bad_result_no_retry(ci_cli_env, stdout):
+    with patch('src.llm_client.subprocess.run', side_effect=[_cli_auth(authMethod='oauth_token'), MagicMock(returncode=0, stdout=stdout)]) as call, patch('src.llm_client.time.sleep') as sleep:
+        with pytest.raises(LLMError):
+            chat('synthetic')
+        assert call.call_count == 2
+        sleep.assert_not_called()
+
+
+def test_preinstall_validation_does_not_run_cli(ci_cli_env):
+    from src.llm_client import validate_config
+    with patch('src.llm_client.subprocess.run') as call:
+        validate_config(check_cli_auth=False)
+        call.assert_not_called()
+
+
+def test_preinstall_missing_provider_fails(ci_cli_env, monkeypatch):
+    from src.llm_client import validate_config
+    monkeypatch.delenv('LLM_PROVIDER')
+    with patch('src.llm_client.subprocess.run') as call, pytest.raises(LLMError, match='LLM_PROVIDER'):
+        validate_config(check_cli_auth=False)
+    call.assert_not_called()
+
+@pytest.mark.parametrize('limit', ['', 'bad', '0', '-1'])
+def test_preflight_anthropic_max_tokens_invalid(monkeypatch, limit):
+    from src.llm_client import validate_config
+    monkeypatch.setenv('LLM_PROVIDER', 'anthropic')
+    monkeypatch.setenv('LLM_BASE_URL', 'https://api.anthropic.com')
+    monkeypatch.setenv('LLM_API_KEY', 'mock-key')
+    monkeypatch.setenv('LLM_MODEL', 'mock-model')
+    monkeypatch.setenv('LLM_MAX_TOKENS', limit)
+    with pytest.raises(LLMError, match='LLM_MAX_TOKENS'):
+        validate_config(check_cli_auth=False)
