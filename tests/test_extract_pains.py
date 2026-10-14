@@ -245,3 +245,29 @@ class TestAttachEngagement:
         posts = [{"score": 999, "source": "reddit"}]  # url なし
         _attach_engagement(pains, posts)
         assert pains[0]["source_engagement"] == {}
+
+
+@pytest.mark.parametrize("error", [RuntimeError("unexpected"), __import__("src.llm_client", fromlist=["LLMError"]).LLMError("auth")])
+def test_provider_failure_does_not_split_or_succeed(error):
+    from unittest.mock import Mock
+    from src.extract_pains import _extract_in_batches
+    call = Mock(side_effect=error)
+    with pytest.raises(type(error)):
+        _extract_in_batches([{"title": "synthetic"}] * 40, call, "test")
+    assert call.call_count == 1
+
+
+def test_valid_empty_extraction():
+    from src.extract_pains import _extract_in_batches
+    assert _extract_in_batches([{"title": "synthetic"}], lambda _: "[]", "test") == []
+
+
+@pytest.mark.parametrize("content", ['[{}]', '[{"pain": null}]', '[{"pain": ""}]'])
+def test_invalid_pain_schema_fails_without_split(content):
+    from unittest.mock import Mock
+    from src.extract_pains import _extract_in_batches
+    from src.llm_client import LLMError
+    call = Mock(return_value=content)
+    with pytest.raises(LLMError):
+        _extract_in_batches([{"title": "synthetic"}] * 40, call, "test")
+    assert call.call_count == 1

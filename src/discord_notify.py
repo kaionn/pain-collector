@@ -8,6 +8,7 @@ import logging
 import os
 
 from .http_utils import create_retry_session
+from .notify_bridge import mirror, discord_gate, discord_ack
 
 logger = logging.getLogger(__name__)
 
@@ -35,19 +36,26 @@ def _severity_color(severity: int) -> int:
     return _SEVERITY_COLORS.get(severity, 0x95A5A6)
 
 
-def _post_webhook(payload: dict) -> None:
+def _post_webhook(payload: dict, *, category: str = "reports", event: str = "pipeline", shadow: bool = True, slack_result: dict | None = None) -> None:
     """Discord Webhook にペイロードを POST する."""
+    if shadow:
+        slack_result = mirror(payload, category, event)
+    if not discord_gate(slack_result):
+        return
     url = os.environ.get("DISCORD_WEBHOOK_URL", "")
     if not url:
         return
 
-    session = create_retry_session()
+    session = create_retry_session(retries=0) if os.environ.get("NOTIFICATION_MODE") == "slack" else create_retry_session()
     resp = session.post(url, json=payload, timeout=10)
+    discord_ack(resp.status_code, slack_result)
     resp.raise_for_status()
 
 
 def _post_bot_message(payload: dict) -> None:
     """Discord Bot API でチャンネルにメッセージを送信する."""
+    if os.environ.get("NOTIFICATION_MODE") == "slack":
+        return
     token = os.environ.get("DISCORD_BOT_TOKEN", "")
     channel_id = os.environ.get("DISCORD_CHANNEL_ID", "")
     if not token or not channel_id:
@@ -205,7 +213,14 @@ def notify_mvp_picked(
     )
 
     rank_emoji = ["🥇", "🥈", "🥉"]
+    slack_result = mirror({
+        "content": "🏆 MVP候補: 証拠とbuild contractを確認しローカル試作を承認、またはIssueで /reject。/approve は廃止です。",
+        "embeds": [_build_mvp_embed(item, i, rank_emoji, today, repo_url) for i, item in enumerate(picked[:3])],
+    }, "reports", "mvp-picked")
 
+    # Slack-primary fallback is one aggregate webhook, not multiple bot cards.
+    if os.environ.get("NOTIFICATION_MODE") == "slack":
+        bot_available = False
     if bot_available:
         try:
             for i, item in enumerate(picked[:3]):
@@ -221,12 +236,12 @@ def notify_mvp_picked(
         embeds.append(_build_mvp_embed(item, i, rank_emoji, today, repo_url))
 
     payload = {
-        "content": f"{_MENTION} 🏆 MVP 候補が選定されました！承認するには Issue で `/approve` とコメントしてください。",
+        "content": f"{_MENTION} 🏆 MVP 候補が選定されました！docs/opportunity-workflow.md の契約を確認してローカル試作を承認してください。",
         "embeds": embeds,
     }
 
     try:
-        _post_webhook(payload)
+        _post_webhook(payload, shadow=False, slack_result=slack_result)
         logger.info(f"Discord MVP 選定通知送信（Webhook）: {len(picked)} 件")
     except Exception as e:
         logger.warning(f"Discord MVP 選定通知失敗: {e}")
@@ -254,7 +269,7 @@ def notify_pipeline_alert(problems: list[str]) -> None:
     }
 
     try:
-        _post_webhook(payload)
+        _post_webhook(payload, category="alerts", event="pipeline-alert")
         logger.info(f"Discord パイプラインアラート送信: {len(problems)} 件")
     except Exception as e:
         logger.warning(f"Discord パイプラインアラート送信失敗: {e}")
@@ -282,7 +297,7 @@ def _build_mvp_embed(
         fields.append({"name": "選定理由", "value": reason, "inline": False})
 
     footer_text = (
-        "Spec Ready → Approve ボタンで自動実装を開始"
+        "Spec Ready → 証拠・build contractを確認してローカル試作を判断"
         if spec
         else "Spec 未生成 → Deep Dive 完了後に再選定"
     )

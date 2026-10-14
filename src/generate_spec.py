@@ -144,6 +144,8 @@ def _generate_with_validation(
 
         try:
             raw = _call_llm(system_prompt, current_user_prompt)
+        except llm_client.LLMError:
+            raise
         except Exception as exc:
             logger.error(f"LLM 呼び出し失敗 (attempt={attempt}): {exc}")
             last_errors = [f"LLM error: {exc}"]

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "flag-audit",
+  "title": "フラグ棚卸し",
+  "target_user": "feature flagを運用する開発者",
+  "problem": "不要フラグ候補の参照を調べるのに時間がかかる",
+  "solution": "合成flag一覧とfixture repoから参照ランキングを表示",
+  "kind": "tool",
+  "origin": {
+    "repo": "kaionn/lazy-product-lab",
+    "locator": "ideas/2026/W40/candidates-3.md#1",
+    "url": "https://github.com/kaionn/lazy-product-lab/blob/main/ideas/2026/W40/candidates-3.md",
+    "observed_at": "2026-10-02T09:31:00+09:00",
+    "classification": "hypothesis"
+  },
+  "evidence": [],
+  "build": {
+    "core_flow": "fixture JSONとfixture repoを読み参照件数順に候補表示",
+    "demo_input": "合成flag 3件、fixture file 2件、実credentialなし",
+    "acceptance": [
+      {
+        "id": "AC1",
+        "check": "fixture inputでランキングの順序を確認",
+        "expected": "参照件数が降順、未知flagは無視"
+      },
+      {
+        "id": "AC2",
+        "check": "不正JSONを入力",
+        "expected": "exit nonzero、repoへの書込なし"
+      }
+    ],
+    "non_goals": [
+      "実API接続",
+      "自動削除",
+      "公開"
+    ],
+    "max_minutes": 120,
+    "max_iterations": 3,
+    "allowed_tools": [
+      "local-files",
+      "local-tests"
+    ]
+  },
+  "distribution": {
+    "channel": "要レビュー",
+    "audience": "feature flag運用開発者",
+    "rationale": "要レビュー: 到達可能なコミュニティを確認"
+  },
+  "measurement": {
+    "primary_event": "tool_use",
+    "graduate_threshold": 20,
+    "observation_days": 21,
+    "minimum_exposures": 20,
+    "stop_rule": "計測済み露出20以上、配布後21日で利用2未満なら撤退候補",
+    "kill_below": 2
+  }
+}

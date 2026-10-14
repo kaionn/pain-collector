@@ -1,0 +1,23 @@
+name: Set up LLM
+description: Validate configuration and install the official Claude CLI when selected
+runs:
+  using: composite
+  steps:
+    - name: Validate configuration before installation or collection
+      shell: bash
+      run: uv run python -c 'from src.llm_client import validate_config; validate_config(check_cli_auth=False)'
+    - name: Install official Claude CLI
+      if: env.LLM_PROVIDER == 'claude-cli'
+      shell: bash
+      run: |
+        # Official native installer, pinned to the locally verified CLI version.
+        # Never expose AI credentials to the installer process.
+        env -u CLAUDE_CODE_OAUTH_TOKEN -u LLM_API_KEY curl -fsSL https://claude.ai/install.sh -o "$RUNNER_TEMP/claude-install.sh"
+        env -u CLAUDE_CODE_OAUTH_TOKEN -u LLM_API_KEY bash "$RUNNER_TEMP/claude-install.sh" 2.1.288
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+    - name: Verify CLI version and authentication before collection
+      if: env.LLM_PROVIDER == 'claude-cli'
+      shell: bash
+      run: |
+        claude --version | grep -Eq '^2\.1\.288( |$)'
+        uv run python -c 'from src.llm_client import validate_config; validate_config()'
