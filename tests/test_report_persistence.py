@@ -229,3 +229,25 @@ def test_workflow_uploads_only_markdown_before_persistence_and_keeps_notificatio
     assert notifications["with"]["path"].splitlines() == [".notification-state/*.json", ".notification-outbox/**"]
     assert "always()" in notifications["if"]
     assert sum("python -m src.main" in s.get("run", "") for s in steps) == 1
+
+
+def test_report_writer_checkout_retains_pat_credential_contract():
+    repo = Path(__file__).resolve().parents[1]
+    for name in ['collect', 'weekly', 'monthly', 'learn']:
+        workflow = yaml.safe_load((repo / f'.github/workflows/{name}.yml').read_text())
+        checkouts = [step for job in workflow['jobs'].values() for step in job['steps']
+                     if step.get('uses', '').startswith('actions/checkout@')]
+        assert len(checkouts) == 1
+        assert checkouts[0]['uses'] == 'actions/checkout@v7'
+        assert checkouts[0]['with']['token'] == '${{ secrets.PAT_TOKEN }}'
+        assert checkouts[0]['with'].get('persist-credentials', True) is True
+
+
+def test_git_retains_external_credential_include(repos, tmp_path):
+    _, _, checkout, _ = repos
+    credential = tmp_path / 'checkout-credentials.config'
+    credential.write_text('[http "https://github.com/"]\n\textraheader = AUTHORIZATION: synthetic\n')
+    git(checkout, 'config', 'include.path', str(credential))
+    result = rp.git(checkout, 'config', '--get', 'http.https://github.com/.extraheader')
+    assert result.returncode == 0
+    assert result.stdout.strip() == b'AUTHORIZATION: synthetic'
