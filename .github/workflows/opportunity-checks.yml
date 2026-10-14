@@ -1,0 +1,23 @@
+name: Opportunity checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: opportunity-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.12'
+      - name: Install locked test dependencies
+        run: uv sync --locked
+      - name: Offline pipeline and ingestion regression
+        run: uv run pytest tests -q

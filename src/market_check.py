@@ -31,6 +31,8 @@ def _load_baselines() -> dict:
     try:
         with open(BASELINES_PATH, encoding="utf-8") as f:
             return json.load(f)
+    except llm_client.LLMError:
+        raise
     except Exception:
         return {}
 
@@ -98,6 +100,8 @@ def _extract_search_keywords(app_idea: str, category: str = "") -> list[str]:
         content = llm_client.chat(prompt, temperature=0, max_tokens=60).strip()
         keywords = [line.strip() for line in content.splitlines() if line.strip()]
         return keywords[:3] if keywords else [app_idea[:50]]
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"キーワード抽出失敗、フォールバック: {e}")
 
@@ -249,6 +253,8 @@ def extract_competitor_pains(apps: list[dict]) -> list[dict]:
         pains = llm_client.parse_json_response(content or "[]")
         logger.info(f"競合レビューから {len(pains)} 件のペインを逆抽出")
         return pains
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"競合レビュー分析失敗: {e}")
         return []

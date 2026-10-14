@@ -72,14 +72,14 @@ class TestClassify:
         assert verdict["reject_reason"] is None
         assert verdict["audience"] == pain_gate.rule_based_audience(pain)
 
-    def test_malformed_json_fails_open(self, monkeypatch):
+    def test_malformed_json_fails_fast(self, monkeypatch):
         monkeypatch.setattr(pain_gate.llm_client, "chat", lambda *a, **k: "not json")
 
         pain = {"pain": "テスト", "product_type": "モバイルアプリ"}
-        verdict = pain_gate.classify(pain)
-
-        assert verdict["actionable"] is True
-        assert verdict["audience"] == "consumer"
+        from src.llm_client import LLMError
+        import pytest
+        with pytest.raises(LLMError):
+            pain_gate.classify(pain)
 
     def test_invalid_audience_falls_back_to_rule_based(self, monkeypatch):
         """LLM が想定外の audience 値を返した場合は rule_based_audience にフォールバック."""

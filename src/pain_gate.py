@@ -61,8 +61,7 @@ def rule_based_audience(pain: dict) -> str:
 def classify(pain: dict) -> dict:
     """ペインの actionability と対象層を LLM で判定する.
 
-    LLM 呼び出しやパースに失敗した場合は fail-open（actionable=True）とし、
-    ゲート故障でパイプライン全体を止めない。
+    構成・認証・応答形式障害は伝播する。その他のローカル障害は fail-open。
     """
     payload = {
         "pain": pain.get("pain", ""),
@@ -85,6 +84,8 @@ def classify(pain: dict) -> dict:
         reject_reason = verdict.get("reject_reason") if not actionable else None
 
         return {"actionable": actionable, "reject_reason": reject_reason, "audience": audience}
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.warning(f"actionability ゲート判定失敗（fail-open）: {e}")
         return {"actionable": True, "reject_reason": None, "audience": rule_based_audience(pain)}

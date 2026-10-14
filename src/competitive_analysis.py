@@ -166,6 +166,8 @@ def generate_teardown(pain: dict, date_str: str) -> str | None:
 
     try:
         llm_content = _call_llm(TEARDOWN_PROMPT, user_prompt)
+    except llm_client.LLMError:
+        raise
     except Exception as e:
         logger.error(f"LLM 呼び出しに失敗しました: {e}")
         return None
