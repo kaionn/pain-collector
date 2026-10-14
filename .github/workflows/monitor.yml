@@ -25,6 +25,14 @@ on:
 permissions:
   contents: write
   issues: write
+  actions: read
+
+# Slack-only default. Explicit discord/shadow values are retained for rollback.
+env:
+  NOTIFICATION_MODE: ${{ vars.NOTIFICATION_MODE || 'slack' }}
+  NOTIFY_DURABLE_LEDGER: ${{ vars.NOTIFY_DURABLE_LEDGER || 'false' }}
+  SLACK_ALERT_CHANNEL_ID: ${{ vars.SLACK_ALERT_CHANNEL_ID }}
+  SLACK_REPORT_CHANNEL_ID: ${{ vars.SLACK_REPORT_CHANNEL_ID }}
 
 jobs:
   detect-stalled:
@@ -47,12 +55,27 @@ jobs:
       - name: Check PAT expiry
         continue-on-error: true
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTIFY_LEDGER_TOKEN: ${{ github.token }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
         run: |
           set -euo pipefail
           uv run python -m src.pat_expiry_check --warn-days 7 --gate-hour 21 \
             ${{ github.event.inputs.force_pat_check == 'true' && '--force' || '' }}
+
+      # 定期 workflow の失敗検知（weekly.yml が 17 週サイレント失敗した再発防止）。
+      # 毎時実行 + 65 分窓で、各失敗をおよそ 1 回だけ通知する（stateless）
+      - name: Check failed workflow runs
+        continue-on-error: true
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTIFY_LEDGER_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
+        run: |
+          set -euo pipefail
+          uv run python -m src.workflow_alerts failed-runs --repo "${{ github.repository }}"
 
       - name: Sync latest pipeline_state.json
         env:
@@ -83,7 +106,7 @@ jobs:
       - name: Notify and update state
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
         env:
-          # contents API PUT は Branch Protection をバイパスするため PAT_TOKEN が必要
+          # contents API PUT は repository rulesetに従った更新のため PAT_TOKEN が必要
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           STALLED_THRESHOLD_HOURS: ${{ github.event.inputs.threshold_hours || '24' }}
         run: |
@@ -95,9 +118,6 @@ jobs:
             --output stalled.json \
             --apply
 
-          # 各 stalled Issue に対してラベル変更とコメント
-          uv run python -m src.workflow_alerts stalled-issues --summary stalled.json
-
           # GitHub API 経由で pipeline_state.json を更新（branch protection バイパス）
           uv run python -m src.state_sync push \
             --repo "${{ github.repository }}" \
@@ -105,14 +125,35 @@ jobs:
             --local-path data/pipeline_state.json \
             --message "pipeline: stalled 検出による status 更新"
 
+          # CAS成功後だけ通知。競合時は再fetch・再検出する。
+          uv run python -m src.workflow_alerts stalled-issues --summary stalled.json
+
       - name: Notify Discord
         if: steps.detect.outputs.count != '0' && github.event.inputs.dry_run != 'true'
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTIFY_LEDGER_TOKEN: ${{ github.token }}
+          DISCORD_WEBHOOK_URL: ${{ (vars.NOTIFICATION_MODE == 'discord' || vars.NOTIFICATION_MODE == 'shadow') && secrets.DISCORD_WEBHOOK_URL || '' }}
         run: |
           set -euo pipefail
-          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
+          if [ "${NOTIFICATION_MODE:-discord}" != "slack" ] && [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
             echo "DISCORD_WEBHOOK_URL 未設定のため Discord 通知をスキップ"
             exit 0
           fi
           uv run python -m src.workflow_alerts discord --summary stalled.json
+
+      - name: Preserve notification delivery receipts and sanitized recovery outbox
+        if: ${{ always() && (env.NOTIFICATION_MODE == 'shadow' || env.NOTIFICATION_MODE == 'slack') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          path: |
+            .notification-state/*.json
+            .notification-outbox/**
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Audit primary notification completion after business work
+        if: ${{ always() && env.NOTIFICATION_MODE == 'slack' }}
+        run: python3 src/notify_bridge.py --audit

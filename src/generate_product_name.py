@@ -1,15 +1,13 @@
-"""Issue タイトルから MVP リポジトリ用のプロダクト名（英語ケバブケース）を生成する.
+"""Issue タイトルからプロダクト名を生成する。
 
-GitHub Models Inference API（OpenAI SDK 経由）で変換し、失敗時は
-``mvp-{issue_number}`` にフォールバックする。``GITHUB_TOKEN`` が無い環境では
-ローカル claude CLI にフォールバックする（``generate_spec.py`` と同じ方針）。
+共有 LLM クライアントの明示設定を使用し、接続障害は伝播する。
+名前の検証に失敗した場合は mvp-{issue_number} を使用する。
 """
 
 import argparse
 import logging
 import os
 import re
-import subprocess
 import sys
 
 from src import llm_client
@@ -86,72 +84,8 @@ def _is_valid(name: str) -> bool:
 
 
 def _call_llm(title: str, *, timeout: int = LLM_TIMEOUT_SEC) -> str | None:
-    """LLM を呼び出してプロダクト名候補の生文字列を返す。失敗時は None.
-
-    - GITHUB_TOKEN がある場合: GitHub Models Inference API（OpenAI SDK）
-    - 無い場合: ローカル claude CLI にフォールバック
-    """
-    token = os.environ.get("GITHUB_TOKEN", "")
-    user_prompt = f"Title: {title}"
-
-    if token:
-        try:
-            from openai import OpenAI
-
-            client = OpenAI(
-                base_url=llm_client.GITHUB_MODELS_BASE_URL,
-                api_key=token,
-            )
-            response = client.chat.completions.create(
-                model=llm_client.DEFAULT_MODEL,
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.3,
-                timeout=timeout,
-            )
-            content = (response.choices[0].message.content or "").strip()
-            if not content:
-                logger.error("GitHub Models の応答が空でした")
-                return None
-            logger.info("LLM 応答（生）: %r", content[:200])
-            return content
-        except Exception as e:
-            logger.error("GitHub Models 呼び出し失敗: %s", str(e)[:300])
-            return None
-
-    # ローカルフォールバック: claude CLI
-    combined = f"{_SYSTEM_PROMPT}\n\n{user_prompt}"
-    try:
-        result = subprocess.run(
-            ["claude", "-p", combined, "--output-format", "text"],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-    except FileNotFoundError:
-        logger.error("claude CLI が見つかりません")
-        return None
-    except subprocess.TimeoutExpired:
-        logger.error("claude CLI がタイムアウトしました (title=%r)", title)
-        return None
-
-    if result.returncode != 0:
-        logger.error(
-            "claude CLI 失敗 (rc=%s, stderr=%s)",
-            result.returncode,
-            (result.stderr or "").strip()[:500],
-        )
-        return None
-
-    stdout = (result.stdout or "").strip()
-    if not stdout:
-        logger.error("claude CLI の stdout が空でした")
-        return None
-
-    logger.info("LLM 応答（生）: %r", stdout[:200])
-    return stdout
+    """共有クライアントの明示 provider 設定を使用する。障害は伝播する。"""
+    return llm_client.chat(f"Title: {title}", system=_SYSTEM_PROMPT, temperature=0.3, timeout=timeout).strip()
 
 
 def generate(title: str, issue_number: int, *, timeout: int = LLM_TIMEOUT_SEC) -> str:

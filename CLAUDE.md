@@ -7,7 +7,7 @@ pain-collector: SNS やレビューサイトからペイン（ユーザーの課
 ## 技術スタック
 
 - Python 3.12
-- LLM: OpenAI API（`gh models run` 経由）
+- LLM: 明示設定した Anthropic / OpenAI-compatible API または Claude CLI
 - テキスト分析: scikit-learn（TF-IDF）、fugashi（日本語形態素解析）
 - CI/CD: GitHub Actions（日次・週次・月次の定期実行）
 - 通知: Discord（Webhook + Bot API）
@@ -58,24 +58,30 @@ python -m src.main --pick-idea
 3. 市場チェック（market_check.py）: App Store で競合調査
 4. スコアリング（scoring.py）: GitHub Issue にスコアラベル付与
 5. 選定（pick_idea.py）: スコア上位から MVP 候補を選定、pipeline_state.json で状態管理
-6. 承認（approve.yml）: Issue に `/approve` コメントで自動ビルドをトリガー
+6. 承認: 新しいローカルbuild contractをレビューし明示承認。旧/approveは廃止（互換LP経路は/probe）
 
 ## 開発ルール
 
 - ワークフローの手動実行は `kaionn` アカウントのみ許可（actor ガード）
-- `gh models run` を LLM 呼び出しに使用（API キー不要）
+- LLM_PROVIDER / LLM_MODEL を明示設定し、API credential は repo token と分離する
 - テスト追加時は `tests/` 配下に配置し `pytest` で実行可能にする
 
-## 選定（pick_idea.py）のドメイン多様性ルール
+## 品質ゲートと選定ルール（実装準拠）
 
-`--pick-idea` の選定基準は技術寄り偏重を抑制するためのハード制約を持つ:
+### Issue 化直前の actionability ゲート（src/pain_gate.py）
 
-- 開発者向け候補は最大 1 件まで（スコアが高くても 2 件目以降は不採用）
-- 一般ユーザー向けを最低 2 件含める
-- 直近 pick とカテゴリが連続したら -3 ペナルティ、3 連続目は除外
-- ジャッジ（LLM）がエンジニアであることに起因する dev ツール過大評価を自己バイアスとして明示
+抽出 LLM の skip ルールはリークするため、Issue 化直前（日次 top_n 件のみ）に二段目の専用 LLM 判定を通す。reject 基準は 4 つ: 特定既存アプリの不具合クレーム / 社会問題・政策 / 技術サポート Q&A / プロダクトで解決できない感情・状況（センシティブ領域）。LLM の構成・認証・応答形式障害は失敗として伝播。その他のローカル障害は fail-open。pass した Issue には audience ラベル（`👨‍💻dev` / `👤consumer`）が付き、pain-data メタデータにも `audience` が入る。
 
-スコア重み: ペインの強さ x3 / スコープの小ささ x3 / 技術的シンプルさ x2 / 差別化 x2 / 収益可能性 x2（最大 60 点）。
+### 選定（pick_idea.py）のドメイン多様性ルール
+
+`--pick-idea` は技術寄り偏重の抑制をプロンプト指示 + コード後処理の二段で行う:
+
+- 開発者向け候補は最大 1 件（`_enforce_diversity` がコードで強制。LLM が違反したら 2 件目以降を consumer 候補のスコア上位で置換し、置換分の詳細は承認後の Deep Dive で補完）
+- audience 判定はラベル優先（`👨‍💻dev` / `👤consumer`）、無ければプロダクト種別ラベル（⌨️CLI・開発ツール / ☁️API・SaaS → developer）でフォールバック
+- 直近 pick と同カテゴリの候補はソートで後方に降格（`_demote_same_category`。数値ペナルティ方式ではない）
+- ジャッジ LLM の dev ツール過大評価は PICK_PROMPT に自己バイアスとして明示
+
+スコア重み（scoring.py の WEIGHTS が正）: 技術的シンプルさ x2 / スコープ x2 / 差別化 x2 / コミュニティ検証 x2 / ペイン強度 x1 / 収益可能性 x3（最大 60 点）。SCORING_PROMPT にはアンカー例と full-range 指示（3〜4 固着の禁止）を含む。
 
 ## 通知 / Issue dedup 方針
 
@@ -120,7 +126,7 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 
 ## ワークフローのコードは src/ モジュールに置く
 
-`.github/workflows/*.yml` に `python3 - <<'PY'` の heredoc や `python3 -c` を埋めない（テスト不能・レビュー困難）。ロジックは `src/` の CLI サブコマンド（`state_sync.py` / `workflow_alerts.py` / `approve_checks.py` 等）に置き、`uv run python -m src.xxx` で呼ぶ。単純な JSON 抽出は `jq` で済ませる。`grep -rn "python3 - <<\|python3 -c" .github/workflows/` がヒット 0 件であることを維持する。
+`.github/workflows/*.yml` に `python3 - <<'PY'` の heredoc や `python3 -c` を埋めない（テスト不能・レビュー困難）。ロジックは `src/` の CLI サブコマンド（`state_sync.py` / `workflow_alerts.py` / `approve_checks.py` 等）に置き、`uv run python -m src.xxx` で呼ぶ。単純な JSON 抽出は `jq` で済ませる。`grep -rnE "python3? +(- <<|-c )" .github/workflows/` がヒット 0 件であることを維持する（`python -c` の 3 なし表記も対象。weekly.yml のインライン `python -c` が YAML folding の先頭空白で IndentationError になり 17 週サイレント失敗した実績あり）。
 
 注: `issue-commands.yml` には未撤廃のインライン bash（SHA 取得 + PUT）が残存。将来統一するなら `state_sync.py` へ寄せる。
 
@@ -138,3 +144,16 @@ Issue 本文には `<!-- product:appstore:1232780281 -->` 形式の隠しメタ�
 
 - 通知は 2 系統: 日次 digest・Issue 通知・パイプラインアラートは `DISCORD_WEBHOOK_URL`（宛先チャンネルは Webhook URL 自体に埋め込み）、週次 MVP 選定（承認ボタン付き）は `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`
 - メンション先の Discord ユーザー ID は `src/discord_notify.py` にハードコードされている。通知が届いているのに気づけない場合はここを疑う
+
+## LLM の Actions 認証
+
+LLMを使用するworkflowは `.github/actions/setup-llm` で収集前に構成・認証を確認する。
+CLIは公式native installerの2.1.288固定版を使用し、更新を無効化する。
+Actionsは `LLM_CLAUDE_AUTH_MODE=ci-oauth`、本人の `CLAUDE_CODE_OAUTH_TOKEN` Secretを使用する。
+ローカルは既定の `local-subscription` と公式CLIログインを使用する。
+repo用PAT/GITHUB_TOKENとAI credentialを分離し、OAuth tokenをAPI keyへ流用しない。
+未設定・認証上書き・非公式endpointはfail-fast。設定手順はREADMEを参照する。
+
+## 証拠から試作への新導線
+
+[docs/opportunity-workflow.md](docs/opportunity-workflow.md) を読む。新しいcontractを正とし、tool/LPを分け、user build承認→test/preview→user release承認を維持する。旧/approveは廃止。/probeはLP生成の互換経路で新contractとは別。main mergeが公開に繋がるため、ローカル試作の許可を公開許可に拡張しない。
