@@ -163,7 +163,7 @@ jobs:
 
       - name: Preserve notification delivery receipts and sanitized recovery outbox
         if: ${{ always() && (env.NOTIFICATION_MODE == 'shadow' || env.NOTIFICATION_MODE == 'slack') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: slack-delivery-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
           path: |
