@@ -89,7 +89,7 @@ jobs:
           key: slack-synthetic-${{ inputs.test_id }}
       - name: Upload safe delivery receipt
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: slack-smoke-${{ github.run_id }}-${{ github.run_attempt }}
           path: .notification-state/*.json

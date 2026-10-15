@@ -215,7 +215,9 @@ def test_workflow_uploads_only_markdown_before_persistence_and_keeps_notificatio
     persist_step = next(i for i, s in enumerate(steps) if "report_persistence persist" in s.get("run", ""))
     assert snapshot_step < report_step < persist_step
     artifact = steps[report_step]
-    assert artifact["uses"] == "actions/upload-artifact@v4"
+    assert artifact["uses"] == "actions/upload-artifact@v7"
+    # v7 direct uploads accept only one file; these globs require the archive default.
+    assert artifact["with"].get("archive", True) is True
     assert artifact["with"]["path"].splitlines() == [
         "${{ runner.temp }}/collected-reports/reports/daily/*.md",
         "${{ runner.temp }}/collected-reports/reports/deep_dive/*.md"]
@@ -224,6 +226,8 @@ def test_workflow_uploads_only_markdown_before_persistence_and_keeps_notificatio
     assert "if" not in steps[persist_step] and "continue-on-error" not in artifact
     assert steps[persist_step]["run"].splitlines()[0] == 'test "$GITHUB_REF" = "refs/heads/main"'
     notifications = next(s for s in steps if s.get("with", {}).get("name", "").startswith("slack-delivery-"))
+    assert notifications["uses"] == "actions/upload-artifact@v7"
+    assert notifications["with"].get("archive", True) is True
     assert notifications["with"]["retention-days"] == 90
     assert notifications["with"]["include-hidden-files"] is True
     assert notifications["with"]["path"].splitlines() == [".notification-state/*.json", ".notification-outbox/**"]
