@@ -69,7 +69,7 @@ jobs:
           PY
       - name: Restore any prior receipt for this test ID
         id: receipt
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .notification-state
           key: slack-synthetic-${{ inputs.test_id }}
@@ -83,7 +83,7 @@ jobs:
         run: python3 scripts/slack-smoke.py
       - name: Preserve receipt even if delivery is uncertain
         if: always() && steps.receipt.outcome == 'success' && steps.receipt.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .notification-state
           key: slack-synthetic-${{ inputs.test_id }}
