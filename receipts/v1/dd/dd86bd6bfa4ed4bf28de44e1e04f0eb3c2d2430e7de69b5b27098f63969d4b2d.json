@@ -1,0 +1,1 @@
+{"channel": "C0C6GSL6H7Z", "event": "pipeline", "key": "dd86bd6bfa4ed4bf28de44e1e04f0eb3c2d2430e7de69b5b27098f63969d4b2d", "mode": "slack", "parts": [], "repo": "kaionn/pain-collector", "run_attempt": "1", "run_id": "38977150495", "schema": 1, "stage": "reserved", "status": "sending"}
