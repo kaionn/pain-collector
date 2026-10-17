@@ -211,6 +211,33 @@
       "deep_dive": null,
       "product_name": null,
       "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 251,
+      "title": "[お金・家計] 高齢の父がSNS経由の投資詐欺やロマンス詐欺を詐欺だと認めない。家族が説明しても聞き入れず、送金してしまわないか常に心配している。",
+      "picked_at": "2026-10-18T07:01:39.051050+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 277,
+      "title": "[住まい・暮らし] 休職中の家族が退職することになり、アパートの引き払い、退職手続き、借金整理などを家族が代わりに進める必要がある。何をどの順番でやればよいか分からず、負担が大きい",
+      "picked_at": "2026-10-18T07:01:39.051066+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 273,
+      "title": "[子育て・育児] ワンオペ育児で心身ともに限界でも、一時保育やファミサポなど頼れる先の空き状況や手続きを調べる余力がなく、休む手段にたどり着けない。",
+      "picked_at": "2026-10-18T07:01:39.051069+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
