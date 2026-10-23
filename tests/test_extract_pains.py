@@ -271,3 +271,19 @@ def test_invalid_pain_schema_fails_without_split(content):
     with pytest.raises(LLMError):
         _extract_in_batches([{"title": "synthetic"}] * 40, call, "test")
     assert call.call_count == 1
+
+
+@pytest.mark.parametrize('source,kind', [('reddit', 'standard'), ('komachi', 'lifestyle')])
+@pytest.mark.parametrize('content', ['```json\n[]', '```json[]```', '```json\n[]\n```\nSYNTHETIC_SECRET', '{SYNTHETIC_SECRET'])
+def test_invalid_response_has_batch_context_without_retry(source, kind, content, caplog):
+    from unittest.mock import Mock, patch
+    from src.extract_pains import extract, BATCH_SIZE
+    from src.llm_client import LLMError
+    call = Mock(side_effect=['[]', content])
+    posts = [{'source': source, 'title': 'SYNTHETIC_POST'}] * (BATCH_SIZE * 3)
+    with patch('src.extract_pains._make_call_fn', return_value=call), pytest.raises(LLMError):
+        extract(posts)
+    assert call.call_count == 2
+    assert f'batch_kind={kind} batch_number=2 batch_posts={BATCH_SIZE}' in caplog.text
+    assert 'SYNTHETIC_SECRET' not in caplog.text
+    assert 'SYNTHETIC_POST' not in caplog.text

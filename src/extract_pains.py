@@ -195,7 +195,7 @@ def extract(posts: list[dict]) -> list[dict]:
 
     if lifestyle_posts:
         call_fn = _make_call_fn(variant="lifestyle")
-        pains.extend(_extract_in_batches(lifestyle_posts, call_fn, f"{base_label}/lifestyle"))
+        pains.extend(_extract_in_batches(lifestyle_posts, call_fn, f"{base_label}/lifestyle", batch_kind="lifestyle"))
 
     # 元投稿のエンゲージメント情報をペインに付与
     _attach_engagement(pains, posts)
@@ -244,6 +244,8 @@ def _extract_in_batches(
     posts: list[dict],
     call_fn: Callable[[str], str],
     label: str,
+    *,
+    batch_kind: str = "standard",
 ) -> list[dict]:
     """バッチごとに LLM を呼び出してペインを抽出する共通ループ."""
     all_pains = []
@@ -254,9 +256,14 @@ def _extract_in_batches(
         batch = posts[i : i + BATCH_SIZE]
         batch_num = i // BATCH_SIZE + 1
 
-        pains = _extract_batch_with_retry(
-            batch, call_fn, label, f"バッチ {batch_num}", failed_posts, retry_stats,
-        )
+        try:
+            pains = _extract_batch_with_retry(
+                batch, call_fn, label, f"バッチ {batch_num}", failed_posts, retry_stats,
+            )
+        except llm_client.LLMError:
+            logger.error("LLM extraction failed: batch_kind=%s batch_number=%d batch_posts=%d",
+                         batch_kind, batch_num, len(batch))
+            raise
         all_pains.extend(pains)
 
     if retry_stats["total_retries"] > 0:
