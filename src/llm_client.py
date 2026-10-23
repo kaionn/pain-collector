@@ -374,20 +374,38 @@ def embed(
             time.sleep(INITIAL_BACKOFF_SECONDS * (2 ** (attempt - 1)))
 
 
+def _response_error(message: str, content: str, *, reason: str) -> LLMError:
+    """本文を含めず、受信した応答の構造だけを診断に残す。"""
+    stripped = content.strip()
+    return LLMError(
+        f"{message} (reason={reason}, response_chars={len(content)}, "
+        f"fence_count={content.count('```')}, "
+        f"starts_with_fence={stripped.startswith('```')}, "
+        f"ends_with_fence={stripped.endswith('```')}, "
+        f"has_newline={'\n' in content})"
+    )
+
+
 def _strip_code_fence(content: str) -> str:
     """LLM レスポンスの Markdown コードフェンスを除去する."""
     if not isinstance(content, str):
         raise LLMError("LLM 応答はテキストである必要があります")
+    original = content
     content = content.strip()
     if content.startswith("```"):
         if "\n" not in content or not content.endswith("```"):
-            raise LLMError("LLM 応答のコードフェンスが不正です")
+            # 追加の marker は本文中にも現れるため、閉鎖や生成切断とは断定しない。
+            reason = "fence_no_newline" if "\n" not in content else (
+                "fence_marker_before_suffix" if "```" in content[3:] else "fence_unclosed"
+            )
+            raise _response_error("LLM 応答のコードフェンスが不正です", original, reason=reason)
         content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
     return content
 
 
 def parse_json_response(content: str) -> list[dict]:
     """LLM レスポンスから JSON 配列をパースする."""
+    original = content
     content = _strip_code_fence(content)
     start = content.find("[")
     end = content.rfind("]")
@@ -395,15 +413,16 @@ def parse_json_response(content: str) -> list[dict]:
         content = content[start : end + 1]
     try:
         result = json.loads(content)
-    except (json.JSONDecodeError, TypeError) as e:
-        raise LLMError("LLM 応答が有効な JSON ではありません") from e
+    except (json.JSONDecodeError, TypeError):
+        raise _response_error("LLM 応答が有効な JSON ではありません", original, reason="invalid_json") from None
     if not isinstance(result, list) or any(not isinstance(item, dict) for item in result):
-        raise LLMError("LLM 応答には JSON object の配列が必要です")
+        raise _response_error("LLM 応答には JSON object の配列が必要です", original, reason="invalid_array_schema")
     return result
 
 
 def parse_json_object(content: str) -> dict:
     """LLM レスポンスから JSON オブジェクトをパースする."""
+    original = content
     content = _strip_code_fence(content)
     start = content.find("{")
     end = content.rfind("}")
@@ -411,8 +430,8 @@ def parse_json_object(content: str) -> dict:
         content = content[start : end + 1]
     try:
         result = json.loads(content)
-    except (json.JSONDecodeError, TypeError) as e:
-        raise LLMError("LLM 応答が有効な JSON ではありません") from e
+    except (json.JSONDecodeError, TypeError):
+        raise _response_error("LLM 応答が有効な JSON ではありません", original, reason="invalid_json") from None
     if not isinstance(result, dict):
-        raise LLMError("LLM 応答には JSON object が必要です")
+        raise _response_error("LLM 応答には JSON object が必要です", original, reason="invalid_object_schema")
     return result

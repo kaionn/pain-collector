@@ -408,3 +408,30 @@ def test_real_sdk_http_error_offline(monkeypatch, status):
         with pytest.raises(expected):
             llm_client._call_api('synthetic-token', 'fixture', system=None, temperature=0.2,
                 max_tokens=12, model='fixture-model', timeout=3)
+
+
+@pytest.mark.parametrize("parser,payload", [(parse_json_response, '[]'), (parse_json_object, '{}')])
+@pytest.mark.parametrize("wrapper,reason", [
+    ('```json\n{payload}', 'fence_unclosed'),
+    ('```json{payload}```', 'fence_no_newline'),
+    ('```json\n{payload}\n```\nSYNTHETIC_SECRET', 'fence_marker_before_suffix'),
+    ('```json\n[{"pain":"SYNTHETIC_SECRET ``` here"}]', 'fence_marker_before_suffix'),
+    ('```json\n{{SYNTHETIC_SECRET\n```', 'invalid_json'),
+])
+def test_response_structure_diagnostics(parser, payload, wrapper, reason):
+    import traceback
+    content = '  ' + wrapper.replace('{payload}', payload) + '  '
+    with pytest.raises(LLMError) as caught:
+        parser(content)
+    diagnostic = str(caught.value)
+    assert f'reason={reason}' in diagnostic
+    assert f'response_chars={len(content)}' in diagnostic
+    assert f"fence_count={content.count('```')}" in diagnostic
+    assert 'starts_with_fence=True' in diagnostic
+    assert f"ends_with_fence={content.strip().endswith('```')}" in diagnostic
+    assert 'SYNTHETIC_SECRET' not in ''.join(traceback.format_exception(caught.value))
+
+
+@pytest.mark.parametrize('content', ['[]', '```json\n[]\n```'])
+def test_empty_array_remains_success(content):
+    assert parse_json_response(content) == []
