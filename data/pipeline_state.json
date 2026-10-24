@@ -238,6 +238,33 @@
       "deep_dive": null,
       "product_name": null,
       "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 287,
+      "title": "[お金・家計] 子連れでの離婚と引っ越し（アパート探し）を1〜2か月以内に控えているが、離婚後の生活費や必要な手続きの全体像が見えない。生活への不安から夜中に目が覚めて眠れなく",
+      "picked_at": "2026-10-25T07:17:56.959999+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 291,
+      "title": "[健康・体調] 妊活がなかなか実を結ばず、精神的につらい。通院や検査、治療費の記録も重なって負担になっており、周囲にも打ち明けにくい。",
+      "picked_at": "2026-10-25T07:17:56.960011+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
+    },
+    {
+      "issue_number": 289,
+      "title": "[仕事・キャリア] 個人開発者やフリーランスが急病・死亡などで連絡が取れなくなると、顧客のアカウントやデータを引き継げず、事業も信頼も失ってしまう。",
+      "picked_at": "2026-10-25T07:17:56.960014+09:00",
+      "spec": null,
+      "deep_dive": null,
+      "product_name": null,
+      "status": "awaiting_approval"
     }
   ]
 }
